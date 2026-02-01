@@ -1,8 +1,0 @@
-Setting up virtual environment for processing /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node_5k.h5ad...
-
-
-Processing /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node_5k.h5ad...
-
-
-/var/spool/slurmd.cn1612/job8490401/slurm_script: line 34: 2186933 Killed                  python /data/sarkar_lab/Projects/spindle_dev/ISMB_notebook/spindle_xenium_single.py "/data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node_5k.h5ad" --resolution 0.5 --min-final-size 15 --top-genes 800 --max-queries 200 --all-genes
-slurmstepd: error: Detected 1 oom_kill event in StepId=8490401.batch. Some of the step tasks have been OOM Killed.
