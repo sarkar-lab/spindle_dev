@@ -4,8 +4,6 @@ title: Spindle documentation
 
 # Spindle
 
-Below is the project README embedded into the documentation site.
-
 ```{include} ../README.md
 ``` 
 
