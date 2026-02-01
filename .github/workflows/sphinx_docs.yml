@@ -1,5 +1,10 @@
 name: Build and deploy Sphinx docs
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   push:
     branches: [ main ]
@@ -37,19 +42,7 @@ jobs:
           # Create examples/index.html that redirects to examples.html so /examples/ works
           if [ -f docs/_build/html/examples.html ]; then
             mkdir -p docs/_build/html/examples
-            printf '%s
-'<!doctype html>' '%s
-'<html>' '%s
-'  <head>' '%s
-'    <meta http-equiv="refresh" content="0; url=../examples.html">' '%s
-'    <meta name="robots" content="noindex">' '%s
-'    <link rel="canonical" href="../examples.html">' '%s
-'    <title>Examples — redirect</title>' '%s
-'  </head>' '%s
-'  <body>' '%s
-'    <p>Redirecting to <a href="../examples.html">examples.html</a>.</p>' '%s
-'  </body>' '%s
-'</html>' > docs/_build/html/examples/index.html
+            printf '%s\n' '<!doctype html>' '<html>' '  <head>' '    <meta http-equiv="refresh" content="0; url=../examples.html">' '    <meta name="robots" content="noindex">' '    <link rel="canonical" href="../examples.html">' '    <title>Examples — redirect</title>' '  </head>' '  <body>' '    <p>Redirecting to <a href="../examples.html">examples.html</a>.</p>' '  </body>' '</html>' > docs/_build/html/examples/index.html
           fi
 
       - name: Deploy to GitHub Pages
