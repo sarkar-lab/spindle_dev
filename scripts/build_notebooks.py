@@ -46,12 +46,16 @@ def convert_notebook(nb_path: Path, out_path: Path) -> None:
 
 def build_index_html(html_files, out_index: Path) -> None:
     out_index.parent.mkdir(parents=True, exist_ok=True)
-    # include README.md content (plain) if available
-    readme_txt = ""
+    # include README.md content (rendered from markdown) if available
+    readme_html = ""
     try:
-        readme_txt = (ROOT / "README.md").read_text(encoding="utf-8")
+        import markdown as _md
+
+        readme_md = (ROOT / "README.md").read_text(encoding="utf-8")
+        # render GitHub-flavored-ish markdown to HTML
+        readme_html = _md.markdown(readme_md, extensions=["fenced_code", "tables", "sane_lists"])
     except Exception:
-        readme_txt = ""
+        readme_html = ""
 
     lines = [
         "<!doctype html>",
@@ -67,9 +71,7 @@ def build_index_html(html_files, out_index: Path) -> None:
         "<p>Click an example to open the generated HTML.</p>",
         "<section>",
         "<h2>README</h2>",
-        "<pre style=\"white-space:pre-wrap; background:#f8f8f8; padding:12px; border-radius:6px;\">",
-        *(readme_txt.splitlines()),
-        "</pre>",
+        f"<div style=\"background:#f8f8f8; padding:12px; border-radius:6px;\">{readme_html}</div>",
         "</section>",
         "<ul>",
     ]
