@@ -27,7 +27,18 @@ jobs:
 
       - name: Copy examples
         run: |
-          cp -r docs/examples docs/_build/html/
+          # Copy any prebuilt examples folder (keeps existing behaviour)
+          if [ -d docs/examples ]; then
+            cp -r docs/examples docs/_build/html/
+          fi
+
+      - name: Ensure examples directory index
+        run: |
+          # Create examples/index.html from examples.html so /examples/ works
+          if [ -f docs/_build/html/examples.html ]; then
+            mkdir -p docs/_build/html/examples
+            cp docs/_build/html/examples.html docs/_build/html/examples/index.html
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
