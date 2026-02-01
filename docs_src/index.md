@@ -9,7 +9,6 @@ title: Spindle documentation
 
 ```{toctree}
 :maxdepth: 3
-:caption: Navigation
 
 self
 examples
