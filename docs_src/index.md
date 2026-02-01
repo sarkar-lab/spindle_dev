@@ -11,8 +11,19 @@ Below is the project README embedded into the documentation site.
 
 ## Examples
 
-- [HTML Examples](../examples/html/)
-- [ISMB Notebooks](../examples/ISMB_notebook/)
+- [HTML Examples](examples/html/index.html)
+- [Brain](examples/ISMB_notebook/brain_01202025%20copy.html)
+- [Breast 01](examples/ISMB_notebook/hbreast_01172026.html)
+- [Breast 02](examples/ISMB_notebook/hbreast_01182026.html)
+- [Breast Performance](examples/ISMB_notebook/hbreast_performance_01202026.html)
+- [Kidney](examples/ISMB_notebook/hkidney_01192026.html)
+- [Lung](examples/ISMB_notebook/hlung_01202025.html)
+- [Lymph Node](examples/ISMB_notebook/hlymph_01202025.html)
+- [Pancreas](examples/ISMB_notebook/hpancreas_01202025.html)
+- [Skin](examples/ISMB_notebook/hskin_01192026.html)
+- [Performance Analysis](examples/ISMB_notebook/performance_analysis.html)
+- [Cross-Cluster Search](examples/ISMB_notebook/spindle_cross_cluster_search_performance.html)
+- [Search with Noise](examples/ISMB_notebook/search_with_noise_01202025.html)
 
 ## API
 
