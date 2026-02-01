@@ -1,34 +1,243 @@
-<!doctype html>
-<html lang="en">
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>spindle_dev examples</title>
-  <style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:40px} a{display:block;margin:6px 0}
-    .readme-content h1,h2,h3{margin-top:1em} .readme-content pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto} .readme-content code{background:#f3f4f6;padding:2px 4px;border-radius:4px}
-  </style>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spindle_dev &mdash; spindle_dev  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
-<body>
-<h1>spindle_dev examples — generated 2026-02-01T04:54:25.790187 UTC</h1>
-<p>Click an example to open the generated HTML.</p>
-<section>
-<h2>README</h2>
-<div style="background:#f8f8f8; padding:12px; border-radius:6px;"></div>
-</section>
-<ul>
-  <li><a href="examples/ISMB_notebook/brain_01202025 copy.html">examples/ISMB_notebook/brain_01202025 copy.html</a></li>
-  <li><a href="examples/ISMB_notebook/hbreast_01172026.html">examples/ISMB_notebook/hbreast_01172026.html</a></li>
-  <li><a href="examples/ISMB_notebook/hbreast_01182026.html">examples/ISMB_notebook/hbreast_01182026.html</a></li>
-  <li><a href="examples/ISMB_notebook/hbreast_performance_01202026.html">examples/ISMB_notebook/hbreast_performance_01202026.html</a></li>
-  <li><a href="examples/ISMB_notebook/hbreast_wo_unlabeled_01192026.html">examples/ISMB_notebook/hbreast_wo_unlabeled_01192026.html</a></li>
-  <li><a href="examples/ISMB_notebook/hkidney_01192026.html">examples/ISMB_notebook/hkidney_01192026.html</a></li>
-  <li><a href="examples/ISMB_notebook/hlung_01202025.html">examples/ISMB_notebook/hlung_01202025.html</a></li>
-  <li><a href="examples/ISMB_notebook/hlymph_01202025.html">examples/ISMB_notebook/hlymph_01202025.html</a></li>
-  <li><a href="examples/ISMB_notebook/hpancreas_01202025.html">examples/ISMB_notebook/hpancreas_01202025.html</a></li>
-  <li><a href="examples/ISMB_notebook/hskin_01192026.html">examples/ISMB_notebook/hskin_01192026.html</a></li>
-  <li><a href="examples/ISMB_notebook/performance_analysis.html">examples/ISMB_notebook/performance_analysis.html</a></li>
-  <li><a href="examples/ISMB_notebook/search_with_noise_01202025.html">examples/ISMB_notebook/search_with_noise_01202025.html</a></li>
-  <li><a href="examples/ISMB_notebook/spindle_cross_cluster_search_performance.html">examples/ISMB_notebook/spindle_cross_cluster_search_performance.html</a></li>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            spindle_dev
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">spindle_dev</a></li>
+<li><a class="reference internal" href="#id1">spindle_dev</a><ul>
+<li><a class="reference internal" href="#modules">Modules</a></li>
+<li><a class="reference internal" href="#public-api">Public API</a></li>
+<li><a class="reference internal" href="#index-and-search"><strong>Index And Search</strong></a></li>
+<li><a class="reference internal" href="#detailed-create-index-steps"><strong>Detailed: create_index steps</strong></a></li>
+<li><a class="reference internal" href="#api">API</a></li>
 </ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">spindle_dev</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">spindle_dev</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="spindle-dev">
+<h1>spindle_dev<a class="headerlink" href="#spindle-dev" title="Link to this heading"></a></h1>
+<p>Below is the project README embedded into the documentation site.</p>
+</section>
+<section id="id1">
+<h1>spindle_dev<a class="headerlink" href="#id1" title="Link to this heading"></a></h1>
+<p>Library for indexing and searching symmetric positive definite (SPD)
+sub-matrices derived from spatial datasets.</p>
+<p>The core idea is to build a block-structured DAG index over SPD
+matrices (or their correlation equivalents) and then perform
+budget-pruned search over this graph for fast matching of query
+sub-matrices.</p>
+<section id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>src/spindle_dev/preprocessing.py – interfaces only; define how raw spatial data is
+converted into a SpatialDataset with points and SPD matrices.</p></li>
+<li><p>src/spindle_dev/index.py – builds a DAG index over block clusters of SPD matrices
+according to the spec in .github/copilot-instructions.md.</p></li>
+<li><p>src/spindle_dev/search.py – traverses the index given a query SPD sub-matrix and a
+distance budget, returning matching SPD IDs and paths.</p></li>
+<li><p>src/spindle_dev/metrics.py – implements log-Euclidean distance and SPD
+↔ correlation conversions.</p></li>
+<li><p>src/spindle_dev/utils.py – serialization helpers (save_index / load_index),
+deterministic config, and logging utilities.</p></li>
+</ul>
+</section>
+<section id="public-api">
+<h2>Public API<a class="headerlink" href="#public-api" title="Link to this heading"></a></h2>
+<p>The intended “front door” for users and higher-level code is:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">build_index(spatial_data,</span> <span class="pre">config)</span> <span class="pre">-&gt;</span> <span class="pre">IndexHandle</span></code> (from <code class="docutils literal notranslate"><span class="pre">index.py</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">query_index(index_handle,</span> <span class="pre">query_spd,</span> <span class="pre">budget,</span> <span class="pre">config)</span> <span class="pre">-&gt;</span> <span class="pre">SearchResults</span></code>
+(from <code class="docutils literal notranslate"><span class="pre">search.py</span></code>)</p></li>
+</ul>
+<p>All other functions and data structures are considered internal
+implementation details.</p>
+</section>
+<section id="index-and-search">
+<h2><strong>Index And Search</strong><a class="headerlink" href="#index-and-search" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Prerequisites:</strong> Ensure you run from the project root or add <code class="docutils literal notranslate"><span class="pre">src</span></code> to <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> so <code class="docutils literal notranslate"><span class="pre">spindle_dev</span></code> is importable. Install runtime deps (e.g. <code class="docutils literal notranslate"><span class="pre">scanpy</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>, <code class="docutils literal notranslate"><span class="pre">umap-learn</span></code>).</p></li>
+<li><p><strong>Quick CLI (recommended for single H5AD files):</strong> Use the helper script to build an index from an AnnData <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> file and run a small sanity search. Example:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># from project root</span>
+python<span class="w"> </span>ISMB_notebook/spindle_xenium_single.py<span class="w"> </span>path/to/sample.h5ad<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--top-genes<span class="w"> </span><span class="m">800</span><span class="w"> </span>--all-genes<span class="w"> </span>--max-queries<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Programmatic: Create index from an <code class="docutils literal notranslate"><span class="pre">AnnData</span></code> object</strong></p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ISMB_notebook.spindle_xenium_single</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_index</span>
+
+<span class="c1"># load your AnnData</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s1">&#39;path/to/sample.h5ad&#39;</span><span class="p">)</span>
+<span class="n">index_path</span> <span class="o">=</span> <span class="s1">&#39;path/to/sample_index&#39;</span>
+
+<span class="c1"># create_index will build the tiles, compute covariances, cluster, choose epsilons,</span>
+<span class="c1"># save a serialized index at `&lt;index_path&gt;/spindle.pkl` and run a small sanity test.</span>
+<span class="n">create_index</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">index_path</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">min_final_size</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+             <span class="n">top_genes</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">all_genes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_queries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Programmatic: Load saved index and run a search</strong></p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spindle_dev</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">spindle_dev</span><span class="w"> </span><span class="kn">import</span> <span class="n">index</span> <span class="k">as</span> <span class="n">sd_index</span><span class="p">,</span> <span class="n">search</span> <span class="k">as</span> <span class="n">sd_search</span>
+
+<span class="c1"># load the saved DatasetIndex bundle</span>
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">sd_index</span><span class="o">.</span><span class="n">load_index</span><span class="p">(</span><span class="s1">&#39;path/to/sample_index/spindle.pkl&#39;</span><span class="p">)</span>
+
+<span class="c1"># inspect available cluster ids (each maps to an IndexHandle)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;cluster ids:&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">dag_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+<span class="c1"># pick an IndexHandle (e.g. first key) and prepare a SPD query matrix</span>
+<span class="n">cluster_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">dag_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">index_handle</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">dag_dict</span><span class="p">[</span><span class="n">cluster_id</span><span class="p">]</span>
+
+<span class="c1"># Replace the following with a real SPD query (e.g. a tile covariance or correlation)</span>
+<span class="n">query_spd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">pca_model</span><span class="o">.</span><span class="n">components_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># placeholder; use a real SPD</span>
+<span class="n">budget</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">sd_search</span><span class="o">.</span><span class="n">SearchConfig</span><span class="p">(</span><span class="n">max_results</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">sd_search</span><span class="o">.</span><span class="n">query_index</span><span class="p">(</span><span class="n">index_handle</span><span class="p">,</span> <span class="n">query_spd</span><span class="p">,</span> <span class="n">budget</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Notes:</strong></p>
+<ul>
+<li><p>The script <a class="reference internal" href="#ISMB_notebook/spindle_xenium_single.py#L1"><span class="xref myst">ISMB_notebook/spindle_xenium_single.py</span></a> contains a convenient <code class="docutils literal notranslate"><span class="pre">create_index</span></code> wrapper that builds the index and runs a sanity check. Use it for quick experiments.</p></li>
+<li><p>Saved indexes are written with <code class="docutils literal notranslate"><span class="pre">spindle.pkl</span></code> and can be loaded with <code class="docutils literal notranslate"><span class="pre">spindle_dev.index.load_index</span></code> (returns a <code class="docutils literal notranslate"><span class="pre">DatasetIndex</span></code> bundle containing <code class="docutils literal notranslate"><span class="pre">dag_dict</span></code> with <code class="docutils literal notranslate"><span class="pre">IndexHandle</span></code> objects).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sd_search.query_index</span></code> expects an <code class="docutils literal notranslate"><span class="pre">IndexHandle</span></code>, a SPD matrix (<code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>) and a numeric <code class="docutils literal notranslate"><span class="pre">budget</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="detailed-create-index-steps">
+<h2><strong>Detailed: create_index steps</strong><a class="headerlink" href="#detailed-create-index-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Entry point:</strong> <code class="docutils literal notranslate"><span class="pre">create_index</span></code> (defined in <a class="reference internal" href="#ISMB_notebook/spindle_xenium_single.py#L1"><span class="xref myst">ISMB_notebook/spindle_xenium_single.py</span></a>).</p></li>
+<li><p><strong>Load coordinates:</strong> extract <code class="docutils literal notranslate"><span class="pre">coords</span> <span class="pre">=</span> <span class="pre">adata.obsm['spatial']</span></code> and build spatial tiles with <code class="docutils literal notranslate"><span class="pre">preprocessing.build_quadtree_tiles(coords,</span> <span class="pre">...)</span></code>.</p></li>
+<li><p><strong>Filter &amp; reindex tiles:</strong> remove tiny tiles, then call <code class="docutils literal notranslate"><span class="pre">preprocessing.reindex_tiles(tiles)</span></code>.</p></li>
+<li><p><strong>Select genes:</strong> choose <code class="docutils literal notranslate"><span class="pre">top_genes</span></code> (or all genes) via <code class="docutils literal notranslate"><span class="pre">preprocessing.topvar_genes(adata,</span> <span class="pre">G=num_genes)</span></code> producing <code class="docutils literal notranslate"><span class="pre">genes_work,</span> <span class="pre">gene_idx</span></code>.</p></li>
+<li><p><strong>Compute per-tile covariances:</strong> <code class="docutils literal notranslate"><span class="pre">preprocessing.build_tile_covs_full_serial(adata,</span> <span class="pre">tiles,</span> <span class="pre">gene_idx,</span> <span class="pre">eps=1e-6)</span></code> returns <code class="docutils literal notranslate"><span class="pre">tile_covs</span></code> used to create <code class="docutils literal notranslate"><span class="pre">index.ProcessedData(tiles,</span> <span class="pre">tile_covs,</span> <span class="pre">genes_work,</span> <span class="pre">adata.n_obs)</span></code>.</p></li>
+<li><p><strong>Dimensionality reduction:</strong> if PCA/UMAP not present, call <code class="docutils literal notranslate"><span class="pre">data.reduce_dim(num_pca_components=30,</span> <span class="pre">n_components=2,</span> <span class="pre">do_umap=True)</span></code> to compute latent features and store <code class="docutils literal notranslate"><span class="pre">pca_model</span></code>.</p></li>
+<li><p><strong>Clustering:</strong> call <code class="docutils literal notranslate"><span class="pre">data.cluster_spds(cluster_distance='tree',</span> <span class="pre">cluster_method='leiden',</span> <span class="pre">resolution=resolution)</span></code> to assign <code class="docutils literal notranslate"><span class="pre">data.labels</span></code> and compute per-cluster consensus trees and permutations.</p></li>
+<li><p><strong>Assign spot labels:</strong> <code class="docutils literal notranslate"><span class="pre">data.assign_label_to_spots()</span></code> maps original spot indices to cluster labels.</p></li>
+<li><p><strong>Cluster means / correlation means:</strong> <code class="docutils literal notranslate"><span class="pre">data.get_corr_mean_by_cluster()</span></code> computes <code class="docutils literal notranslate"><span class="pre">data.R_mean_list</span></code> used for block detection.</p></li>
+<li><p><strong>Adaptive block detection:</strong> <code class="docutils literal notranslate"><span class="pre">data.get_adaptive_runs(find_blocks=True,</span> <span class="pre">with_size_guard=True,</span> <span class="pre">min_final_size=min_final_size,</span> <span class="pre">max_final_size=100)</span></code> returns candidate block runs.</p></li>
+<li><p><strong>Per-cluster epsilon selection:</strong> for each cluster call <code class="docutils literal notranslate"><span class="pre">index.choose_adaptive_epsilons(data,</span> <span class="pre">cluster_id,</span> <span class="pre">k_target_per_block=64)</span></code> to get <code class="docutils literal notranslate"><span class="pre">eps_per_block,</span> <span class="pre">eps_elbow_per_block,</span> <span class="pre">eps</span></code> and populate <code class="docutils literal notranslate"><span class="pre">IndexConfig</span></code> fields <code class="docutils literal notranslate"><span class="pre">epsilon_dict</span></code> and <code class="docutils literal notranslate"><span class="pre">epsilon_block_wise_dict</span></code>.</p></li>
+<li><p><strong>Index construction:</strong> call <code class="docutils literal notranslate"><span class="pre">index.index_spds(data,</span> <span class="pre">config=config)</span></code> to produce <code class="docutils literal notranslate"><span class="pre">dag_dict,</span> <span class="pre">stat,</span> <span class="pre">dist_list</span></code> (the block-DAG index).</p></li>
+<li><p><strong>Serialize index:</strong> <code class="docutils literal notranslate"><span class="pre">index.save_index(data,</span> <span class="pre">dag_dict,</span> <span class="pre">index_path</span> <span class="pre">+</span> <span class="pre">'/spindle.pkl')</span></code> writes the dataset bundle.</p></li>
+<li><p><strong>Sanity test &amp; artifacts:</strong> run <code class="docutils literal notranslate"><span class="pre">test.run_sanity_search(data,</span> <span class="pre">dag_dict,</span> <span class="pre">config,</span> <span class="pre">search_cfg,</span> <span class="pre">max_queries=max_queries)</span></code>, write <code class="docutils literal notranslate"><span class="pre">index_stats.txt</span></code> with timing, and save <code class="docutils literal notranslate"><span class="pre">sanity_test_results.csv</span></code> in the index folder.</p></li>
+<li><p><strong>What to inspect after building:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">index_path/spindle.pkl</span></code> — load with <code class="docutils literal notranslate"><span class="pre">spindle_dev.index.load_index</span></code> to get a <code class="docutils literal notranslate"><span class="pre">DatasetIndex</span></code> bundle containing <code class="docutils literal notranslate"><span class="pre">dag_dict</span></code> and <code class="docutils literal notranslate"><span class="pre">IndexHandle</span></code> objects.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">index_path/index_stats.txt</span></code> — index build time.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">index_path/sanity_test_results.csv</span></code> — sanity-check search records.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<p>Autogenerated API docs will appear here when <code class="docutils literal notranslate"><span class="pre">autodoc</span></code> runs.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, sarkar_lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
 </body>
 </html>

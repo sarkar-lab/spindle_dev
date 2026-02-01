@@ -5,3 +5,6 @@ scikit-learn
 umap-learn
 scanpy
 markdown
+sphinx
+sphinx-rtd-theme
+myst-parser
