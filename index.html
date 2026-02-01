@@ -172,7 +172,7 @@ python<span class="w"> </span>ISMB_notebook/spindle_xenium_single.py<span class=
 <ul class="simple">
 <li><p><strong>Notes:</strong></p>
 <ul>
-<li><p>The script <a class="reference internal" href="#ISMB_notebook/spindle_xenium_single.py#L1"><span class="xref myst">ISMB_notebook/spindle_xenium_single.py</span></a> contains a convenient <code class="docutils literal notranslate"><span class="pre">create_index</span></code> wrapper that builds the index and runs a sanity check. Use it for quick experiments.</p></li>
+<li><p>The script <a href="ISMB_notebook/spindle_xenium_single.py">ISMB_notebook/spindle_xenium_single.py</a> contains a convenient <code class="docutils literal notranslate"><span class="pre">create_index</span></code> wrapper that builds the index and runs a sanity check. Use it for quick experiments.</p></li>
 <li><p>Saved indexes are written with <code class="docutils literal notranslate"><span class="pre">spindle.pkl</span></code> and can be loaded with <code class="docutils literal notranslate"><span class="pre">spindle_dev.index.load_index</span></code> (returns a <code class="docutils literal notranslate"><span class="pre">DatasetIndex</span></code> bundle containing <code class="docutils literal notranslate"><span class="pre">dag_dict</span></code> with <code class="docutils literal notranslate"><span class="pre">IndexHandle</span></code> objects).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">sd_search.query_index</span></code> expects an <code class="docutils literal notranslate"><span class="pre">IndexHandle</span></code>, a SPD matrix (<code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>) and a numeric <code class="docutils literal notranslate"><span class="pre">budget</span></code>.</p></li>
 </ul>
@@ -182,7 +182,7 @@ python<span class="w"> </span>ISMB_notebook/spindle_xenium_single.py<span class=
 <section id="detailed-create-index-steps">
 <h2><strong>Detailed: create_index steps</strong><a class="headerlink" href="#detailed-create-index-steps" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><strong>Entry point:</strong> <code class="docutils literal notranslate"><span class="pre">create_index</span></code> (defined in <a class="reference internal" href="#ISMB_notebook/spindle_xenium_single.py#L1"><span class="xref myst">ISMB_notebook/spindle_xenium_single.py</span></a>).</p></li>
+<li><p><strong>Entry point:</strong> <code class="docutils literal notranslate"><span class="pre">create_index</span></code> (defined in <a href="ISMB_notebook/spindle_xenium_single.py">ISMB_notebook/spindle_xenium_single.py</a>).</p></li>
 <li><p><strong>Load coordinates:</strong> extract <code class="docutils literal notranslate"><span class="pre">coords</span> <span class="pre">=</span> <span class="pre">adata.obsm['spatial']</span></code> and build spatial tiles with <code class="docutils literal notranslate"><span class="pre">preprocessing.build_quadtree_tiles(coords,</span> <span class="pre">...)</span></code>.</p></li>
 <li><p><strong>Filter &amp; reindex tiles:</strong> remove tiny tiles, then call <code class="docutils literal notranslate"><span class="pre">preprocessing.reindex_tiles(tiles)</span></code>.</p></li>
 <li><p><strong>Select genes:</strong> choose <code class="docutils literal notranslate"><span class="pre">top_genes</span></code> (or all genes) via <code class="docutils literal notranslate"><span class="pre">preprocessing.topvar_genes(adata,</span> <span class="pre">G=num_genes)</span></code> producing <code class="docutils literal notranslate"><span class="pre">genes_work,</span> <span class="pre">gene_idx</span></code>.</p></li>
@@ -207,20 +207,20 @@ python<span class="w"> </span>ISMB_notebook/spindle_xenium_single.py<span class=
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<p><a href="examples/html/index.html">HTML Examples</a></p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#examples/html/index.html"><span class="xref myst">HTML Examples</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/brain_01202025%20copy.html"><span class="xref myst">Brain</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hbreast_01172026.html"><span class="xref myst">Breast 01</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hbreast_01182026.html"><span class="xref myst">Breast 02</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hbreast_performance_01202026.html"><span class="xref myst">Breast Performance</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hkidney_01192026.html"><span class="xref myst">Kidney</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hlung_01202025.html"><span class="xref myst">Lung</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hlymph_01202025.html"><span class="xref myst">Lymph Node</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hpancreas_01202025.html"><span class="xref myst">Pancreas</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/hskin_01192026.html"><span class="xref myst">Skin</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/performance_analysis.html"><span class="xref myst">Performance Analysis</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/spindle_cross_cluster_search_performance.html"><span class="xref myst">Cross-Cluster Search</span></a></p></li>
-<li><p><a class="reference internal" href="#examples/ISMB_notebook/search_with_noise_01202025.html"><span class="xref myst">Search with Noise</span></a></p></li>
+<li><p><a href="examples/ISMB_notebook/brain_01202025%20copy.html">Brain</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hbreast_01172026.html">Breast 01</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hbreast_01182026.html">Breast 02</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hbreast_performance_01202026.html">Breast Performance</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hkidney_01192026.html">Kidney</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hlung_01202025.html">Lung</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hlymph_01202025.html">Lymph Node</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hpancreas_01202025.html">Pancreas</a></p></li>
+<li><p><a href="examples/ISMB_notebook/hskin_01192026.html">Skin</a></p></li>
+<li><p><a href="examples/ISMB_notebook/performance_analysis.html">Performance Analysis</a></p></li>
+<li><p><a href="examples/ISMB_notebook/spindle_cross_cluster_search_performance.html">Cross-Cluster Search</a></p></li>
+<li><p><a href="examples/ISMB_notebook/search_with_noise_01202025.html">Search with Noise</a></p></li>
 </ul>
 </section>
 <section id="api">
