@@ -32,6 +32,7 @@ ENV/
 
 # Jupyter notebooks
 .ipynb_checkpoints/
+*.ipynb
 
 # VS Code
 .vscode/
@@ -52,9 +53,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# Logs
-*.log
-*/logs/*
+# Documentation build artifacts
+docs/_build/
 # Local data or scratch
 *.tmp
 *.bak
