@@ -54,6 +54,9 @@ Thumbs.db
 
 # Documentation build artifacts
 docs/_build/
+docs/*.html
+docs/objects.inv
+docs/searchindex.js
 # Local data or scratch
 *.tmp
 *.bak
