@@ -88,13 +88,13 @@ print(results)
 ```
 
 - **Notes:**
-  - The script [ISMB_notebook/spindle_xenium_single.py](ISMB_notebook/spindle_xenium_single.py#L1) contains a convenient `create_index` wrapper that builds the index and runs a sanity check. Use it for quick experiments.
+  - The script <a href="ISMB_notebook/spindle_xenium_single.py">ISMB_notebook/spindle_xenium_single.py</a> contains a convenient `create_index` wrapper that builds the index and runs a sanity check. Use it for quick experiments.
   - Saved indexes are written with `spindle.pkl` and can be loaded with `spindle_dev.index.load_index` (returns a `DatasetIndex` bundle containing `dag_dict` with `IndexHandle` objects).
   - `sd_search.query_index` expects an `IndexHandle`, a SPD matrix (`numpy.ndarray`) and a numeric `budget`.
 
 ## **Detailed: create_index steps**
 
-- **Entry point:** `create_index` (defined in [ISMB_notebook/spindle_xenium_single.py](ISMB_notebook/spindle_xenium_single.py#L1)).
+- **Entry point:** `create_index` (defined in <a href="ISMB_notebook/spindle_xenium_single.py">ISMB_notebook/spindle_xenium_single.py</a>).
 - **Load coordinates:** extract `coords = adata.obsm['spatial']` and build spatial tiles with `preprocessing.build_quadtree_tiles(coords, ...)`.
 - **Filter & reindex tiles:** remove tiny tiles, then call `preprocessing.reindex_tiles(tiles)`.
 - **Select genes:** choose `top_genes` (or all genes) via `preprocessing.topvar_genes(adata, G=num_genes)` producing `genes_work, gene_idx`.
