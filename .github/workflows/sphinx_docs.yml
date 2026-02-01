@@ -34,10 +34,22 @@ jobs:
 
       - name: Ensure examples directory index
         run: |
-          # Create examples/index.html from examples.html so /examples/ works
+          # Create examples/index.html that redirects to examples.html so /examples/ works
           if [ -f docs/_build/html/examples.html ]; then
             mkdir -p docs/_build/html/examples
-            cp docs/_build/html/examples.html docs/_build/html/examples/index.html
+            printf '%s
+'<!doctype html>' '%s
+'<html>' '%s
+'  <head>' '%s
+'    <meta http-equiv="refresh" content="0; url=../examples.html">' '%s
+'    <meta name="robots" content="noindex">' '%s
+'    <link rel="canonical" href="../examples.html">' '%s
+'    <title>Examples — redirect</title>' '%s
+'  </head>' '%s
+'  <body>' '%s
+'    <p>Redirecting to <a href="../examples.html">examples.html</a>.</p>' '%s
+'  </body>' '%s
+'</html>' > docs/_build/html/examples/index.html
           fi
 
       - name: Deploy to GitHub Pages

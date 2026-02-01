@@ -1,4 +1,25 @@
 
+## Installation
+
+Create and activate a virtual environment, then install runtime dependencies and (optionally) the docs/tools:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+# To build the documentation locally:
+pip install sphinx sphinx-rtd-theme myst-parser
+# Optional (for automatic notebook → HTML conversion in CI):
+pip install nbconvert jupyter
+```
+
+To build the Sphinx site locally:
+
+```bash
+python -m sphinx -b html docs_src docs/_build/html -a
+```
+
 ## Background
 
 Sprindle is a library for indexing and searching symmetric positive definite (SPD)
