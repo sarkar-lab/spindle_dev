@@ -1,8 +1,8 @@
 ---
-title: spindle_dev documentation
+title: Spindle documentation
 ---
 
-# spindle_dev
+# Spindle
 
 Below is the project README embedded into the documentation site.
 
