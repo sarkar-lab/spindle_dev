@@ -119,6 +119,13 @@ def main():
     # generate docs/index.html
     index_file = ROOT / "docs" / "index.html"
     build_index_html(html_paths, index_file)
+    # Also generate a Sphinx page listing examples so they appear in the docs site
+    sphinx_examples = ROOT / "docs_src" / "examples.md"
+    sphinx_lines = ["# Examples", "", "The generated example notebooks (HTML):", ""]
+    for rel in html_paths:
+        sphinx_lines.append(f"- [{rel}]({rel})")
+    sphinx_examples.write_text("\n".join(sphinx_lines), encoding="utf-8")
+    print(f"Wrote Sphinx examples page to {sphinx_examples}")
     print(f"Wrote index to {index_file}. {len(html_paths)} files linked.")
 
 
