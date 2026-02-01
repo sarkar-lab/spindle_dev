@@ -8,7 +8,7 @@ title: Spindle documentation
 ```
 
 ```{toctree}
-   :maxdepth: 3
+:maxdepth: 3
 
-   examples
+examples.md
 ```
