@@ -2,7 +2,7 @@
 ## Background
 
 Sprindle is a library for indexing and searching symmetric positive definite (SPD)
-sub-matrices derived from spatial-omics datasets.
+sub-matrices derived from spatial-omics datasets. Please refer to the (documentation page)[www.hiraksarkar.com/spindle_dev/].
 
 The core idea is to build a block-structured DAG index over SPD
 matrices (or their correlation equivalents) and then perform
