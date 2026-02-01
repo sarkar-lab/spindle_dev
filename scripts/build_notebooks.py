@@ -52,6 +52,16 @@ def build_index_html(html_files, out_index: Path) -> None:
         import markdown as _md
 
         readme_md = (ROOT / "README.md").read_text(encoding="utf-8")
+        # If README is wrapped in a top-level fenced block (e.g. ```markdown ... ```),
+        # strip that fence so it renders as normal markdown rather than a giant code block.
+        lines = readme_md.splitlines()
+        if lines and lines[0].lstrip().startswith("```"):
+            # drop opening fence
+            lines = lines[1:]
+            # drop trailing fence if present
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+        readme_md = "\n".join(lines)
         # render GitHub-flavored-ish markdown to HTML
         readme_html = _md.markdown(readme_md, extensions=["fenced_code", "tables", "sane_lists"])
     except Exception:
@@ -64,7 +74,9 @@ def build_index_html(html_files, out_index: Path) -> None:
         "  <meta charset=\"utf-8\">",
         "  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">",
         "  <title>spindle_dev examples</title>",
-        "  <style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:40px} a{display:block;margin:6px 0}</style>",
+        "  <style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:40px} a{display:block;margin:6px 0}",
+        "    .readme-content h1,h2,h3{margin-top:1em} .readme-content pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto} .readme-content code{background:#f3f4f6;padding:2px 4px;border-radius:4px}",
+        "  </style>",
         "</head>",
         "<body>",
         f"<h1>spindle_dev examples — generated {datetime.utcnow().isoformat()} UTC</h1>",
