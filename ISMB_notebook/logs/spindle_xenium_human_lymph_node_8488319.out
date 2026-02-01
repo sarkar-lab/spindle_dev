@@ -1,0 +1,377 @@
+Setting up virtual environment for processing /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node.h5ad...
+
+
+Processing /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node.h5ad...
+
+
+[2026-01-18 08:51:45,279] INFO spindle_dev.index: Clustering SPD-s using 'tree' distance.
+[2026-01-18 08:51:45,292] INFO spindle_dev.index: Building ultrametric features from SPD matrices.
+[2026-01-18 08:52:02,549] INFO spindle_dev.index: Computing latent features from the tree representations.
+[2026-01-18 08:52:03,938] INFO spindle_dev.index: Reducing latent features to 30 dimensions using PCA.
+[2026-01-18 08:52:14,592] INFO spindle_dev.index: Explained variance ratios by PCA components: [0.04082877 0.02090289 0.01214787 0.00703324 0.00602298 0.00583663
+ 0.00484961 0.00420947 0.00341713 0.00326079 0.00293997 0.00285414
+ 0.00278242 0.00267546 0.00262346 0.00254401 0.00253857 0.00249984
+ 0.00243455 0.00240164 0.00238939 0.00234241 0.0022555  0.0022111
+ 0.00219762 0.0021745  0.00212202 0.0020705  0.00205612 0.00198888]
+[2026-01-18 08:52:14,593] INFO spindle_dev.index: Reducing latent features to 2 dimensions using UMAP.
+/panfs/accrepfs.vampire/home/sarkah1/miniforge3/envs/spatial/lib/python3.10/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+[2026-01-18 08:52:28,532] INFO spindle_dev.index: Clustering SPD-s using 'tree' distance.
+[2026-01-18 08:52:28,533] INFO spindle_dev.index: Clustering SPD matrices using Leiden clustering with resolution 0.50.
+[2026-01-18 08:52:28,903] INFO spindle_dev.index: Since clustering method is tree, I am going to find global order per cluster
+[2026-01-18 08:52:28,904] INFO spindle_dev.index: Finding consensus tree for cluster 0
+[2026-01-18 08:52:29,121] INFO spindle_dev.index: Finding consensus tree for cluster 1
+[2026-01-18 08:52:29,316] INFO spindle_dev.index: Finding consensus tree for cluster 2
+[2026-01-18 08:52:29,470] INFO spindle_dev.index: Finding consensus tree for cluster 3
+[2026-01-18 08:52:29,595] INFO spindle_dev.index: Finding consensus tree for cluster 4
+[2026-01-18 08:52:29,696] INFO spindle_dev.index: Finding consensus tree for cluster 5
+[2026-01-18 08:52:30,449] INFO spindle_dev.index: Computing mean correlation matrix for cluster 0
+[2026-01-18 08:52:32,652] INFO spindle_dev.index: Computing mean correlation matrix for cluster 1
+[2026-01-18 08:52:34,817] INFO spindle_dev.index: Computing mean correlation matrix for cluster 2
+[2026-01-18 08:52:36,344] INFO spindle_dev.index: Computing mean correlation matrix for cluster 3
+[2026-01-18 08:52:37,654] INFO spindle_dev.index: Computing mean correlation matrix for cluster 4
+[2026-01-18 08:52:38,652] INFO spindle_dev.index: Computing mean correlation matrix for cluster 5
+[2026-01-18 08:52:38,969] INFO spindle_dev.index: Finding adaptive block runs for cluster 0
+[2026-01-18 08:52:39,555] INFO spindle_dev.index:  Chose t=0.8953150000734291 resulting in 269 blocks instead of 234 blocks would have gotten by default
+[2026-01-18 08:52:39,644] INFO spindle_dev.index:  Final block runs for cluster 0: 22 blocks.
+[2026-01-18 08:52:39,644] INFO spindle_dev.index: Finding adaptive block runs for cluster 1
+[2026-01-18 08:52:40,235] INFO spindle_dev.index:  Chose t=0.8974951970517207 resulting in 247 blocks instead of 219 blocks would have gotten by default
+[2026-01-18 08:52:40,303] INFO spindle_dev.index:  Final block runs for cluster 1: 22 blocks.
+[2026-01-18 08:52:40,303] INFO spindle_dev.index: Finding adaptive block runs for cluster 2
+[2026-01-18 08:52:40,893] INFO spindle_dev.index:  Chose t=0.9153192440240208 resulting in 190 blocks instead of 182 blocks would have gotten by default
+[2026-01-18 08:52:40,938] INFO spindle_dev.index:  Final block runs for cluster 2: 16 blocks.
+[2026-01-18 08:52:40,938] INFO spindle_dev.index: Finding adaptive block runs for cluster 3
+[2026-01-18 08:52:41,518] INFO spindle_dev.index:  Chose t=0.9106198620507007 resulting in 285 blocks instead of 267 blocks would have gotten by default
+[2026-01-18 08:52:41,612] INFO spindle_dev.index:  Final block runs for cluster 3: 22 blocks.
+[2026-01-18 08:52:41,612] INFO spindle_dev.index: Finding adaptive block runs for cluster 4
+[2026-01-18 08:52:42,206] INFO spindle_dev.index:  Chose t=0.9374727137890102 resulting in 246 blocks instead of 291 blocks would have gotten by default
+[2026-01-18 08:52:42,276] INFO spindle_dev.index:  Final block runs for cluster 4: 21 blocks.
+[2026-01-18 08:52:42,276] INFO spindle_dev.index: Finding adaptive block runs for cluster 5
+[2026-01-18 08:52:42,857] INFO spindle_dev.index:  Chose t=0.9281580392858046 resulting in 252 blocks instead of 271 blocks would have gotten by default
+[2026-01-18 08:52:42,930] INFO spindle_dev.index:  Final block runs for cluster 5: 20 blocks.
+[2026-01-18 08:52:52,846] INFO spindle_dev.index: Processing cluster 0
+[2026-01-18 08:52:52,846] INFO spindle_dev.index: Building SPD index with epsilon=5.577215954607414
+[2026-01-18 08:52:52,847] INFO spindle_dev.index: Step 1: Cluster blocks within each class of SPD matrices.
+[2026-01-18 08:52:52,916] INFO spindle_dev.index: Cluster 0: 692 SPDs, 22 blocks
+[2026-01-18 08:52:52,916] INFO spindle_dev.index:  Using epsilon-net clustering for block 0
+[2026-01-18 08:52:52,968] INFO spindle_dev.index:  Finished block 0 in 0.05 seconds, found 2 clusters.
+[2026-01-18 08:52:52,968] INFO spindle_dev.index:  Using epsilon-net clustering for block 1
+[2026-01-18 08:52:53,020] INFO spindle_dev.index:  Finished block 1 in 0.05 seconds, found 2 clusters.
+[2026-01-18 08:52:53,020] INFO spindle_dev.index:  Using epsilon-net clustering for block 2
+[2026-01-18 08:52:53,072] INFO spindle_dev.index:  Finished block 2 in 0.05 seconds, found 2 clusters.
+[2026-01-18 08:52:53,072] INFO spindle_dev.index:  Using epsilon-net clustering for block 3
+[2026-01-18 08:52:53,141] INFO spindle_dev.index:  Finished block 3 in 0.07 seconds, found 4 clusters.
+[2026-01-18 08:52:53,141] INFO spindle_dev.index:  Using epsilon-net clustering for block 4
+[2026-01-18 08:52:53,202] INFO spindle_dev.index:  Finished block 4 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:53,202] INFO spindle_dev.index:  Using epsilon-net clustering for block 5
+[2026-01-18 08:52:53,286] INFO spindle_dev.index:  Finished block 5 in 0.08 seconds, found 6 clusters.
+[2026-01-18 08:52:53,286] INFO spindle_dev.index:  Using epsilon-net clustering for block 6
+[2026-01-18 08:52:53,348] INFO spindle_dev.index:  Finished block 6 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:53,348] INFO spindle_dev.index:  Using epsilon-net clustering for block 7
+[2026-01-18 08:52:53,412] INFO spindle_dev.index:  Finished block 7 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:53,412] INFO spindle_dev.index:  Using epsilon-net clustering for block 8
+[2026-01-18 08:52:53,476] INFO spindle_dev.index:  Finished block 8 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:53,476] INFO spindle_dev.index:  Using epsilon-net clustering for block 9
+[2026-01-18 08:52:53,539] INFO spindle_dev.index:  Finished block 9 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:53,539] INFO spindle_dev.index:  Using epsilon-net clustering for block 10
+[2026-01-18 08:52:53,605] INFO spindle_dev.index:  Finished block 10 in 0.07 seconds, found 3 clusters.
+[2026-01-18 08:52:53,605] INFO spindle_dev.index:  Using epsilon-net clustering for block 11
+[2026-01-18 08:52:53,709] INFO spindle_dev.index:  Finished block 11 in 0.10 seconds, found 8 clusters.
+[2026-01-18 08:52:53,709] INFO spindle_dev.index:  Using epsilon-net clustering for block 12
+[2026-01-18 08:52:53,766] INFO spindle_dev.index:  Finished block 12 in 0.06 seconds, found 2 clusters.
+[2026-01-18 08:52:53,766] INFO spindle_dev.index:  Using epsilon-net clustering for block 13
+[2026-01-18 08:52:53,877] INFO spindle_dev.index:  Finished block 13 in 0.11 seconds, found 9 clusters.
+[2026-01-18 08:52:53,877] INFO spindle_dev.index:  Using epsilon-net clustering for block 14
+[2026-01-18 08:52:53,956] INFO spindle_dev.index:  Finished block 14 in 0.08 seconds, found 3 clusters.
+[2026-01-18 08:52:53,956] INFO spindle_dev.index:  Using epsilon-net clustering for block 15
+[2026-01-18 08:52:54,044] INFO spindle_dev.index:  Finished block 15 in 0.09 seconds, found 6 clusters.
+[2026-01-18 08:52:54,044] INFO spindle_dev.index:  Using epsilon-net clustering for block 16
+[2026-01-18 08:52:54,254] INFO spindle_dev.index:  Finished block 16 in 0.21 seconds, found 13 clusters.
+[2026-01-18 08:52:54,254] INFO spindle_dev.index:  Using epsilon-net clustering for block 17
+[2026-01-18 08:52:54,397] INFO spindle_dev.index:  Finished block 17 in 0.14 seconds, found 12 clusters.
+[2026-01-18 08:52:54,397] INFO spindle_dev.index:  Using epsilon-net clustering for block 18
+[2026-01-18 08:52:54,500] INFO spindle_dev.index:  Finished block 18 in 0.10 seconds, found 8 clusters.
+[2026-01-18 08:52:54,500] INFO spindle_dev.index:  Using epsilon-net clustering for block 19
+[2026-01-18 08:52:54,606] INFO spindle_dev.index:  Finished block 19 in 0.11 seconds, found 7 clusters.
+[2026-01-18 08:52:54,606] INFO spindle_dev.index:  Using epsilon-net clustering for block 20
+[2026-01-18 08:52:54,730] INFO spindle_dev.index:  Finished block 20 in 0.12 seconds, found 3 clusters.
+[2026-01-18 08:52:54,730] INFO spindle_dev.index:  Using epsilon-net clustering for block 21
+[2026-01-18 08:52:54,815] INFO spindle_dev.index:  Finished block 21 in 0.09 seconds, found 3 clusters.
+[2026-01-18 08:52:54,815] INFO spindle_dev.index: Step 2: Build DAG connections between block clusters.
+[2026-01-18 08:52:54,815] INFO spindle_dev.index: Step 2.1: For each layer order the block-clusters by
+[2026-01-18 08:52:54,815] INFO spindle_dev.index: Not implemented: ordering block-clusters ? How to order them?
+[2026-01-18 08:52:54,815] INFO spindle_dev.index: We will use triangle inequality to order clusters.
+[2026-01-18 08:52:54,815] INFO spindle_dev.index: Step 2.2: Connect block-clusters between layers based on co-occurrence in SPDs.
+[2026-01-18 08:52:54,828] INFO spindle_dev.index: Check if node global_node_id matches index in nodes list
+[2026-01-18 08:52:54,828] INFO spindle_dev.index: Step 2.3: Ordering block-clusters within each layer using log-Euclidean distances.
+[2026-01-18 08:52:54,828] INFO spindle_dev.index: Processing cluster 1
+[2026-01-18 08:52:54,828] INFO spindle_dev.index: Building SPD index with epsilon=6.072689718804082
+[2026-01-18 08:52:54,828] INFO spindle_dev.index: Step 1: Cluster blocks within each class of SPD matrices.
+[2026-01-18 08:52:54,900] INFO spindle_dev.index: Cluster 1: 688 SPDs, 22 blocks
+[2026-01-18 08:52:54,901] INFO spindle_dev.index:  Using epsilon-net clustering for block 0
+[2026-01-18 08:52:54,952] INFO spindle_dev.index:  Finished block 0 in 0.05 seconds, found 2 clusters.
+[2026-01-18 08:52:54,952] INFO spindle_dev.index:  Using epsilon-net clustering for block 1
+[2026-01-18 08:52:55,004] INFO spindle_dev.index:  Finished block 1 in 0.05 seconds, found 2 clusters.
+[2026-01-18 08:52:55,004] INFO spindle_dev.index:  Using epsilon-net clustering for block 2
+[2026-01-18 08:52:55,056] INFO spindle_dev.index:  Finished block 2 in 0.05 seconds, found 2 clusters.
+[2026-01-18 08:52:55,056] INFO spindle_dev.index:  Using epsilon-net clustering for block 3
+[2026-01-18 08:52:55,120] INFO spindle_dev.index:  Finished block 3 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:55,120] INFO spindle_dev.index:  Using epsilon-net clustering for block 4
+[2026-01-18 08:52:55,176] INFO spindle_dev.index:  Finished block 4 in 0.06 seconds, found 2 clusters.
+[2026-01-18 08:52:55,176] INFO spindle_dev.index:  Using epsilon-net clustering for block 5
+[2026-01-18 08:52:55,239] INFO spindle_dev.index:  Finished block 5 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:55,239] INFO spindle_dev.index:  Using epsilon-net clustering for block 6
+[2026-01-18 08:52:55,303] INFO spindle_dev.index:  Finished block 6 in 0.06 seconds, found 3 clusters.
+[2026-01-18 08:52:55,303] INFO spindle_dev.index:  Using epsilon-net clustering for block 7
+[2026-01-18 08:52:55,417] INFO spindle_dev.index:  Finished block 7 in 0.11 seconds, found 9 clusters.
+[2026-01-18 08:52:55,417] INFO spindle_dev.index:  Using epsilon-net clustering for block 8
+[2026-01-18 08:52:55,513] INFO spindle_dev.index:  Finished block 8 in 0.10 seconds, found 7 clusters.
+[2026-01-18 08:52:55,513] INFO spindle_dev.index:  Using epsilon-net clustering for block 9
+[2026-01-18 08:52:55,618] INFO spindle_dev.index:  Finished block 9 in 0.10 seconds, found 8 clusters.
+[2026-01-18 08:52:55,618] INFO spindle_dev.index:  Using epsilon-net clustering for block 10
+[2026-01-18 08:52:55,751] INFO spindle_dev.index:  Finished block 10 in 0.13 seconds, found 12 clusters.
+[2026-01-18 08:52:55,751] INFO spindle_dev.index:  Using epsilon-net clustering for block 11
+[2026-01-18 08:52:55,906] INFO spindle_dev.index:  Finished block 11 in 0.15 seconds, found 15 clusters.
+[2026-01-18 08:52:55,906] INFO spindle_dev.index:  Using epsilon-net clustering for block 12
+[2026-01-18 08:52:55,956] INFO spindle_dev.index:  Finished block 12 in 0.05 seconds, found 1 clusters.
+[2026-01-18 08:52:55,956] INFO spindle_dev.index:  Using epsilon-net clustering for block 13
+[2026-01-18 08:52:56,060] INFO spindle_dev.index:  Finished block 13 in 0.10 seconds, found 8 clusters.
+[2026-01-18 08:52:56,060] INFO spindle_dev.index:  Using epsilon-net clustering for block 14
+[2026-01-18 08:52:56,118] INFO spindle_dev.index:  Finished block 14 in 0.06 seconds, found 2 clusters.
+[2026-01-18 08:52:56,118] INFO spindle_dev.index:  Using epsilon-net clustering for block 15
+[2026-01-18 08:52:56,188] INFO spindle_dev.index:  Finished block 15 in 0.07 seconds, found 2 clusters.
+[2026-01-18 08:52:56,188] INFO spindle_dev.index:  Using epsilon-net clustering for block 16
+[2026-01-18 08:52:56,349] INFO spindle_dev.index:  Finished block 16 in 0.16 seconds, found 14 clusters.
+[2026-01-18 08:52:56,349] INFO spindle_dev.index:  Using epsilon-net clustering for block 17
+[2026-01-18 08:52:56,424] INFO spindle_dev.index:  Finished block 17 in 0.07 seconds, found 4 clusters.
+[2026-01-18 08:52:56,424] INFO spindle_dev.index:  Using epsilon-net clustering for block 18
+[2026-01-18 08:52:56,532] INFO spindle_dev.index:  Finished block 18 in 0.11 seconds, found 6 clusters.
+[2026-01-18 08:52:56,532] INFO spindle_dev.index:  Using epsilon-net clustering for block 19
+[2026-01-18 08:52:56,597] INFO spindle_dev.index:  Finished block 19 in 0.07 seconds, found 3 clusters.
+[2026-01-18 08:52:56,598] INFO spindle_dev.index:  Using epsilon-net clustering for block 20
+[2026-01-18 08:52:56,829] INFO spindle_dev.index:  Finished block 20 in 0.23 seconds, found 7 clusters.
+[2026-01-18 08:52:56,829] INFO spindle_dev.index:  Using epsilon-net clustering for block 21
+[2026-01-18 08:52:56,896] INFO spindle_dev.index:  Finished block 21 in 0.07 seconds, found 3 clusters.
+[2026-01-18 08:52:56,896] INFO spindle_dev.index: Step 2: Build DAG connections between block clusters.
+[2026-01-18 08:52:56,896] INFO spindle_dev.index: Step 2.1: For each layer order the block-clusters by
+[2026-01-18 08:52:56,896] INFO spindle_dev.index: Not implemented: ordering block-clusters ? How to order them?
+[2026-01-18 08:52:56,896] INFO spindle_dev.index: We will use triangle inequality to order clusters.
+[2026-01-18 08:52:56,896] INFO spindle_dev.index: Step 2.2: Connect block-clusters between layers based on co-occurrence in SPDs.
+[2026-01-18 08:52:56,906] INFO spindle_dev.index: Check if node global_node_id matches index in nodes list
+[2026-01-18 08:52:56,906] INFO spindle_dev.index: Step 2.3: Ordering block-clusters within each layer using log-Euclidean distances.
+[2026-01-18 08:52:56,906] INFO spindle_dev.index: Processing cluster 2
+[2026-01-18 08:52:56,907] INFO spindle_dev.index: Building SPD index with epsilon=8.153677741285781
+[2026-01-18 08:52:56,907] INFO spindle_dev.index: Step 1: Cluster blocks within each class of SPD matrices.
+[2026-01-18 08:52:56,955] INFO spindle_dev.index: Cluster 2: 538 SPDs, 16 blocks
+[2026-01-18 08:52:56,955] INFO spindle_dev.index:  Using epsilon-net clustering for block 0
+[2026-01-18 08:52:57,004] INFO spindle_dev.index:  Finished block 0 in 0.05 seconds, found 3 clusters.
+[2026-01-18 08:52:57,004] INFO spindle_dev.index:  Using epsilon-net clustering for block 1
+[2026-01-18 08:52:57,043] INFO spindle_dev.index:  Finished block 1 in 0.04 seconds, found 2 clusters.
+[2026-01-18 08:52:57,043] INFO spindle_dev.index:  Using epsilon-net clustering for block 2
+[2026-01-18 08:52:57,095] INFO spindle_dev.index:  Finished block 2 in 0.05 seconds, found 4 clusters.
+[2026-01-18 08:52:57,095] INFO spindle_dev.index:  Using epsilon-net clustering for block 3
+[2026-01-18 08:52:57,153] INFO spindle_dev.index:  Finished block 3 in 0.06 seconds, found 5 clusters.
+[2026-01-18 08:52:57,153] INFO spindle_dev.index:  Using epsilon-net clustering for block 4
+[2026-01-18 08:52:57,202] INFO spindle_dev.index:  Finished block 4 in 0.05 seconds, found 3 clusters.
+[2026-01-18 08:52:57,202] INFO spindle_dev.index:  Using epsilon-net clustering for block 5
+[2026-01-18 08:52:57,273] INFO spindle_dev.index:  Finished block 5 in 0.07 seconds, found 7 clusters.
+[2026-01-18 08:52:57,273] INFO spindle_dev.index:  Using epsilon-net clustering for block 6
+[2026-01-18 08:52:57,317] INFO spindle_dev.index:  Finished block 6 in 0.04 seconds, found 2 clusters.
+[2026-01-18 08:52:57,317] INFO spindle_dev.index:  Using epsilon-net clustering for block 7
+[2026-01-18 08:52:57,377] INFO spindle_dev.index:  Finished block 7 in 0.06 seconds, found 5 clusters.
+[2026-01-18 08:52:57,377] INFO spindle_dev.index:  Using epsilon-net clustering for block 8
+[2026-01-18 08:52:57,446] INFO spindle_dev.index:  Finished block 8 in 0.07 seconds, found 3 clusters.
+[2026-01-18 08:52:57,446] INFO spindle_dev.index:  Using epsilon-net clustering for block 9
+[2026-01-18 08:52:57,519] INFO spindle_dev.index:  Finished block 9 in 0.07 seconds, found 7 clusters.
+[2026-01-18 08:52:57,519] INFO spindle_dev.index:  Using epsilon-net clustering for block 10
+[2026-01-18 08:52:57,587] INFO spindle_dev.index:  Finished block 10 in 0.07 seconds, found 6 clusters.
+[2026-01-18 08:52:57,587] INFO spindle_dev.index:  Using epsilon-net clustering for block 11
+[2026-01-18 08:52:57,718] INFO spindle_dev.index:  Finished block 11 in 0.13 seconds, found 10 clusters.
+[2026-01-18 08:52:57,718] INFO spindle_dev.index:  Using epsilon-net clustering for block 12
+[2026-01-18 08:52:57,974] INFO spindle_dev.index:  Finished block 12 in 0.26 seconds, found 3 clusters.
+[2026-01-18 08:52:57,974] INFO spindle_dev.index:  Using epsilon-net clustering for block 13
+[2026-01-18 08:52:58,166] INFO spindle_dev.index:  Finished block 13 in 0.19 seconds, found 2 clusters.
+[2026-01-18 08:52:58,166] INFO spindle_dev.index:  Using epsilon-net clustering for block 14
+[2026-01-18 08:52:58,241] INFO spindle_dev.index:  Finished block 14 in 0.07 seconds, found 2 clusters.
+[2026-01-18 08:52:58,241] INFO spindle_dev.index:  Using epsilon-net clustering for block 15
+[2026-01-18 08:52:58,335] INFO spindle_dev.index:  Finished block 15 in 0.09 seconds, found 2 clusters.
+[2026-01-18 08:52:58,335] INFO spindle_dev.index: Step 2: Build DAG connections between block clusters.
+[2026-01-18 08:52:58,335] INFO spindle_dev.index: Step 2.1: For each layer order the block-clusters by
+[2026-01-18 08:52:58,335] INFO spindle_dev.index: Not implemented: ordering block-clusters ? How to order them?
+[2026-01-18 08:52:58,335] INFO spindle_dev.index: We will use triangle inequality to order clusters.
+[2026-01-18 08:52:58,335] INFO spindle_dev.index: Step 2.2: Connect block-clusters between layers based on co-occurrence in SPDs.
+[2026-01-18 08:52:58,341] INFO spindle_dev.index: Check if node global_node_id matches index in nodes list
+[2026-01-18 08:52:58,341] INFO spindle_dev.index: Step 2.3: Ordering block-clusters within each layer using log-Euclidean distances.
+[2026-01-18 08:52:58,341] INFO spindle_dev.index: Processing cluster 3
+[2026-01-18 08:52:58,341] INFO spindle_dev.index: Building SPD index with epsilon=7.913863825670992
+[2026-01-18 08:52:58,341] INFO spindle_dev.index: Step 1: Cluster blocks within each class of SPD matrices.
+[2026-01-18 08:52:58,379] INFO spindle_dev.index: Cluster 3: 425 SPDs, 22 blocks
+[2026-01-18 08:52:58,380] INFO spindle_dev.index:  Using epsilon-net clustering for block 0
+[2026-01-18 08:52:58,449] INFO spindle_dev.index:  Finished block 0 in 0.07 seconds, found 10 clusters.
+[2026-01-18 08:52:58,449] INFO spindle_dev.index:  Using epsilon-net clustering for block 1
+[2026-01-18 08:52:58,482] INFO spindle_dev.index:  Finished block 1 in 0.03 seconds, found 3 clusters.
+[2026-01-18 08:52:58,482] INFO spindle_dev.index:  Using epsilon-net clustering for block 2
+[2026-01-18 08:52:58,511] INFO spindle_dev.index:  Finished block 2 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:58,511] INFO spindle_dev.index:  Using epsilon-net clustering for block 3
+[2026-01-18 08:52:58,546] INFO spindle_dev.index:  Finished block 3 in 0.03 seconds, found 3 clusters.
+[2026-01-18 08:52:58,546] INFO spindle_dev.index:  Using epsilon-net clustering for block 4
+[2026-01-18 08:52:58,585] INFO spindle_dev.index:  Finished block 4 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:58,585] INFO spindle_dev.index:  Using epsilon-net clustering for block 5
+[2026-01-18 08:52:58,625] INFO spindle_dev.index:  Finished block 5 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:58,625] INFO spindle_dev.index:  Using epsilon-net clustering for block 6
+[2026-01-18 08:52:58,661] INFO spindle_dev.index:  Finished block 6 in 0.04 seconds, found 3 clusters.
+[2026-01-18 08:52:58,661] INFO spindle_dev.index:  Using epsilon-net clustering for block 7
+[2026-01-18 08:52:58,701] INFO spindle_dev.index:  Finished block 7 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:58,701] INFO spindle_dev.index:  Using epsilon-net clustering for block 8
+[2026-01-18 08:52:58,733] INFO spindle_dev.index:  Finished block 8 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:58,733] INFO spindle_dev.index:  Using epsilon-net clustering for block 9
+[2026-01-18 08:52:58,765] INFO spindle_dev.index:  Finished block 9 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:58,765] INFO spindle_dev.index:  Using epsilon-net clustering for block 10
+[2026-01-18 08:52:58,802] INFO spindle_dev.index:  Finished block 10 in 0.04 seconds, found 3 clusters.
+[2026-01-18 08:52:58,802] INFO spindle_dev.index:  Using epsilon-net clustering for block 11
+[2026-01-18 08:52:58,846] INFO spindle_dev.index:  Finished block 11 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:58,846] INFO spindle_dev.index:  Using epsilon-net clustering for block 12
+[2026-01-18 08:52:58,888] INFO spindle_dev.index:  Finished block 12 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:58,888] INFO spindle_dev.index:  Using epsilon-net clustering for block 13
+[2026-01-18 08:52:58,920] INFO spindle_dev.index:  Finished block 13 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:58,920] INFO spindle_dev.index:  Using epsilon-net clustering for block 14
+[2026-01-18 08:52:58,953] INFO spindle_dev.index:  Finished block 14 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:58,953] INFO spindle_dev.index:  Using epsilon-net clustering for block 15
+[2026-01-18 08:52:58,986] INFO spindle_dev.index:  Finished block 15 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:58,986] INFO spindle_dev.index:  Using epsilon-net clustering for block 16
+[2026-01-18 08:52:59,052] INFO spindle_dev.index:  Finished block 16 in 0.07 seconds, found 9 clusters.
+[2026-01-18 08:52:59,052] INFO spindle_dev.index:  Using epsilon-net clustering for block 17
+[2026-01-18 08:52:59,118] INFO spindle_dev.index:  Finished block 17 in 0.07 seconds, found 5 clusters.
+[2026-01-18 08:52:59,118] INFO spindle_dev.index:  Using epsilon-net clustering for block 18
+[2026-01-18 08:52:59,152] INFO spindle_dev.index:  Finished block 18 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,153] INFO spindle_dev.index:  Using epsilon-net clustering for block 19
+[2026-01-18 08:52:59,220] INFO spindle_dev.index:  Finished block 19 in 0.07 seconds, found 2 clusters.
+[2026-01-18 08:52:59,220] INFO spindle_dev.index:  Using epsilon-net clustering for block 20
+[2026-01-18 08:52:59,267] INFO spindle_dev.index:  Finished block 20 in 0.05 seconds, found 3 clusters.
+[2026-01-18 08:52:59,267] INFO spindle_dev.index:  Using epsilon-net clustering for block 21
+[2026-01-18 08:52:59,358] INFO spindle_dev.index:  Finished block 21 in 0.09 seconds, found 3 clusters.
+[2026-01-18 08:52:59,358] INFO spindle_dev.index: Step 2: Build DAG connections between block clusters.
+[2026-01-18 08:52:59,358] INFO spindle_dev.index: Step 2.1: For each layer order the block-clusters by
+[2026-01-18 08:52:59,358] INFO spindle_dev.index: Not implemented: ordering block-clusters ? How to order them?
+[2026-01-18 08:52:59,358] INFO spindle_dev.index: We will use triangle inequality to order clusters.
+[2026-01-18 08:52:59,358] INFO spindle_dev.index: Step 2.2: Connect block-clusters between layers based on co-occurrence in SPDs.
+[2026-01-18 08:52:59,365] INFO spindle_dev.index: Check if node global_node_id matches index in nodes list
+[2026-01-18 08:52:59,365] INFO spindle_dev.index: Step 2.3: Ordering block-clusters within each layer using log-Euclidean distances.
+[2026-01-18 08:52:59,365] INFO spindle_dev.index: Processing cluster 4
+[2026-01-18 08:52:59,365] INFO spindle_dev.index: Building SPD index with epsilon=5.770509149284863
+[2026-01-18 08:52:59,365] INFO spindle_dev.index: Step 1: Cluster blocks within each class of SPD matrices.
+[2026-01-18 08:52:59,395] INFO spindle_dev.index: Cluster 4: 340 SPDs, 21 blocks
+[2026-01-18 08:52:59,396] INFO spindle_dev.index:  Using epsilon-net clustering for block 0
+[2026-01-18 08:52:59,434] INFO spindle_dev.index:  Finished block 0 in 0.04 seconds, found 3 clusters.
+[2026-01-18 08:52:59,434] INFO spindle_dev.index:  Using epsilon-net clustering for block 1
+[2026-01-18 08:52:59,460] INFO spindle_dev.index:  Finished block 1 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,460] INFO spindle_dev.index:  Using epsilon-net clustering for block 2
+[2026-01-18 08:52:59,487] INFO spindle_dev.index:  Finished block 2 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,487] INFO spindle_dev.index:  Using epsilon-net clustering for block 3
+[2026-01-18 08:52:59,514] INFO spindle_dev.index:  Finished block 3 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,514] INFO spindle_dev.index:  Using epsilon-net clustering for block 4
+[2026-01-18 08:52:59,540] INFO spindle_dev.index:  Finished block 4 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,540] INFO spindle_dev.index:  Using epsilon-net clustering for block 5
+[2026-01-18 08:52:59,571] INFO spindle_dev.index:  Finished block 5 in 0.03 seconds, found 3 clusters.
+[2026-01-18 08:52:59,571] INFO spindle_dev.index:  Using epsilon-net clustering for block 6
+[2026-01-18 08:52:59,599] INFO spindle_dev.index:  Finished block 6 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,599] INFO spindle_dev.index:  Using epsilon-net clustering for block 7
+[2026-01-18 08:52:59,626] INFO spindle_dev.index:  Finished block 7 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,626] INFO spindle_dev.index:  Using epsilon-net clustering for block 8
+[2026-01-18 08:52:59,661] INFO spindle_dev.index:  Finished block 8 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:59,661] INFO spindle_dev.index:  Using epsilon-net clustering for block 9
+[2026-01-18 08:52:59,689] INFO spindle_dev.index:  Finished block 9 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,689] INFO spindle_dev.index:  Using epsilon-net clustering for block 10
+[2026-01-18 08:52:59,724] INFO spindle_dev.index:  Finished block 10 in 0.04 seconds, found 3 clusters.
+[2026-01-18 08:52:59,724] INFO spindle_dev.index:  Using epsilon-net clustering for block 11
+[2026-01-18 08:52:59,752] INFO spindle_dev.index:  Finished block 11 in 0.03 seconds, found 2 clusters.
+[2026-01-18 08:52:59,752] INFO spindle_dev.index:  Using epsilon-net clustering for block 12
+[2026-01-18 08:52:59,787] INFO spindle_dev.index:  Finished block 12 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:59,787] INFO spindle_dev.index:  Using epsilon-net clustering for block 13
+[2026-01-18 08:52:59,827] INFO spindle_dev.index:  Finished block 13 in 0.04 seconds, found 5 clusters.
+[2026-01-18 08:52:59,827] INFO spindle_dev.index:  Using epsilon-net clustering for block 14
+[2026-01-18 08:52:59,859] INFO spindle_dev.index:  Finished block 14 in 0.03 seconds, found 3 clusters.
+[2026-01-18 08:52:59,859] INFO spindle_dev.index:  Using epsilon-net clustering for block 15
+[2026-01-18 08:52:59,921] INFO spindle_dev.index:  Finished block 15 in 0.06 seconds, found 11 clusters.
+[2026-01-18 08:52:59,921] INFO spindle_dev.index:  Using epsilon-net clustering for block 16
+[2026-01-18 08:52:59,965] INFO spindle_dev.index:  Finished block 16 in 0.04 seconds, found 4 clusters.
+[2026-01-18 08:52:59,965] INFO spindle_dev.index:  Using epsilon-net clustering for block 17
+[2026-01-18 08:53:00,007] INFO spindle_dev.index:  Finished block 17 in 0.04 seconds, found 3 clusters.
+[2026-01-18 08:53:00,007] INFO spindle_dev.index:  Using epsilon-net clustering for block 18
+[2026-01-18 08:53:00,046] INFO spindle_dev.index:  Finished block 18 in 0.04 seconds, found 2 clusters.
+[2026-01-18 08:53:00,046] INFO spindle_dev.index:  Using epsilon-net clustering for block 19
+[2026-01-18 08:53:00,096] INFO spindle_dev.index:  Finished block 19 in 0.05 seconds, found 5 clusters.
+[2026-01-18 08:53:00,096] INFO spindle_dev.index:  Using epsilon-net clustering for block 20
+[2026-01-18 08:53:00,180] INFO spindle_dev.index:  Finished block 20 in 0.08 seconds, found 2 clusters.
+[2026-01-18 08:53:00,180] INFO spindle_dev.index: Step 2: Build DAG connections between block clusters.
+[2026-01-18 08:53:00,180] INFO spindle_dev.index: Step 2.1: For each layer order the block-clusters by
+[2026-01-18 08:53:00,180] INFO spindle_dev.index: Not implemented: ordering block-clusters ? How to order them?
+[2026-01-18 08:53:00,180] INFO spindle_dev.index: We will use triangle inequality to order clusters.
+[2026-01-18 08:53:00,180] INFO spindle_dev.index: Step 2.2: Connect block-clusters between layers based on co-occurrence in SPDs.
+[2026-01-18 08:53:00,185] INFO spindle_dev.index: Check if node global_node_id matches index in nodes list
+[2026-01-18 08:53:00,185] INFO spindle_dev.index: Step 2.3: Ordering block-clusters within each layer using log-Euclidean distances.
+[2026-01-18 08:53:00,185] INFO spindle_dev.index: Processing cluster 5
+[2026-01-18 08:53:00,185] INFO spindle_dev.index: Building SPD index with epsilon=5.13772711064887
+[2026-01-18 08:53:00,185] INFO spindle_dev.index: Step 1: Cluster blocks within each class of SPD matrices.
+[2026-01-18 08:53:00,191] INFO spindle_dev.index: Cluster 5: 89 SPDs, 20 blocks
+[2026-01-18 08:53:00,192] INFO spindle_dev.index:  Using epsilon-net clustering for block 0
+[2026-01-18 08:53:00,203] INFO spindle_dev.index:  Finished block 0 in 0.01 seconds, found 4 clusters.
+[2026-01-18 08:53:00,203] INFO spindle_dev.index:  Using epsilon-net clustering for block 1
+[2026-01-18 08:53:00,211] INFO spindle_dev.index:  Finished block 1 in 0.01 seconds, found 3 clusters.
+[2026-01-18 08:53:00,211] INFO spindle_dev.index:  Using epsilon-net clustering for block 2
+[2026-01-18 08:53:00,220] INFO spindle_dev.index:  Finished block 2 in 0.01 seconds, found 4 clusters.
+[2026-01-18 08:53:00,220] INFO spindle_dev.index:  Using epsilon-net clustering for block 3
+[2026-01-18 08:53:00,230] INFO spindle_dev.index:  Finished block 3 in 0.01 seconds, found 5 clusters.
+[2026-01-18 08:53:00,230] INFO spindle_dev.index:  Using epsilon-net clustering for block 4
+[2026-01-18 08:53:00,238] INFO spindle_dev.index:  Finished block 4 in 0.01 seconds, found 3 clusters.
+[2026-01-18 08:53:00,238] INFO spindle_dev.index:  Using epsilon-net clustering for block 5
+[2026-01-18 08:53:00,251] INFO spindle_dev.index:  Finished block 5 in 0.01 seconds, found 8 clusters.
+[2026-01-18 08:53:00,251] INFO spindle_dev.index:  Using epsilon-net clustering for block 6
+[2026-01-18 08:53:00,258] INFO spindle_dev.index:  Finished block 6 in 0.01 seconds, found 2 clusters.
+[2026-01-18 08:53:00,258] INFO spindle_dev.index:  Using epsilon-net clustering for block 7
+[2026-01-18 08:53:00,267] INFO spindle_dev.index:  Finished block 7 in 0.01 seconds, found 4 clusters.
+[2026-01-18 08:53:00,268] INFO spindle_dev.index:  Using epsilon-net clustering for block 8
+[2026-01-18 08:53:00,288] INFO spindle_dev.index:  Finished block 8 in 0.02 seconds, found 16 clusters.
+[2026-01-18 08:53:00,288] INFO spindle_dev.index:  Using epsilon-net clustering for block 9
+[2026-01-18 08:53:00,296] INFO spindle_dev.index:  Finished block 9 in 0.01 seconds, found 2 clusters.
+[2026-01-18 08:53:00,296] INFO spindle_dev.index:  Using epsilon-net clustering for block 10
+[2026-01-18 08:53:00,306] INFO spindle_dev.index:  Finished block 10 in 0.01 seconds, found 4 clusters.
+[2026-01-18 08:53:00,306] INFO spindle_dev.index:  Using epsilon-net clustering for block 11
+[2026-01-18 08:53:00,315] INFO spindle_dev.index:  Finished block 11 in 0.01 seconds, found 4 clusters.
+[2026-01-18 08:53:00,315] INFO spindle_dev.index:  Using epsilon-net clustering for block 12
+[2026-01-18 08:53:00,323] INFO spindle_dev.index:  Finished block 12 in 0.01 seconds, found 2 clusters.
+[2026-01-18 08:53:00,323] INFO spindle_dev.index:  Using epsilon-net clustering for block 13
+[2026-01-18 08:53:00,331] INFO spindle_dev.index:  Finished block 13 in 0.01 seconds, found 3 clusters.
+[2026-01-18 08:53:00,331] INFO spindle_dev.index:  Using epsilon-net clustering for block 14
+[2026-01-18 08:53:00,351] INFO spindle_dev.index:  Finished block 14 in 0.02 seconds, found 6 clusters.
+[2026-01-18 08:53:00,351] INFO spindle_dev.index:  Using epsilon-net clustering for block 15
+[2026-01-18 08:53:00,366] INFO spindle_dev.index:  Finished block 15 in 0.02 seconds, found 5 clusters.
+[2026-01-18 08:53:00,366] INFO spindle_dev.index:  Using epsilon-net clustering for block 16
+[2026-01-18 08:53:00,380] INFO spindle_dev.index:  Finished block 16 in 0.01 seconds, found 8 clusters.
+[2026-01-18 08:53:00,380] INFO spindle_dev.index:  Using epsilon-net clustering for block 17
+[2026-01-18 08:53:00,395] INFO spindle_dev.index:  Finished block 17 in 0.02 seconds, found 8 clusters.
+[2026-01-18 08:53:00,395] INFO spindle_dev.index:  Using epsilon-net clustering for block 18
+[2026-01-18 08:53:00,429] INFO spindle_dev.index:  Finished block 18 in 0.03 seconds, found 4 clusters.
+[2026-01-18 08:53:00,429] INFO spindle_dev.index:  Using epsilon-net clustering for block 19
+[2026-01-18 08:53:00,444] INFO spindle_dev.index:  Finished block 19 in 0.02 seconds, found 8 clusters.
+[2026-01-18 08:53:00,444] INFO spindle_dev.index: Step 2: Build DAG connections between block clusters.
+[2026-01-18 08:53:00,444] INFO spindle_dev.index: Step 2.1: For each layer order the block-clusters by
+[2026-01-18 08:53:00,444] INFO spindle_dev.index: Not implemented: ordering block-clusters ? How to order them?
+[2026-01-18 08:53:00,444] INFO spindle_dev.index: We will use triangle inequality to order clusters.
+[2026-01-18 08:53:00,444] INFO spindle_dev.index: Step 2.2: Connect block-clusters between layers based on co-occurrence in SPDs.
+[2026-01-18 08:53:00,446] INFO spindle_dev.index: Check if node global_node_id matches index in nodes list
+[2026-01-18 08:53:00,446] INFO spindle_dev.index: Step 2.3: Ordering block-clusters within each layer using log-Euclidean distances.
+[2026-01-18 08:53:01,437] INFO spindle_dev.test: Built ground-truth paths for 692 SPDs in cluster 0 across 22 blocks.
+[2026-01-18 08:53:01,879] INFO spindle_dev.test: Built ground-truth paths for 688 SPDs in cluster 1 across 22 blocks.
+[2026-01-18 08:53:02,074] INFO spindle_dev.test: Built ground-truth paths for 538 SPDs in cluster 2 across 16 blocks.
+[2026-01-18 08:53:02,246] INFO spindle_dev.test: Built ground-truth paths for 425 SPDs in cluster 3 across 22 blocks.
+[2026-01-18 08:53:02,352] INFO spindle_dev.test: Built ground-truth paths for 340 SPDs in cluster 4 across 21 blocks.
+[2026-01-18 08:53:02,361] INFO spindle_dev.test: Built ground-truth paths for 89 SPDs in cluster 5 across 20 blocks.
+[2026-01-18 08:53:02,361] INFO spindle_dev.test: Created ground-truth paths for all clusters.
+[2026-01-18 08:53:02,361] INFO spindle_dev.test: Search config: SearchConfig(max_results=2, max_failed_starts=5, max_failed_paths=10, total_paths_limit=1000, deterministic=DeterministicConfig(seed=0), debug=False)
+[2026-01-18 08:53:02,362] INFO spindle_dev.test: Running sanity search with 200 queries.
+Processing file: /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node.h5ad with 377985 spots and 377 genes.
+  0%|          | 0/200 [00:00<?, ?it/s]  0%|          | 1/200 [00:10<33:42, 10.16s/it]  1%|          | 2/200 [00:24<41:54, 12.70s/it]  2%|▏         | 3/200 [00:34<37:40, 11.47s/it]  2%|▏         | 4/200 [00:44<35:47, 10.96s/it]  2%|▎         | 5/200 [00:54<34:32, 10.63s/it]  3%|▎         | 6/200 [01:14<43:51, 13.57s/it]  4%|▎         | 7/200 [01:33<49:34, 15.41s/it]  4%|▍         | 8/200 [01:43<44:05, 13.78s/it]  4%|▍         | 9/200 [01:57<44:25, 13.96s/it]  5%|▌         | 10/200 [02:17<49:11, 15.53s/it]  6%|▌         | 11/200 [02:36<52:20, 16.62s/it]  6%|▌         | 12/200 [02:54<54:01, 17.24s/it]  6%|▋         | 13/200 [03:12<54:12, 17.39s/it]  7%|▋         | 14/200 [03:21<46:29, 15.00s/it]  8%|▊         | 15/200 [03:31<41:00, 13.30s/it]  8%|▊         | 16/200 [03:50<46:25, 15.14s/it]  8%|▊         | 17/200 [04:00<41:31, 13.62s/it]  9%|▉         | 18/200 [04:15<42:01, 13.86s/it] 10%|▉         | 19/200 [04:24<37:49, 12.54s/it] 10%|█         | 20/200 [04:34<35:25, 11.81s/it] 10%|█         | 21/200 [04:53<41:40, 13.97s/it] 11%|█         | 22/200 [04:56<31:06, 10.49s/it] 12%|█▏        | 23/200 [05:06<30:37, 10.38s/it] 12%|█▏        | 24/200 [05:15<29:30, 10.06s/it] 12%|█▎        | 25/200 [05:25<29:18, 10.05s/it] 13%|█▎        | 26/200 [05:45<37:18, 12.87s/it] 14%|█▎        | 27/200 [06:03<42:17, 14.67s/it] 14%|█▍        | 28/200 [06:22<45:41, 15.94s/it] 14%|█▍        | 29/200 [06:41<47:58, 16.83s/it] 15%|█▌        | 30/200 [07:01<49:48, 17.58s/it] 16%|█▌        | 31/200 [07:20<50:40, 17.99s/it] 16%|█▌        | 32/200 [07:29<43:21, 15.48s/it] 16%|█▋        | 33/200 [07:48<45:51, 16.47s/it] 17%|█▋        | 34/200 [07:58<40:16, 14.55s/it] 18%|█▊        | 35/200 [08:08<35:50, 13.04s/it] 18%|█▊        | 36/200 [08:27<40:41, 14.89s/it] 18%|█▊        | 37/200 [08:46<43:41, 16.08s/it] 19%|█▉        | 38/200 [09:05<45:48, 16.97s/it] 20%|█▉        | 39/200 [09:19<43:41, 16.28s/it] 20%|██        | 40/200 [09:34<42:11, 15.82s/it] 20%|██        | 41/200 [09:36<31:14, 11.79s/it] 21%|██        | 42/200 [09:56<36:54, 14.02s/it] 22%|██▏       | 43/200 [10:15<40:49, 15.60s/it] 22%|██▏       | 44/200 [10:34<43:17, 16.65s/it] 22%|██▎       | 45/200 [10:53<44:45, 17.33s/it] 23%|██▎       | 46/200 [11:12<45:40, 17.80s/it] 24%|██▎       | 47/200 [11:14<33:34, 13.16s/it] 24%|██▍       | 48/200 [11:29<34:14, 13.52s/it] 24%|██▍       | 49/200 [11:43<34:41, 13.78s/it] 25%|██▌       | 50/200 [11:58<35:29, 14.20s/it] 26%|██▌       | 51/200 [12:08<32:10, 12.96s/it] 26%|██▌       | 52/200 [12:18<29:47, 12.08s/it] 26%|██▋       | 53/200 [12:37<34:37, 14.13s/it] 27%|██▋       | 54/200 [12:46<30:51, 12.68s/it] 28%|██▊       | 55/200 [13:06<35:42, 14.78s/it] 28%|██▊       | 56/200 [13:25<38:28, 16.03s/it] 28%|██▊       | 57/200 [13:40<37:16, 15.64s/it] 29%|██▉       | 58/200 [13:59<39:17, 16.60s/it] 30%|██▉       | 59/200 [14:18<40:56, 17.42s/it] 30%|███       | 60/200 [14:37<41:53, 17.96s/it] 30%|███       | 61/200 [14:52<39:13, 16.94s/it] 31%|███       | 62/200 [15:10<40:11, 17.47s/it] 32%|███▏      | 63/200 [15:25<37:46, 16.54s/it] 32%|███▏      | 64/200 [15:34<32:23, 14.29s/it] 32%|███▎      | 65/200 [15:53<35:31, 15.79s/it] 33%|███▎      | 66/200 [16:13<37:59, 17.01s/it] 34%|███▎      | 67/200 [16:32<39:13, 17.70s/it] 34%|███▍      | 68/200 [16:47<36:58, 16.81s/it] 34%|███▍      | 69/200 [17:06<38:12, 17.50s/it] 35%|███▌      | 70/200 [17:25<39:03, 18.03s/it] 36%|███▌      | 71/200 [17:44<39:23, 18.32s/it] 36%|███▌      | 72/200 [17:59<36:52, 17.29s/it] 36%|███▋      | 73/200 [18:09<32:04, 15.16s/it] 37%|███▋      | 74/200 [18:28<34:09, 16.26s/it] 38%|███▊      | 75/200 [18:39<30:03, 14.43s/it] 38%|███▊      | 76/200 [18:58<32:50, 15.89s/it] 38%|███▊      | 77/200 [19:18<35:07, 17.13s/it] 39%|███▉      | 78/200 [19:37<35:47, 17.61s/it] 40%|███▉      | 79/200 [19:51<33:47, 16.75s/it] 40%|████      | 80/200 [20:11<35:10, 17.58s/it] 40%|████      | 81/200 [20:30<35:57, 18.13s/it] 41%|████      | 82/200 [20:49<36:11, 18.40s/it] 42%|████▏     | 83/200 [20:59<30:45, 15.77s/it] 42%|████▏     | 84/200 [21:08<26:52, 13.90s/it] 42%|████▎     | 85/200 [21:28<29:38, 15.47s/it] 43%|████▎     | 86/200 [21:42<28:53, 15.21s/it] 44%|████▎     | 87/200 [21:57<28:15, 15.01s/it] 44%|████▍     | 88/200 [22:16<30:23, 16.28s/it] 44%|████▍     | 89/200 [22:36<32:00, 17.30s/it] 45%|████▌     | 90/200 [22:46<27:43, 15.13s/it] 46%|████▌     | 91/200 [22:55<24:25, 13.44s/it] 46%|████▌     | 92/200 [23:15<27:28, 15.27s/it] 46%|████▋     | 93/200 [23:34<29:10, 16.36s/it] 47%|████▋     | 94/200 [23:44<25:34, 14.48s/it] 48%|████▊     | 95/200 [24:02<27:22, 15.64s/it] 48%|████▊     | 96/200 [24:21<28:48, 16.62s/it] 48%|████▊     | 97/200 [24:23<21:14, 12.38s/it] 49%|████▉     | 98/200 [24:26<15:56,  9.38s/it] 50%|████▉     | 99/200 [24:44<20:25, 12.13s/it] 50%|█████     | 100/200 [24:54<19:11, 11.51s/it] 50%|█████     | 101/200 [25:09<20:39, 12.52s/it] 51%|█████     | 102/200 [25:29<23:45, 14.55s/it] 52%|█████▏    | 103/200 [25:48<25:46, 15.95s/it] 52%|█████▏    | 104/200 [25:58<22:47, 14.24s/it] 52%|█████▎    | 105/200 [26:17<24:49, 15.68s/it] 53%|█████▎    | 106/200 [26:37<26:31, 16.93s/it] 54%|█████▎    | 107/200 [26:56<27:21, 17.65s/it] 54%|█████▍    | 108/200 [27:16<27:48, 18.14s/it] 55%|█████▍    | 109/200 [27:35<28:04, 18.51s/it] 55%|█████▌    | 110/200 [27:54<28:05, 18.73s/it] 56%|█████▌    | 111/200 [28:14<28:14, 19.04s/it] 56%|█████▌    | 112/200 [28:24<23:48, 16.23s/it] 56%|█████▋    | 113/200 [28:34<20:56, 14.44s/it] 57%|█████▋    | 114/200 [28:53<22:41, 15.84s/it] 57%|█████▊    | 115/200 [29:13<24:01, 16.96s/it] 58%|█████▊    | 116/200 [29:27<22:43, 16.23s/it] 58%|█████▊    | 117/200 [29:37<19:55, 14.40s/it] 59%|█████▉    | 118/200 [29:47<17:42, 12.96s/it] 60%|█████▉    | 119/200 [30:01<18:10, 13.46s/it] 60%|██████    | 120/200 [30:21<20:12, 15.15s/it] 60%|██████    | 121/200 [30:40<21:29, 16.32s/it] 61%|██████    | 122/200 [30:59<22:16, 17.13s/it] 62%|██████▏   | 123/200 [31:18<22:50, 17.80s/it] 62%|██████▏   | 124/200 [31:28<19:38, 15.51s/it] 62%|██████▎   | 125/200 [31:38<17:04, 13.66s/it] 63%|██████▎   | 126/200 [31:56<18:43, 15.18s/it] 64%|██████▎   | 127/200 [32:11<18:08, 14.91s/it] 64%|██████▍   | 128/200 [32:20<15:52, 13.23s/it] 64%|██████▍   | 129/200 [32:34<16:04, 13.59s/it] 65%|██████▌   | 130/200 [32:37<11:56, 10.23s/it] 66%|██████▌   | 131/200 [32:50<12:52, 11.20s/it] 66%|██████▌   | 132/200 [33:09<15:14, 13.45s/it] 66%|██████▋   | 133/200 [33:28<16:51, 15.10s/it] 67%|██████▋   | 134/200 [33:30<12:25, 11.29s/it] 68%|██████▊   | 135/200 [33:40<11:44, 10.83s/it] 68%|██████▊   | 136/200 [33:50<11:15, 10.55s/it] 68%|██████▊   | 137/200 [34:07<13:17, 12.66s/it] 69%|██████▉   | 138/200 [34:22<13:35, 13.15s/it] 70%|██████▉   | 139/200 [34:41<15:11, 14.94s/it] 70%|███████   | 140/200 [34:55<14:47, 14.79s/it] 70%|███████   | 141/200 [35:14<15:49, 16.10s/it] 71%|███████   | 142/200 [35:33<16:21, 16.93s/it] 72%|███████▏  | 143/200 [35:52<16:42, 17.58s/it] 72%|███████▏  | 144/200 [36:07<15:33, 16.68s/it] 72%|███████▎  | 145/200 [36:17<13:31, 14.75s/it] 73%|███████▎  | 146/200 [36:32<13:15, 14.73s/it] 74%|███████▎  | 147/200 [36:42<11:51, 13.43s/it] 74%|███████▍  | 148/200 [36:57<11:54, 13.73s/it] 74%|███████▍  | 149/200 [37:06<10:37, 12.50s/it] 75%|███████▌  | 150/200 [37:26<12:08, 14.57s/it] 76%|███████▌  | 151/200 [37:45<13:01, 15.94s/it] 76%|███████▌  | 152/200 [37:47<09:30, 11.88s/it] 76%|███████▋  | 153/200 [38:06<10:56, 13.97s/it] 77%|███████▋  | 154/200 [38:08<08:02, 10.49s/it] 78%|███████▊  | 155/200 [38:27<09:45, 13.01s/it] 78%|███████▊  | 156/200 [38:42<09:51, 13.44s/it] 78%|███████▊  | 157/200 [39:00<10:38, 14.85s/it] 79%|███████▉  | 158/200 [39:19<11:14, 16.06s/it] 80%|███████▉  | 159/200 [39:38<11:32, 16.88s/it] 80%|████████  | 160/200 [39:56<11:37, 17.43s/it] 80%|████████  | 161/200 [40:15<11:34, 17.80s/it] 81%|████████  | 162/200 [40:25<09:42, 15.32s/it] 82%|████████▏ | 163/200 [40:43<10:02, 16.28s/it] 82%|████████▏ | 164/200 [41:02<10:18, 17.17s/it] 82%|████████▎ | 165/200 [41:12<08:45, 15.00s/it] 83%|████████▎ | 166/200 [41:31<09:12, 16.25s/it] 84%|████████▎ | 167/200 [41:51<09:24, 17.12s/it] 84%|████████▍ | 168/200 [42:05<08:43, 16.37s/it] 84%|████████▍ | 169/200 [42:14<07:21, 14.24s/it] 85%|████████▌ | 170/200 [42:25<06:29, 12.99s/it] 86%|████████▌ | 171/200 [42:44<07:10, 14.85s/it] 86%|████████▌ | 172/200 [42:58<06:52, 14.74s/it] 86%|████████▋ | 173/200 [43:17<07:11, 15.99s/it] 87%|████████▋ | 174/200 [43:31<06:40, 15.38s/it] 88%|████████▊ | 175/200 [43:41<05:40, 13.63s/it] 88%|████████▊ | 176/200 [43:59<06:04, 15.20s/it] 88%|████████▊ | 177/200 [44:10<05:15, 13.71s/it] 89%|████████▉ | 178/200 [44:29<05:37, 15.34s/it] 90%|████████▉ | 179/200 [44:48<05:48, 16.59s/it] 90%|█████████ | 180/200 [44:59<04:53, 14.67s/it] 90%|█████████ | 181/200 [45:08<04:09, 13.15s/it] 91%|█████████ | 182/200 [45:23<04:05, 13.65s/it] 92%|█████████▏| 183/200 [45:38<03:56, 13.93s/it] 92%|█████████▏| 184/200 [45:52<03:45, 14.08s/it] 92%|█████████▎| 185/200 [46:07<03:33, 14.22s/it] 93%|█████████▎| 186/200 [46:26<03:41, 15.80s/it] 94%|█████████▎| 187/200 [46:45<03:37, 16.75s/it] 94%|█████████▍| 188/200 [47:00<03:14, 16.18s/it] 94%|█████████▍| 189/200 [47:19<03:06, 16.97s/it] 95%|█████████▌| 190/200 [47:37<02:54, 17.47s/it] 96%|█████████▌| 191/200 [47:47<02:17, 15.25s/it] 96%|█████████▌| 192/200 [47:57<01:49, 13.67s/it] 96%|█████████▋| 193/200 [48:17<01:47, 15.32s/it] 97%|█████████▋| 194/200 [48:26<01:21, 13.58s/it] 98%|█████████▊| 195/200 [48:45<01:16, 15.35s/it] 98%|█████████▊| 196/200 [49:05<01:06, 16.59s/it] 98%|█████████▊| 197/200 [49:14<00:43, 14.44s/it] 99%|█████████▉| 198/200 [49:24<00:26, 13.13s/it]100%|█████████▉| 199/200 [49:34<00:12, 12.05s/it]100%|██████████| 200/200 [49:48<00:00, 12.78s/it]100%|██████████| 200/200 [49:48<00:00, 14.94s/it]
+[2026-01-18 09:42:51,364] INFO spindle_dev.test: Sanity search: 200 queries, 200 exact path matches, 200 leaf matches, mean search_time=0.0060s
+Completed: /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node.h5ad
+✓ Successfully processed: /data/sarkar_lab/insitupy_demo_data_xenium/xenium_human_lymph_node.h5ad
