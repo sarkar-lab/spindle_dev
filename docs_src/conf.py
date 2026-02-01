@@ -6,7 +6,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath('../src'))
 
 # -- Project information -----------------------------------------------------
-project = 'spindle_dev'
+project = 'Spindle'
 author = 'sarkar_lab'
 copyright = f"{datetime.now().year}, {author}"
 
@@ -23,6 +23,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'sphinx_rtd_theme'
+html_theme_options = {
+    'collapse_navigation': False,
+}
 html_static_path = ['_static']
 
 # Copy arbitrary files from repo/docs/examples into the built HTML root
