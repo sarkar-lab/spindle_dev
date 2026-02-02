@@ -4,8 +4,6 @@
 :maxdepth: 1
 :caption: ISMB Examples
 examples/brain_01202025_copy
-examples/hbreast_01172026
-examples/hbreast_01182026
 examples/hbreast_performance_01202026
 examples/hbreast_wo_unlabeled_01192026
 examples/hkidney_01192026
