@@ -1,0 +1,59 @@
+.wy-menu-vertical ul {
+  display: block !important;
+}
+.wy-menu-vertical li.toctree-l1 > ul {
+  display: block !important;
+  max-height: none !important;
+}
+/* Hide any expand/collapse controls if present */
+.toctree-expand, .wy-side-nav .toctree-expand {
+  display: none !important;
+}
+
+/* Improve contrast: make sidebar links light and second-level slightly dimmer and indented */
+.wy-menu-vertical a.reference.internal {
+  color: rgba(255,255,255,0.95) !important;
+}
+.wy-menu-vertical li.toctree-l2 > a.reference.internal {
+  color: rgba(255,255,255,0.82) !important;
+  padding-left: 14px !important;
+  display: block !important;
+}
+.wy-menu-vertical li.toctree-l3 > a.reference.internal {
+  color: rgba(255,255,255,0.72) !important;
+  padding-left: 28px !important;
+}
+.wy-menu-vertical a.reference.internal:hover {
+  color: #ffffff !important;
+}
+
+/* Emphasize top-level entries (Spindle, Examples) */
+.wy-menu-vertical li.toctree-l1 > a.reference.internal {
+  font-weight: 700 !important;
+  font-size: 1.05em !important;
+  padding-left: 6px !important;
+}
+
+/* Slightly increase caption prominence */
+.caption-text {
+  color: rgba(255,255,255,0.98) !important;
+  font-weight: 700;
+}
+
+/* Keep active/current links readable on dark sidebar */
+.wy-menu-vertical li.current > a.reference.internal,
+.wy-menu-vertical a.reference.internal:active,
+.wy-menu-vertical a.reference.internal:focus {
+  /* subtle translucent highlight, keep text color consistent */
+  background-color: rgba(255,255,255,0.035) !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
+/* Gentle accent for top-level current items */
+.wy-menu-vertical li.current.toctree-l1 > a.reference.internal {
+  background-color: rgba(255,255,255,0.045) !important;
+  font-weight: 700 !important;
+  border-left: 3px solid rgba(255,255,255,0.10) !important;
+  padding-left: 6px !important;
+}
