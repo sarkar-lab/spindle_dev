@@ -272,7 +272,7 @@ def search_index(
     total_paths_explored: int = 0
 
     # Depth-first recursive traversal with budget-based backtracking.
-    def dfs(layer_idx: int, node_idx: int, remaining_budget: float, total_dist: float, path_indices: List[int]) -> None:
+    def dfs(layer_idx: int, node_idx: int, remaining_budget: float, total_dist: float, path_indices: List[int], valid_spds: set) -> None:
         nonlocal best_paths, done, failed_paths, total_paths_explored
 
         if done:
@@ -356,7 +356,7 @@ def search_index(
         query_block_next = query_blocks[next_layer_idx]
 
         # Collect children that belong to the next block and order them by distance.
-        child_dists: List[Tuple[int, float]] = []
+        child_dists: List[Tuple[int, float, set]] = []
         for child_global_id in node.children:
             # By construction, global_node_id is equal to the index in
             # the ``nodes`` list, but guard against out-of-range values
@@ -367,18 +367,25 @@ def search_index(
             child = nodes[child_idx]
             if child.block_index != next_block:
                 continue
+            
+            # --- NEW: Intersect members ---
+            child_spds = {int(spd_id) for spd_id, _ in child.metadata.members}
+            new_valid_spds = valid_spds.intersection(child_spds)
+            if not new_valid_spds:
+                continue
+            
             # dist = log_euclidean_distance(query_block_next, child.metadata.mean, normalize=True)
             # this is log distance
             p = child.metadata.mean.shape[0]
             L_block = log_spd(query_block_next)
             diff = L_block - child.metadata.mean
             dist = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
-            child_dists.append((child_idx, dist))
+            child_dists.append((child_idx, dist, new_valid_spds))
 
         # Explore children from closest to farthest.
         child_dists.sort(key=lambda x: x[1])
 
-        for child_idx, dist in child_dists:
+        for child_idx, dist, new_valid_spds in child_dists:
             new_total = total_dist + dist
             new_remaining = remaining_budget - dist
             if new_remaining < 0 or new_total > budget:
@@ -415,7 +422,7 @@ def search_index(
                     new_remaining,
                 )
 
-            dfs(next_layer_idx, child_idx, new_remaining, new_total, path_indices + [child_idx])
+            dfs(next_layer_idx, child_idx, new_remaining, new_total, path_indices + [child_idx], new_valid_spds)
 
             # Optional early stopping if we've already collected enough results.
             if done:
@@ -466,7 +473,11 @@ def search_index(
                 remaining,
             )
         before = len(best_paths)
-        dfs(0, node_idx, remaining, dist, [node_idx])
+        
+        start_node = nodes[node_idx]
+        valid_spds = {int(spd_id) for spd_id, _ in start_node.metadata.members}
+        if valid_spds:
+            dfs(0, node_idx, remaining, dist, [node_idx], valid_spds)
 
         # If this start contributed no new leaf paths, count it as a
         # failed attempt. For hard / false-positive queries this
