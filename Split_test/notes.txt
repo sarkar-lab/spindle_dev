@@ -1,0 +1,7 @@
+brute force to see if the results are optimal.
+
+log euclidian distance vs spatial distance plot for all pair. 
+
+do a permutation then calculate blockwise correlation
+
+inter dataset search
