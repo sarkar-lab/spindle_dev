@@ -309,20 +309,20 @@ def search_index(
                     )
                 done = True
                 return
-            leaf_id = node.global_node_id
-            # If we've already recorded a path for this leaf, we don't
-            # need to refine it; just treat this as another way to
-            # reach the same leaf and stop.
-            if leaf_id in best_paths:
+            node_path_global = [nodes[i].global_node_id for i in path_indices]
+            path_key = tuple(node_path_global)
+
+            # If we've already recorded this exact path, we don't
+            # need to refine it.
+            if path_key in best_paths:
                 return
 
-            node_path_global = [nodes[i].global_node_id for i in path_indices]
             candidate = SearchPath(
                 node_path=node_path_global,
                 total_distance=total_dist,
             )
 
-            best_paths[leaf_id] = candidate
+            best_paths[path_key] = candidate
             if debug:
                 logger.info("Leaf reached: right now we have %d distinct leaf paths", len(best_paths))
 
