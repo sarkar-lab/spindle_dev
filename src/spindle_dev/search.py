@@ -170,7 +170,7 @@ def search_index(
 
     if not nodes or not block_to_nodes:
         logger.info("Index is empty; returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
 
     # # Prepare and cache index views once (id_to_idx, block_to_node_indices, sorted_blocks)
     # if len(index_handle.id_to_idx) == 0:
@@ -188,7 +188,7 @@ def search_index(
 
     if not sorted_blocks:
         logger.info("Index has no block layers; returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
 
     # True alignment: choose index layers that overlap query runs
     # Normalize index block runs from index_handle
@@ -197,12 +197,12 @@ def search_index(
 
     if len(query_indices) == 0 and len(query_block_runs) == 0:
         logger.info("No query indices or block runs provided; returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
     
     if len(query_block_runs) == 0:
         logger.info("Using query_indices to align blocks.")
         logger.warning("Not implemented: returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
         # used_blocks = find_matching_blocks(query_indices, index_block_runs)
     elif len(query_indices) == 0:
         # first check if they are same 
@@ -211,7 +211,7 @@ def search_index(
         elif len(query_block_runs) > len(index_block_runs):
             logger.warning("Query block runs longer than index block runs; using index block runs to align.")
             logger.info("Not implemented: returning no search results.")
-            return [SearchResults(hits=[], paths=[])]
+            return [SearchResults(paths=[])]
         else:
             logger.info("Using query_block_runs to align blocks.")
             used_blocks: List[int] = determine_active_blocks(query_block_runs, index_block_runs)
@@ -225,11 +225,11 @@ def search_index(
     if any(used_blocks[i] + 1 != used_blocks[i + 1] for i in range(len(used_blocks) - 1)):
         logger.warning("Non-contiguous blocks detected in used_blocks; search may be suboptimal.")
         logger.info("Not implemented: returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
 
     if not used_blocks:
         logger.info("No overlapping blocks between query and index; returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
 
     num_layers = len(used_blocks)
 
@@ -256,13 +256,13 @@ def search_index(
 
     if not query_blocks:
         logger.info("No query blocks align to index layers; returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
 
     first_block = used_blocks[0]
     first_layer_nodes = block_to_node_indices.get(first_block, [])
     if not first_layer_nodes:
         logger.info("No nodes in first block; returning no search results.")
-        return [SearchResults(hits=[], paths=[])]
+        return [SearchResults(paths=[])]
 
     # Best path per leaf (keyed by leaf global_node_id).
     best_paths: Dict[int, SearchPath] = {}

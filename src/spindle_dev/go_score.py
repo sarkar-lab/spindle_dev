@@ -10,7 +10,7 @@ from pathlib import Path
 
 def enrich_modules_with_gseapy(modules,
                               gene_sets=("Reactome_2022", "KEGG_2021_Human", "GO_Biological_Process_2023", "MsigDB_Hallmark_2020"),
-                              organism="Human",
+                              organism="human",
                               cutoff=0.05):
     import gseapy as gp
     import pandas as pd
@@ -83,7 +83,7 @@ def enrich_modules_with_gseapy(modules,
 
 def enrich_modules_with_gseapy(modules,
                               gene_sets=("Reactome_2022", "KEGG_2021_Human", "GO_Biological_Process_2023", "MSigDB_Hallmark_2020"),
-                              organism="Human",
+                              organism="human",
                               cutoff=0.05):
     import gseapy as gp
     import pandas as pd

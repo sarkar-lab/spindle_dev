@@ -191,9 +191,16 @@ def search_ground_truth_matrices(
         search_time = time.perf_counter() - t1
 
         # Check if any returned path matches the full ground-truth path.
-        gt_path = ground_truth_paths.get(cluster_id, {}).get(q_idx)
+        
+        # FIX: Extract the true global ID that the DAG actually stored
+        # Safely handle different dataclass structures (e.g. .id or .spd_id)
+        tile_obj = data.metadata["tiles"][q_idx]
+        true_spd_id = int(getattr(tile_obj, 'spd_id', getattr(tile_obj, 'id', q_idx)))
+        
+        gt_path = ground_truth_paths.get(cluster_id, {}).get(true_spd_id)
+        
         if gt_path is None:
-            logger.warning("Ground-truth path not found for query idx %d in cluster %d.", q_idx, cluster_id)
+            logger.warning("Ground-truth path not found for TRUE tile id %d (loop idx %d) in cluster %d.", true_spd_id, q_idx, cluster_id)
             continue
 
         matched = False
