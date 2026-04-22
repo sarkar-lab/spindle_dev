@@ -136,3 +136,100 @@ print(results)
   - `index_path/index_stats.txt` — index build time.
   - `index_path/sanity_test_results.csv` — sanity-check search records.
 
+## **Interval Index (optional)**
+
+The interval index lets you search **principal sub-matrices of individual layer blocks** — useful when the query only covers a contiguous subset of the genes in one niche layer (e.g. a partial panel).  It is built **after** the standard DAG and stored separately, so it never affects existing search behaviour.
+
+### Concept
+
+For a layer block of size `d`, the interval index clusters all principal sub-matrices `A[a:b, a:b]` (in the permuted gene order) directly in log-Euclidean space, **independently per interval**.  No guarantee is inherited from the full-block DAG clusters.
+
+```
+interval_index[niche j][layer ℓ][(a, b)]  →  List[IntervalCluster]
+    IntervalCluster.centroid  # log-mean of the cluster
+    IntervalCluster.members   # spd_ids in this cluster
+    IntervalCluster.radius    # max LE distance to centroid
+```
+
+### Build
+
+Add interval options to `IndexConfig` before calling `index_spds`, then call `build_all_interval_indices` afterwards:
+
+```python
+from spindle_dev.typing import IndexConfig
+from spindle_dev.interval_index import build_all_interval_indices
+
+config = IndexConfig(
+    epsilon_dict={...},           # same as before
+    epsilon_block_wise_dict={...},
+    kmean_method='stable',
+    # --- interval index knobs ---
+    use_interval_index=True,
+    interval_mode='dyadic',       # 'all' | 'dyadic' | 'fixed'
+    interval_max_layer_size=64,   # skip blocks larger than this
+    interval_eps=None,            # None → reuse per-niche epsilon
+    interval_max_iters=5,
+)
+
+dag_dict, stats, dist_list = index_spds(data, config)
+
+# Build interval index as a standalone post-build step
+ivl_idx = build_all_interval_indices(data, config)
+```
+
+`interval_mode` choices:
+
+| mode | intervals per block of size d | when to use |
+|---|---|---|
+| `"dyadic"` | O(d log d) power-of-2-aligned | default; good balance |
+| `"all"` | O(d²) every contiguous sub-interval | only for small blocks (d ≤ 20) |
+| `"fixed"` | 1 (the whole block) | sanity check / baseline |
+
+### Query a partial interval
+
+To query interval `(a, b)` within layer `block_index` of niche `cluster_id`:
+
+```python
+import numpy as np
+from spindle_dev.interval_index import query_interval_index
+
+# --- 1. Identify which niche the query belongs to ---
+# (use the same mechanism as the full DAG search, e.g. PCA + nearest centroid)
+cluster_id = ...   # int
+
+# --- 2. Choose the block/layer and the interval within it ---
+block_index = 0    # which layer to probe
+a, b = 2, 6       # half-open interval [a,b) in 0-indexed permuted-block coordinates
+
+# --- 3. Extract the query sub-matrix ---
+# The interval index was built on permuted sub-blocks:
+#   A_block = query_full[ perm[block_start:block_end], :][:, perm[block_start:block_end] ]
+#   A_interval = A_block[a:b, a:b]
+perm        = data.perm_list[cluster_id]
+block_start, block_end = data.block_dict[cluster_id][block_index]
+perm_idx    = perm[block_start:block_end]
+A_block     = query_full_spd[np.ix_(perm_idx, perm_idx)]
+A_interval  = A_block[a:b, a:b]    # shape (b-a, b-a)
+
+# --- 4. Query ---
+hits = query_interval_index(
+    ivl_idx,
+    cluster_id=cluster_id,
+    block_index=block_index,
+    interval=(a, b),
+    query_spd_sub=A_interval,   # raw SPD; log is applied internally
+    top_k=5,
+)
+
+# hits = [(distance, [spd_id, ...]), ...]  sorted ascending by distance
+for dist, spd_ids in hits:
+    print(f"  dist={dist:.4f}  candidates={spd_ids}")
+```
+
+If `(a, b)` is not in the index (e.g. the block was skipped due to `interval_max_layer_size`), `query_interval_index` returns `[]` — existing search is unaffected.
+
+### Computational notes
+
+- **Build cost** scales as `O(n · |intervals| · d_I²)` per (niche, layer), where `n` is the niche size, `|intervals|` is the interval count, and `d_I = b-a`.  Tune `interval_max_layer_size` to keep this tractable.
+- **Interval guarantees are independent** of the full-block clusters.  Sub-matrix distances do not satisfy `d_LE(A_I, B_I) ≤ d_LE(A, B)` in general, which is exactly why sub-matrices are clustered directly.
+

@@ -23,14 +23,50 @@ class IndexConfig:
     Attributes
     ----------
     epsilon_dict:
-        Dictionary mapping block indices to maximum allowed pairwise log-Euclidean distances within block-clusters.
+        Dictionary mapping cluster (niche) ids to the maximum allowed
+        pairwise log-Euclidean distance within block-clusters.
     epsilon_block_wise_dict:
-        Nested dictionary mapping block indices to dictionaries that map cluster indices to their respective epsilon values.
+        Nested dict ``{cluster_id: {block_index: epsilon}}`` for
+        per-block epsilon overrides.  Used when ``threshold_type='block_wise'``.
+    threshold_type:
+        ``"constant"`` uses ``epsilon_dict``; ``"block_wise"`` uses
+        ``epsilon_block_wise_dict``.
     is_ordered:
         If True, block-clusters within each block are sorted by their
         log-Euclidean distance from a deterministic reference point.
+    debug:
+        Emit verbose logging during index construction.
+    kmean_method:
+        Clustering algorithm for block-level SPD grouping.
+        One of ``"online"``, ``"stable"``, ``"offline"``, ``"epsilon_net"``.
+    stabilize_block_cluster:
+        If True, run a phase-2 Lloyd refinement with epsilon constraint
+        after the initial greedy clustering (online mode only).
+    max_iter:
+        Maximum Lloyd iterations for block-cluster refinement.
     deterministic:
-        Controls global deterministic settings.
+        Controls global random-seed settings for reproducibility.
+    use_interval_index:
+        If True, :func:`build_all_interval_indices` will build a
+        per-(niche, layer, interval) sub-matrix index alongside the DAG.
+        Has no effect on the DAG itself.  Default ``False``.
+    interval_mode:
+        How to enumerate contiguous intervals within each layer block.
+        ``"dyadic"`` (default) — power-of-2-length intervals anchored at
+        dyadic boundaries, O(d log d) per block.
+        ``"all"`` — every contiguous sub-interval, O(d²); use only for
+        small blocks (d ≤ ~20).
+        ``"fixed"`` — single interval covering the whole block.
+    interval_eps:
+        Epsilon used for interval-level clustering.  ``None`` (default)
+        re-uses the per-niche epsilon from ``epsilon_dict``.
+    interval_max_layer_size:
+        Blocks whose size exceeds this threshold are skipped entirely by
+        the interval index builder, regardless of ``interval_mode``.
+        Default 64.  For ``"all"`` mode, which generates O(d²) intervals
+        per block, you should set this to a smaller value (e.g. 20–32).
+    interval_max_iters:
+        Lloyd iteration count for interval-level clustering.  Default 5.
     """
 
     epsilon_dict: Dict[int, float] = field(default_factory=dict)
@@ -42,6 +78,11 @@ class IndexConfig:
     stabilize_block_cluster: bool = False
     max_iter: int = 5
     deterministic: DeterministicConfig = field(default_factory=DeterministicConfig)
+    use_interval_index: bool = False
+    interval_mode: str = "dyadic"   # "all" | "dyadic" | "fixed"
+    interval_eps: float | None = None
+    interval_max_layer_size: int | None = None
+    interval_max_iters: int = 5
 
 
 @dataclass
