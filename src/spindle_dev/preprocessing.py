@@ -249,3 +249,79 @@ def build_spatial_dataset(raw_data: Any, config: PreprocessingConfig | None = No
         "host project."
     )
 
+
+def prepare_multiple_adatas(adatas: list, max_pts=200, min_side=0.0, max_depth=40, n_jobs=8, eps=1e-6):
+    """
+    Takes a list of AnnData objects, finds their common genes, 
+    and builds an aggregated list of tiles and tile covariances 
+    with globally unique tile IDs.
+    
+    Returns:
+        combined_tiles: list of QuadTile
+        combined_tile_covs: list of dict
+        common_genes: list of str
+        total_spots: int
+    """
+    if not adatas:
+        return [], [], [], 0
+
+    # 1. Unique var names and find intersection
+    common_genes_set = None
+    for adata in adatas:
+        adata.var_names_make_unique()
+        genes = set(adata.var_names)
+        if common_genes_set is None:
+            common_genes_set = genes
+        else:
+            common_genes_set = common_genes_set.intersection(genes)
+            
+    common_genes = sorted(list(common_genes_set))
+    if len(common_genes) == 0:
+        raise ValueError("No common genes found across the provided datasets.")
+    
+    LOGGER.info("Found %d common genes across %d datasets.", len(common_genes), len(adatas))
+
+    combined_tiles = []
+    combined_tile_covs = []
+    total_spots = 0
+    tile_id_offset = 0
+
+    for i, adata in enumerate(adatas):
+        LOGGER.info("Processing dataset %d/%d with %d spots.", i+1, len(adatas), adata.n_obs)
+        # Subset adata to common genes to ensure exact order
+        adata_sub = adata[:, common_genes].copy()
+        
+        coords = adata_sub.obsm["spatial"]
+        
+        # Build tiles
+        tiles = build_quadtree_tiles(coords, max_pts=max_pts, min_side=min_side, max_depth=max_depth)
+        
+        # Build covariance matrices using the subset (so gene_idx=None)
+        tile_covs = build_tile_covs_full(adata_sub, tiles, gene_idx=None, n_jobs=n_jobs, eps=eps)
+        
+        # Offset tile IDs
+        for t, t_cov in zip(tiles, tile_covs):
+            old_id = getattr(t, 'id', None)
+            if old_id is None:
+                old_id = t.get("id") if isinstance(t, dict) else 0
+            
+            new_id = old_id + tile_id_offset
+            
+            if hasattr(t, 'id'):
+                t.id = new_id
+            elif isinstance(t, dict):
+                t["id"] = new_id
+                
+            t_cov["tile_id"] = new_id
+            
+            combined_tiles.append(t)
+            combined_tile_covs.append(t_cov)
+            
+        # Update offsets
+        if tiles:
+            max_id_in_batch = max(t.id if hasattr(t, 'id') else t.get('id', 0) for t in tiles)
+            tile_id_offset = max_id_in_batch + 1
+            
+        total_spots += adata_sub.n_obs
+
+    return combined_tiles, combined_tile_covs, common_genes, total_spots
