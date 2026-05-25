@@ -469,14 +469,83 @@ def query_arbitrary_interval(
     if not common:
         return []
 
-    # sum distances across pieces as combined score
-    ranked = sorted(
-        ((sum(ps[tid] for ps in piece_scores), tid) for tid in common),
-        key=lambda x: x[0],
-    )
+    valid_len = sum((pb - pa) for pa, pb in pieces)
+    total_scale = np.sqrt(valid_len) if valid_len > 1 else 1.0
+    piece_scales = [np.sqrt(pb - pa) if (pb - pa) > 1 else 1.0 for pa, pb in pieces]
+
+    ranked = []
+    for tid in common:
+        total_sq = 0.0
+        for i, ps in enumerate(piece_scores):
+            unscaled = ps[tid] * piece_scales[i]
+            total_sq += unscaled ** 2
+        combined_dist = np.sqrt(total_sq) / total_scale
+        ranked.append((combined_dist, tid))
+
+    ranked.sort(key=lambda x: x[0])
     # group ties into member lists (each tile is its own entry here)
     results = [(dist, [tid]) for dist, tid in ranked[:top_k]]
     return results
+
+
+def search_multiblock_intervals(interval_index_obj, cluster_id, block_intervals_map, q_blocks_map, top_k=100):
+    """
+    Search across multiple block indices simultaneously.
+    block_intervals_map: {block_index: [(start, end), ...]}
+    q_blocks_map: {block_index: np.ndarray (the full permuted block from query)}
+    """
+    piece_scores = []
+    piece_scales = []
+    total_valid_len = 0
+    
+    for block_index, disjoint_intervals in block_intervals_map.items():
+        q_block = q_blocks_map[block_index]
+        pieces = []
+        for a, b in disjoint_intervals:
+            pieces.extend(decompose_to_dyadic(a, b))
+            
+        for pa, pb in pieces:
+            q_sub = q_block[pa:pb, pa:pb]
+            p = pb - pa
+            scale = np.sqrt(p) if p > 1 else 1.0
+            
+            piece_results = query_interval_index(
+                interval_index_obj, cluster_id, block_index, (pa, pb), q_sub, top_k=None
+            )
+            if not piece_results:
+                return []
+                
+            scores = {}
+            for dist, members in piece_results:
+                for m in members:
+                    scores[m] = dist
+            piece_scores.append(scores)
+            piece_scales.append(scale)
+            total_valid_len += p
+
+    if not piece_scores:
+        return []
+        
+    common = set(piece_scores[0].keys())
+    for ps in piece_scores[1:]:
+        common &= ps.keys()
+        
+    if not common:
+        return []
+        
+    total_scale = np.sqrt(total_valid_len) if total_valid_len > 1 else 1.0
+        
+    ranked = []
+    for tid in common:
+        total_sq = 0.0
+        for i, ps in enumerate(piece_scores):
+            unscaled = ps[tid] * piece_scales[i]
+            total_sq += unscaled ** 2
+        combined_dist = np.sqrt(total_sq) / total_scale
+        ranked.append((combined_dist, tid))
+        
+    ranked.sort(key=lambda x: x[0])
+    return [(dist, [tid]) for dist, tid in ranked[:top_k]]
 
 
 __all__ = [
@@ -489,4 +558,5 @@ __all__ = [
     "build_all_interval_indices",
     "query_interval_index",
     "query_arbitrary_interval",
+    "search_multiblock_intervals",
 ]
