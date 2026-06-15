@@ -1,0 +1,444 @@
+import os
+import sys
+import time
+import argparse
+import numpy as np
+import scanpy as sc
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+from spindle_dev.preprocessing import prepare_multiple_adatas
+from spindle_dev.index import ProcessedData, index_spds, IndexConfig
+from spindle_dev.search import search_index, SearchConfig, assign_clusters_to_new_spds
+
+def log_spd(M, eps=1e-6):
+    M = 0.5 * (M + M.T)
+    w, V = np.linalg.eigh(M)
+    w = np.maximum(w, eps)
+    return (V * np.log(w)) @ V.T
+
+def exp_spd(M):
+    M = 0.5 * (M + M.T)
+    w, V = np.linalg.eigh(M)
+    w = np.clip(w, -20, 20)
+    return (V * np.exp(w)) @ V.T
+
+def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, data, direction="x2v"):
+    print("\n" + "=" * 60)
+    print("TASK 2: Brute-Force Approximation Benchmark")
+    print("=" * 60)
+    
+    exact_dists = []
+    spindle_dists = []
+    spindle_ranks = []
+    results_for_plot = []
+    
+    
+    for i, q_spd in enumerate(query_covs):
+        target_niche = int(assigned_labels[i])
+        perm = data.perm_list[target_niche]
+        block_runs = data.block_dict[target_niche]
+        q_corr_blocks_log = corrected_queries_by_id.get(i, [])
+        if not q_corr_blocks_log: continue
+        
+        niche_train_indices = [idx for idx, lab in enumerate(data.labels) if int(lab) == target_niche]
+        distances = []
+        
+        for t_idx in niche_train_indices:
+            t_spd = train_covs[t_idx]
+            t_perm = t_spd[np.ix_(perm, perm)]
+            total_block_dist = 0.0
+            for b_idx, (start, end) in enumerate(block_runs):
+                t_block = t_perm[start:end, start:end]
+                t_block_log = log_spd(t_block)
+                diff = q_corr_blocks_log[b_idx] - t_block_log
+                p_block = t_block.shape[0]
+                total_block_dist += np.linalg.norm(diff, ord='fro') / np.sqrt(p_block)
+            distances.append((total_block_dist, t_idx))
+            
+        distances.sort(key=lambda x: x[0]) 
+        closest_dist = distances[0][0] if len(distances) > 0 else float('inf')
+        
+        best_exact_idx = distances[0][1] if len(distances) > 0 else -1
+        
+        spindle_best_dist = float('inf')
+        spindle_best_rank = -1
+        best_spindle_idx = -1
+        
+        for match_global_idx in all_matched_train_ids[i]:
+            local_match_idx = match_global_idx
+            match_rank = -1
+            match_dist = -1
+            for r, (d, idx) in enumerate(distances):
+                if idx == local_match_idx:
+                    match_rank = r + 1
+                    match_dist = d
+                    break
+            if match_dist != -1 and match_dist < spindle_best_dist:
+                spindle_best_dist = match_dist
+                spindle_best_rank = match_rank
+                best_spindle_idx = local_match_idx
+                
+        if spindle_best_rank == -1:
+            print(f"Query {i:3d} (Niche {target_niche}): Exact closest dist = {closest_dist:.3f} | Spindle found NOTHING.")
+            exact_dists.append(closest_dist)
+            spindle_dists.append(float('inf'))
+            spindle_ranks.append(-1)
+        else:
+            print(f"Query {i:3d} (Niche {target_niche}): Exact dist = {closest_dist:.3f}, Spindle dist = {spindle_best_dist:.3f} | Rank {spindle_best_rank}")
+            exact_dists.append(closest_dist)
+            spindle_dists.append(spindle_best_dist)
+            spindle_ranks.append(spindle_best_rank)
+            
+        results_for_plot.append({
+            'query_idx': i,
+            'exact_idx': best_exact_idx,
+            'spindle_idx': best_spindle_idx,
+            'spindle_rank': spindle_best_rank
+        })
+            
+    os.makedirs("results", exist_ok=True)
+    plt.figure(figsize=(8, 5))
+    ranks = np.array(spindle_ranks)
+    valid_ranks = ranks[ranks != -1]
+    
+    bins = [1, 2, 3, 4, 6, 11, 21, 51, 100]
+    labels = ['1st', '2nd', '3rd', '4-5th', '6-10th', '11-20th', '21-50th', '51-99th']
+    counts = []
+    for k in range(len(bins)-1):
+        counts.append(np.sum((valid_ranks >= bins[k]) & (valid_ranks < bins[k+1])))
+    counts.append(np.sum(valid_ranks >= bins[-1]))
+    labels.append('>=100')
+    counts.append(np.sum(ranks == -1))
+    labels.append('Not Found')
+    
+    plt.bar(labels, counts, color='lightgreen', edgecolor='black')
+    plt.title(f'Spindle Match Rank Distribution ({direction})')
+    plt.ylabel('Number of Queries')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig(f'results/cross_modal_search/{direction}_spindle_match_ranks.png', dpi=150)
+    plt.close()
+    
+    valid_mask = ranks != -1
+    if np.sum(valid_mask) > 0:
+        v_exact = np.array(exact_dists)[valid_mask]
+        v_spindle = np.array(spindle_dists)[valid_mask]
+        plt.figure(figsize=(6, 6))
+        plt.scatter(v_exact, v_spindle, alpha=0.6, c='blue', edgecolors='w', s=50)
+        min_val = min(np.min(v_exact), np.min(v_spindle))
+        max_val = max(np.max(v_exact), np.max(v_spindle))
+        plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='y=x (Perfect Match)')
+        plt.title(f'Exact Distance vs Spindle Distance ({direction})')
+        plt.xlabel('Exact Distance to 1st NN')
+        plt.ylabel('Spindle Distance to Best Match')
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(f'results/cross_modal_search/{direction}_distance_scatter.png', dpi=150)
+        plt.close()
+        
+    print(f"\nSaved performance summary plots to results/cross_modal_search/{direction}_*.png")
+    return results_for_plot
+
+
+def plot_search_results(results_for_plot, coords_query, coords_index, tiles_query, tiles_index, query_name, index_name, direction):
+    # Plot top 5 queries
+    n_plots = min(5, len(results_for_plot))
+    fig, axes = plt.subplots(n_plots, 3, figsize=(15, 5*n_plots))
+    
+    if n_plots == 1:
+        axes = [axes]
+        
+    for idx in range(n_plots):
+        res = results_for_plot[idx]
+        q_id = res['query_idx']
+        e_id = res['exact_idx']
+        s_id = res['spindle_idx']
+        
+        # Plot query
+        ax_q = axes[idx][0]
+        ax_q.scatter(coords_query[:, 0], coords_query[:, 1], s=1, color='lightgray', alpha=0.5)
+        qt = tiles_query[q_id]
+        x0, y0, x1, y1 = qt.bbox
+        ax_q.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False, edgecolor='red', lw=2))
+        ax_q.set_title(f"Query {q_id} ({query_name})")
+        ax_q.set_aspect('equal')
+        
+        # Plot Exact
+        ax_e = axes[idx][1]
+        ax_e.scatter(coords_index[:, 0], coords_index[:, 1], s=1, color='lightgray', alpha=0.5)
+        if e_id != -1:
+            et = tiles_index[e_id]
+            x0, y0, x1, y1 = et.bbox
+            ax_e.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False, edgecolor='blue', lw=2))
+            ax_e.set_title(f"Brute Force Best ({index_name})")
+        else:
+            ax_e.set_title("Brute Force: None")
+        ax_e.set_aspect('equal')
+            
+        # Plot Spindle
+        ax_s = axes[idx][2]
+        ax_s.scatter(coords_index[:, 0], coords_index[:, 1], s=1, color='lightgray', alpha=0.5)
+        if s_id != -1:
+            st = tiles_index[s_id]
+            x0, y0, x1, y1 = st.bbox
+            ax_s.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False, edgecolor='green', lw=2))
+            ax_s.set_title(f"Spindle Best (Rank {res['spindle_rank']})")
+        else:
+            ax_s.set_title("Spindle: NOTHING")
+        ax_s.set_aspect('equal')
+            
+    plt.tight_layout()
+    plt.savefig(f"results/cross_modal_search/{direction}_search_visualization.png", dpi=150)
+    plt.close()
+    print(f"Saved side-by-side search visualization to results/cross_modal_search/{direction}_search_visualization.png")
+
+def main():
+    parser = argparse.ArgumentParser(description="Cross-Modal SPD Index Search")
+    parser.add_argument("--direction", type=str, choices=["x2v", "v2x"], default="x2v",
+                        help="Search direction: 'x2v' (Xenium query -> Visium index) or 'v2x' (Visium query -> Xenium index)")
+    parser.add_argument("--n_queries", type=int, default=50,
+                        help="Number of queries to run if query dataset is large.")
+    args = parser.parse_args()
+
+    print("Loading datasets...")
+    adata_vi = sc.read_h5ad(r"d:\SPINDLE\opt_brca\brca\visium_rotated.h5ad")
+    adata_xe = sc.read_h5ad(r"d:\SPINDLE\opt_brca\brca\xenium_rotated.h5ad")
+
+    adata_vi.var_names_make_unique()
+    adata_xe.var_names_make_unique()
+
+    common_genes = sorted(list(set(adata_vi.var_names).intersection(adata_xe.var_names)))
+    print(f"Found {len(common_genes)} common genes.")
+
+    if not common_genes:
+        print("No common genes found!")
+        return
+
+    from spindle_dev.preprocessing import build_quadtree_tiles, QuadTile, build_tile_covs_full
+
+    print("\n[1/6] Building quadtree tiles on Xenium...")
+    adata_xe_sub = adata_xe[:, common_genes].copy()
+    coords_xe = adata_xe_sub.obsm["spatial"]
+    tiles_xe = build_quadtree_tiles(coords_xe, max_pts=2000, min_side=0.0, max_depth=40)
+    
+    print("\n[2/6] Overlaying tiles on Visium...")
+    adata_vi_sub = adata_vi[:, common_genes].copy()
+    coords_vi = adata_vi_sub.obsm["spatial"]
+    
+    tiles_vi = []
+    for t in tiles_xe:
+        x0, y0, x1, y1 = t.bbox
+        mask = (coords_vi[:, 0] >= x0) & (coords_vi[:, 0] < x1) & \
+               (coords_vi[:, 1] >= y0) & (coords_vi[:, 1] < y1)
+        child_idx = np.where(mask)[0]
+        # Using a slightly higher threshold to ensure covariance matrix is well defined
+        if len(child_idx) >= 10:  
+            tiles_vi.append(QuadTile(t.id, t.bbox, child_idx))
+            
+    # Re-assign IDs to be contiguous
+    for i, t in enumerate(tiles_xe): t.id = i
+    for i, t in enumerate(tiles_vi): t.id = i
+            
+    print(f"Built {len(tiles_xe)} Xenium tiles and {len(tiles_vi)} Visium tiles.")
+
+    print("\n[3/6] Computing tile covariance matrices...")
+    covs_xe = build_tile_covs_full(adata_xe_sub, tiles_xe, gene_idx=None, n_jobs=8, eps=1e-6)
+    covs_vi = build_tile_covs_full(adata_vi_sub, tiles_vi, gene_idx=None, n_jobs=8, eps=1e-6)
+
+    total_spots_xe = adata_xe_sub.n_obs
+    total_spots_vi = adata_vi_sub.n_obs
+
+    if args.direction == "x2v":
+        index_name = "Visium"
+        query_name = "Xenium"
+        tiles_index, covs_index, total_spots_index = tiles_vi, covs_vi, total_spots_vi
+        tiles_query, covs_query, total_spots_query = tiles_xe, covs_xe, total_spots_xe
+        coords_index, coords_query = coords_vi, coords_xe
+        n_queries = args.n_queries
+    else:
+        index_name = "Xenium"
+        query_name = "Visium"
+        tiles_index, covs_index, total_spots_index = tiles_xe, covs_xe, total_spots_xe
+        tiles_query, covs_query, total_spots_query = tiles_vi, covs_vi, total_spots_vi
+        coords_index, coords_query = coords_xe, coords_vi
+        n_queries = args.n_queries
+        
+    print(f"Generated {len(covs_query)} {query_name} query SPDs.")
+    
+    if n_queries is not None and n_queries < len(covs_query):
+        query_covs = [t["cov"] for t in covs_query[:n_queries]]
+    else:
+        query_covs = [t["cov"] for t in covs_query]
+        n_queries = len(query_covs)
+        
+    print(f"Selecting {n_queries} {query_name} queries for search.")
+    
+    print(f"\n[3/6] Building ProcessedData for {index_name}...")
+    processed_index = ProcessedData(tiles=tiles_index, tile_stats=covs_index, genes_work=common_genes, num_spots=total_spots_index)
+    
+    print(f"Reducing dimensions and clustering SPDs ({index_name})...")
+    processed_index.reduce_dim(cluster_distance="tree", num_pca_components=30, random_state=42)
+    processed_index.cluster_spds(cluster_distance="tree", cluster_method="kmeans", n_clusters=2, random_state=42)
+    
+    print("Computing mean correlations and finding block diagonal order...")
+    processed_index.get_corr_mean_by_cluster()
+    processed_index.get_adaptive_runs(find_blocks=True, min_final_size=5, max_final_size=50)
+
+    print(f"\n[4/6] Building DAG index for {index_name}...")
+    config = IndexConfig()
+    for cluster_id in set(processed_index.labels):
+        config.epsilon_dict[cluster_id] = 0.5
+        
+    try:
+        dag_dict, stats, global_dist_list = index_spds(processed_index, config)
+    except Exception as e:
+        print(f"Error building index: {e}")
+        return
+
+    print(f"\n[5/6] Aligning {query_name} SPDs to {index_name} index clusters...")
+    assigned_labels = assign_clusters_to_new_spds(query_covs, processed_index, strategy="knn_majority", n_neighbors=5)
+    
+    print("Calculating tangent space block means and stds for modality bias correction...")
+    cluster_means = {}
+    train_covs = [t["cov"] for t in covs_index]
+    
+    for cluster_id in set(processed_index.labels):
+        perm = processed_index.perm_list[cluster_id]
+        block_runs = processed_index.block_dict[cluster_id]
+        
+        idx_train = [idx for idx, lab in enumerate(processed_index.labels) if int(lab) == cluster_id]
+        idx_query = [idx for idx, lab in enumerate(assigned_labels) if int(lab) == cluster_id]
+        
+        block_means_train = []
+        block_means_query = []
+        block_stds_train = []
+        block_stds_query = []
+        
+        for b_idx, (start, end) in enumerate(block_runs):
+            # Index Mean & Std
+            t_logs = []
+            for i in idx_train:
+                t_spd = train_covs[i]
+                t_perm = t_spd[np.ix_(perm, perm)]
+                t_logs.append(log_spd(t_perm[start:end, start:end]))
+            if t_logs:
+                block_means_train.append(np.mean(t_logs, axis=0))
+                block_stds_train.append(np.std(t_logs))
+            else:
+                block_means_train.append(0)
+                block_stds_train.append(1.0)
+            
+            # Query Mean & Std
+            q_logs = []
+            for i in idx_query:
+                q_spd = query_covs[i]
+                q_perm = q_spd[np.ix_(perm, perm)]
+                q_logs.append(log_spd(q_perm[start:end, start:end]))
+            if q_logs:
+                block_means_query.append(np.mean(q_logs, axis=0))
+                std_q = np.std(q_logs)
+                block_stds_query.append(std_q if std_q > 1e-6 else 1.0)
+            else:
+                block_means_query.append(0)
+                block_stds_query.append(1.0)
+            
+        cluster_means[cluster_id] = {
+            'train': block_means_train, 'query': block_means_query,
+            'std_train': block_stds_train, 'std_query': block_stds_query
+        }
+
+    print("\n[6/6] Running cross-modal search with bias correction...")
+    search_cfg = SearchConfig(max_results=100, debug=False, max_failed_starts=100, max_failed_paths=500, total_paths_limit=5000)
+    
+    total_hits = 0
+    total_time = 0.0
+    valid_searches = 0
+    all_matched_train_ids = []
+    corrected_queries_by_id = {}
+    
+    for i, q_spd in enumerate(query_covs):
+        cluster_id = int(assigned_labels[i])
+        index_handle = dag_dict.get(cluster_id)
+        
+        if index_handle is None:
+            all_matched_train_ids.append([])
+            continue
+            
+        perm = processed_index.perm_list[cluster_id]
+        block_runs = processed_index.block_dict[cluster_id]
+        
+        q_spd_perm = q_spd[np.ix_(perm, perm)]
+        q_corr_blocks_log = []
+        q_spd_corr_perm = np.zeros_like(q_spd_perm)
+        
+        for b_idx, (start, end) in enumerate(block_runs):
+            q_block = q_spd_perm[start:end, start:end]
+            q_log = log_spd(q_block)
+            
+            # Apply Variance Scaling and Mean-Centering
+            # We clip the scale to a maximum of 1.0 to prevent the mathematical explosion in x2v,
+            # but allow it to be < 1.0 in v2x to act as a denoiser.
+            raw_scale = cluster_means[cluster_id]['std_train'][b_idx] / cluster_means[cluster_id]['std_query'][b_idx]
+            scale = min(1.0, raw_scale)
+            
+            L_corr = (q_log - cluster_means[cluster_id]['query'][b_idx]) * scale + cluster_means[cluster_id]['train'][b_idx]
+            q_corr_blocks_log.append(L_corr)
+            
+            C_corr = exp_spd(L_corr)
+            q_spd_corr_perm[start:end, start:end] = C_corr
+            
+        corrected_queries_by_id[i] = q_corr_blocks_log
+        
+        epsilon = config.epsilon_dict.get(cluster_id, 0.5) if hasattr(config, 'epsilon_dict') else 0.5
+        budget = float(epsilon) * float(len(block_runs)) * 12
+        
+        inv_perm = np.argsort(perm)
+        q_spd_corr = q_spd_corr_perm[np.ix_(inv_perm, inv_perm)]
+        
+        t0 = time.perf_counter()
+        results = search_index(
+            index_handle=index_handle,
+            query_spd=q_spd_corr,
+            query_indices=[],
+            query_block_runs=block_runs,
+            budget=budget,
+            config=search_cfg
+        )
+        total_time += (time.perf_counter() - t0)
+        
+        matched_ids_for_query = []
+        if results.paths:
+            for rank, path in enumerate(results.paths, start=1):
+                member_sets = []
+                for node_id in path.node_path:
+                    node = index_handle.nodes[node_id]
+                    members = getattr(getattr(node, "metadata", None), "members", [])
+                    spd_ids = {int(spd_id) for spd_id, _ in members}
+                    member_sets.append(spd_ids)
+
+                intersect_ids = set.intersection(*member_sets) if member_sets else set()
+                matched_ids_for_query.extend(sorted(intersect_ids))
+            
+        all_matched_train_ids.append(matched_ids_for_query)
+        
+        valid_searches += 1
+        total_hits += len(matched_ids_for_query)
+        
+        step = max(1, n_queries//10)
+        if (i+1) % step == 0:
+            print(f"Processed {i+1}/{n_queries} queries...")
+
+    print("\n" + "=" * 40)
+    print(f"Cross-Modal Search Results ({query_name} -> {index_name}):")
+    print(f"Total Valid Queries : {valid_searches}")
+    print(f"Total Paths Found   : {total_hits}")
+    print(f"Avg Time Per Query  : {total_time / valid_searches:.4f}s" if valid_searches else "No valid searches")
+    print("=" * 40)
+
+    plot_results = evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, processed_index, direction=args.direction)
+    plot_search_results(plot_results, coords_query, coords_index, tiles_query, tiles_index, query_name, index_name, args.direction)
+
+if __name__ == "__main__":
+    main()

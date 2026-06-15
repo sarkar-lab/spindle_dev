@@ -234,9 +234,18 @@ class ProcessedData:
         for cluster_id in set(self.labels):
             logger.info("Computing mean correlation matrix for cluster %d", cluster_id)
             idxs = np.where(self.labels == cluster_id)[0]
-            corrs = [spd_to_correlation(self.spd_matrices[i]) for i in idxs]
-            corrs_stack = np.stack(corrs, axis=0)
-            corr_mean = corrs_stack.mean(axis=0)
+            if len(idxs) == 0:
+                continue
+            
+            corr_sum = None
+            for i in idxs:
+                corr = spd_to_correlation(self.spd_matrices[i])
+                if corr_sum is None:
+                    corr_sum = corr.copy()
+                else:
+                    corr_sum += corr
+            
+            corr_mean = corr_sum / len(idxs)
             self.R_mean_list[cluster_id] = corr_mean
         
 

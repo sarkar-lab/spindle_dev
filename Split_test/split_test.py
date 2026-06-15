@@ -4,6 +4,9 @@ from pathlib import Path
 
 import numpy as np
 import scanpy as sc
+import matplotlib
+matplotlib.use('Agg')
+import argparse
 from tqdm.auto import tqdm
 
 # Set up sys.path so that 'src/spindle_dev' is importable as 'spindle_dev'
@@ -42,7 +45,10 @@ def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_siz
     Run indexing workflow.
     """
     data = index.ProcessedData(tiles, tile_covs, genes_work, adata.n_obs)
-    data.reduce_dim(num_pca_components=30, n_components=2, do_umap=True)
+    num_pca = min(30, len(tiles) - 1)
+    if num_pca < 2:
+        num_pca = 2
+    data.reduce_dim(num_pca_components=num_pca, n_components=2, do_umap=True)
     data.cluster_spds(cluster_distance="tree", cluster_method="leiden", resolution=resolution)
     data.assign_label_to_spots()
     data.get_corr_mean_by_cluster()
@@ -81,7 +87,7 @@ def calc_corr(mat1, mat2, perm, block_runs):
         return c if not np.isnan(c) else 0.0
     return 0.0
 
-def evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data):
+def evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir):
     print("\n" + "="*50)
     print("TASK 1: Block-Diagonalized Correlation Permutation Test")
     print("="*50)
@@ -131,8 +137,8 @@ def evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, tra
         import matplotlib.pyplot as plt
         from pathlib import Path
         
-        plot_dir = Path(__file__).resolve().parent / "correlation_plots"
-        plot_dir.mkdir(exist_ok=True)
+        plot_dir = dataset_out_dir / "correlation_plots"
+        plot_dir.mkdir(exist_ok=True, parents=True)
         
         plt.figure(figsize=(8, 5))
         plt.hist(random_corrs, bins=20, color='lightgray', edgecolor='black', alpha=0.7, label='Random Background (n=100)')
@@ -170,7 +176,7 @@ def get_ordinal(n):
     return str(n) + suffixes[n % 10]
 
 
-def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data):
+def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir, dataset_name):
     print("\n" + "="*60)
     print("TASK 2:Brute-Force Approximation Benchmark")
     print("="*60)
@@ -180,6 +186,7 @@ def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_id
     exact_dists = []
     spindle_dists = []
     spindle_ranks = []
+    overlap_metrics = []
     
     for i, q_dict in enumerate(test_tile_covs):
         if not all_matched_train_ids[i]:
@@ -226,6 +233,35 @@ def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_id
         # Sort to find the true Block-Wise nearest neighbors in this Niche
         distances.sort(key=lambda x: x[0]) 
         
+        true_order = [idx for d, idx in distances]
+        dist_dict = {idx: d for d, idx in distances}
+        
+        spindle_candidates_local = []
+        for match_global_idx in all_matched_train_ids[i]:
+            local_match_idx = global_to_local_train_map.get(match_global_idx)
+            if local_match_idx is not None and local_match_idx in dist_dict:
+                spindle_candidates_local.append(local_match_idx)
+                
+        spindle_candidates_with_dist = [(dist_dict[idx], idx) for idx in spindle_candidates_local]
+        spindle_candidates_with_dist.sort(key=lambda x: x[0])
+        spindle_ranked_local = [idx for d, idx in spindle_candidates_with_dist]
+        
+        overlaps = {}
+        for K in [10, 20, 30, 50]:
+            if len(true_order) < K:
+                overlaps[f'overlap_{K}'] = float('nan')
+            else:
+                true_top_k = set(true_order[:K])
+                spindle_top_k = set(spindle_ranked_local[:K])
+                overlap = len(true_top_k.intersection(spindle_top_k)) / K
+                overlaps[f'overlap_{K}'] = overlap
+                
+        overlap_metrics.append({
+            'Query': i,
+            'Dataset': dataset_name,
+            **overlaps
+        })
+        
         # 5. Evaluate Spindle's BEST match from its search pool
         closest_dist = distances[0][0] if len(distances) > 0 else float('inf')
         
@@ -270,8 +306,8 @@ def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_id
     import matplotlib.pyplot as plt
     from pathlib import Path
     
-    plot_dir = Path(__file__).resolve().parent / "performance_plots"
-    plot_dir.mkdir(exist_ok=True)
+    plot_dir = dataset_out_dir / "performance_plots"
+    plot_dir.mkdir(exist_ok=True, parents=True)
     
     # Plot 1: Spindle Match Ranks
     plt.figure(figsize=(8, 5))
@@ -322,10 +358,37 @@ def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_id
         
     print(f"\nSaved performance summary plots to {plot_dir}")
 
-def load_and_split_data(adata_path, test_ratio=0.1, seed=42):
+    import pandas as pd
+    df_overlaps = pd.DataFrame(overlap_metrics)
+    
+    if not df_overlaps.empty:
+        # Plot overlaps
+        plt.figure(figsize=(8, 5))
+        means = []
+        labels_k = ['overlap_10', 'overlap_20', 'overlap_30', 'overlap_50']
+        for k in labels_k:
+            means.append(df_overlaps[k].mean() * 100)
+            
+        plt.bar(['10', '20', '30', '50'], means, color='coral', edgecolor='black')
+        plt.title('Neighborhood Overlap@K')
+        plt.xlabel('K')
+        plt.ylabel('Overlap (%)')
+        plt.ylim(0, 105)
+        plt.tight_layout()
+        plt.savefig(plot_dir / 'overlap_at_k.png', dpi=150)
+        plt.close()
+        
+    return df_overlaps
+
+def load_and_split_data(adata_path, test_ratio=0.1, seed=42, n_subsample=None):
     print(f"Reading data from {adata_path}...")
     adata = sc.read_h5ad(adata_path)
-    adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
+    if 'Cluster' in adata.obs.columns:
+        adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
+
+    if n_subsample is not None and n_subsample < adata.n_obs:
+        print(f"Subsampling to {n_subsample} spots for quick test...")
+        sc.pp.subsample(adata, n_obs=n_subsample, random_state=seed)
 
     print("Preparing data for indexing...")
     tiles, tile_covs, genes_work = prepare_to_index(adata)
@@ -379,7 +442,7 @@ def extract_query_matrices(test_tile_covs):
     return query_matrices
 
 
-def perform_search(query_matrices, data, dag_dict, config, budget_multiplier=0.5):
+def perform_search(query_matrices, data, dag_dict, config, budget_multiplier=1):
     search_cfg = search.SearchConfig(max_results=None, debug=False, max_failed_starts=20, max_failed_paths=50, total_paths_limit=5000)
 
     print(f"Starting blind holdout validation for {len(query_matrices)} unseen queries...")
@@ -449,31 +512,102 @@ def summarize_hits(all_matched_train_ids, predicted_clusters):
     print("="*40 + "\n")
 
 def main():
+    parser = argparse.ArgumentParser(description="Split test Spindle")
+    parser.add_argument('--test', action='store_true', help='Run a quick test on a subset of data (10k spots)')
+    args = parser.parse_args()
+
     current_dir = Path(__file__).resolve().parent
-    adata_path = current_dir.parent / "dataset" / "adata.h5ad"
+    project_root = current_dir.parent
+    
+    datasets = {
+        # "brain_cancer": project_root.parent / "dataset" / "xenium_human_brain_cancer.h5ad",
+        "breast_cancer": project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad",
+        "kidney_nondiseased": project_root.parent / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
+        "lymph_node": project_root.parent / "dataset" / "xenium_human_lymph_node.h5ad",
+        "lung_cancer": project_root.parent / "dataset" / "xenium_human_lung_cancer.h5ad",
+        "skin_melanoma": project_root.parent / "dataset" / "xenium_human_skin_melanoma.h5ad",
+        "pancreatic_cancer": project_root.parent / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
+        # "lymph_node_5k": project_root.parent / "dataset" / "xenium_human_lymph_node_5k.h5ad"
+    }
 
-    # 1. Load and split data
-    adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path)
+    base_results_dir = project_root / "results" / "split_test"
+    base_results_dir.mkdir(exist_ok=True, parents=True)
 
-    # 2. Run index
-    print("Running index...")
-    data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15)
+    all_overlap_dfs = []
 
-    # 3. Configure and build DAG
-    dag_dict, config = configure_and_build_dag(data)
+    for dataset_name, adata_path in datasets.items():
+        print(f"\n{'='*80}")
+        print(f"Processing dataset: {dataset_name}")
+        print(f"{'='*80}\n")
+        
+        dataset_out_dir = base_results_dir / dataset_name
+        dataset_out_dir.mkdir(exist_ok=True, parents=True)
 
-    # 4. Extract queries
-    query_matrices = extract_query_matrices(test_tile_covs)
+        if not adata_path.exists():
+            print(f"Dataset not found at {adata_path}. Skipping.")
+            continue
 
-    # 5. Perform search
-    predicted_clusters, all_matched_train_ids = perform_search(query_matrices, data, dag_dict, config)
+        n_subsample = 10000 if args.test else None
+        # 1. Load and split data
+        adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path, n_subsample=n_subsample)
 
-    # 6. Summarize hits
-    summarize_hits(all_matched_train_ids, predicted_clusters)
+        # 2. Run index
+        print("Running index...")
+        data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15)
 
-    # 7. Evaluate
-    # evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data)
-    evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data)
+        # 3. Configure and build DAG
+        dag_dict, config = configure_and_build_dag(data)
+
+        # 4. Extract queries
+        query_matrices = extract_query_matrices(test_tile_covs)
+
+        # 5. Perform search
+        predicted_clusters, all_matched_train_ids = perform_search(query_matrices, data, dag_dict, config)
+
+        # 6. Summarize hits
+        summarize_hits(all_matched_train_ids, predicted_clusters)
+
+        # 7. Evaluate
+        # evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir)
+        df_overlaps = evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir, dataset_name)
+        if df_overlaps is not None and not df_overlaps.empty:
+            all_overlap_dfs.append(df_overlaps)
+
+    if all_overlap_dfs:
+        import pandas as pd
+        combined_overlaps = pd.concat(all_overlap_dfs, ignore_index=True)
+        generate_overall_dataset_plots(combined_overlaps, base_results_dir)
+
+def generate_overall_dataset_plots(combined_df, results_dir):
+    print("\nGenerating overall dataset comparison plots...")
+    import warnings
+    warnings.filterwarnings("ignore")
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    
+    sns.set_theme(style="whitegrid", context="paper", font_scale=1.3)
+    
+    results_dir.mkdir(parents=True, exist_ok=True)
+    
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    axes = axes.flatten()
+    
+    metrics = ['overlap_10', 'overlap_20', 'overlap_30', 'overlap_50']
+    
+    for idx, metric in enumerate(metrics):
+        combined_df[f'{metric} (%)'] = combined_df[metric] * 100
+        sns.barplot(data=combined_df, x='Dataset', y=f'{metric} (%)', ax=axes[idx], palette="muted", errorbar=None)
+        axes[idx].set_title(f"Average {metric.replace('_', '@')} per Dataset", fontweight='bold')
+        axes[idx].set_ylim(0, 105)
+        axes[idx].tick_params(axis='x', rotation=45)
+        axes[idx].set_xlabel("")
+        axes[idx].set_ylabel("Overlap (%)")
+        
+    sns.despine(fig=fig)
+    plt.tight_layout()
+    plot_path = results_dir / "overall_overlap_performance.png"
+    plt.savefig(str(plot_path), dpi=300, bbox_inches='tight')
+    print(f"Saved overall benchmark plots to {plot_path}")
 
 if __name__ == "__main__":
     main()
