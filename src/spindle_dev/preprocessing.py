@@ -99,21 +99,21 @@ def build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=12):
         idx = np.asarray(idx, dtype=int)
         side = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
 
-        # If this node is small enough, make it a leaf.
-        if idx.size <= max_pts:
-            tiles.append(QuadTile(next_id, bbox, idx))
-            next_id += 1
-            continue
-
-        # From here on, idx.size > max_pts so we MUST split somehow.
-
-        # If we cannot meaningfully split spatially (too deep / too small),
-        # fall back to non-spatial chunking to enforce the cap.
+        # Stop splitting if we hit min_side or max_depth
         if (side <= min_side) or (depth >= max_depth):
-            n_chunks = math.ceil(idx.size / max_pts)
+            n_chunks = max(1, math.ceil(idx.size / max_pts))
             for chunk in np.array_split(idx, n_chunks):
                 tiles.append(QuadTile(next_id, bbox, chunk))
                 next_id += 1
+            continue
+
+        # If we have very few points, we can stop early to avoid deep trees,
+        # unless we strictly want to enforce uniform tile sizes down to min_side.
+        # But if max_pts is very large (e.g. 999999), we want to force spatial splitting.
+        # So we only stop early if min_side is 0.
+        if min_side <= 0 and idx.size <= max_pts:
+            tiles.append(QuadTile(next_id, bbox, idx))
+            next_id += 1
             continue
 
         # Try spatial split
