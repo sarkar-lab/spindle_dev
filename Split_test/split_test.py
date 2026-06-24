@@ -1,9 +1,8 @@
 import sys
 import time
 from pathlib import Path
-
+import pickle
 import numpy as np
-import scanpy as sc
 import matplotlib
 matplotlib.use('Agg')
 import argparse
@@ -17,44 +16,7 @@ src_path = project_root / 'src'
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-import spindle_dev
-import spindle_dev.metrics as metrics
-import spindle_dev.index as index
-import spindle_dev.preprocessing as preprocessing
-import spindle_dev.plotting as plotting
-import spindle_dev.typing as typing
-import spindle_dev.test as test
 import spindle_dev.search as search
-
-
-def prepare_to_index(adata):
-    """
-    Prepare standard data object for indexing.
-    """
-    coords = adata.obsm["spatial"]
-    tiles = preprocessing.build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=40)
-    num_genes = adata.n_vars
-    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=num_genes)  
-    tile_covs = spindle_dev.preprocessing.build_tile_covs_full(adata, tiles, gene_idx, n_jobs=8, eps=1e-6)
-
-    return tiles, tile_covs, genes_work
-
-
-def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20):
-    """
-    Run indexing workflow.
-    """
-    data = index.ProcessedData(tiles, tile_covs, genes_work, adata.n_obs)
-    num_pca = min(30, len(tiles) - 1)
-    if num_pca < 2:
-        num_pca = 2
-    data.reduce_dim(num_pca_components=num_pca, n_components=2, do_umap=True)
-    data.cluster_spds(cluster_distance="tree", cluster_method="leiden", resolution=resolution)
-    data.assign_label_to_spots()
-    data.get_corr_mean_by_cluster()
-    out_dict = data.get_adaptive_runs(find_blocks=True, with_size_guard=True, min_final_size=min_final_size, max_final_size=100)
-    return data, out_dict
-
 
 def log_spd(M, eps=1e-6):
     M = 0.5 * (M + M.T)
@@ -135,7 +97,6 @@ def evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, tra
         
         # Plot Background Distribution vs. True Match
         import matplotlib.pyplot as plt
-        from pathlib import Path
         
         plot_dir = dataset_out_dir / "correlation_plots"
         plot_dir.mkdir(exist_ok=True, parents=True)
@@ -207,7 +168,6 @@ def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_id
             q_blocks_log.append(log_spd(q_perm[start:end, start:end]))
             
         # 3. Restrict brute force search to ONLY the training tiles in this niche
-        # data.labels aligns perfectly with train_tile_covs
         niche_train_indices = [idx for idx, lab in enumerate(data.labels) if int(lab) == target_niche]
         
         distances = []
@@ -380,57 +340,6 @@ def evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_id
         
     return df_overlaps
 
-def load_and_split_data(adata_path, test_ratio=0.1, seed=42, n_subsample=None):
-    print(f"Reading data from {adata_path}...")
-    adata = sc.read_h5ad(adata_path)
-    if 'Cluster' in adata.obs.columns:
-        adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
-
-    if n_subsample is not None and n_subsample < adata.n_obs:
-        print(f"Subsampling to {n_subsample} spots for quick test...")
-        sc.pp.subsample(adata, n_obs=n_subsample, random_state=seed)
-
-    print("Preparing data for indexing...")
-    tiles, tile_covs, genes_work = prepare_to_index(adata)
-
-    np.random.seed(seed) 
-    num_total_tiles = len(tiles)
-    num_test = int(num_total_tiles * test_ratio)
-
-    all_indices = np.arange(num_total_tiles)
-    test_idx = np.random.choice(all_indices, size=num_test, replace=False)
-    train_idx = np.setdiff1d(all_indices, test_idx)
-
-    train_tiles = [tiles[i] for i in train_idx]
-    train_tile_covs = [tile_covs[i] for i in train_idx]
-    test_tiles = [tiles[i] for i in test_idx]
-    test_tile_covs = [tile_covs[i] for i in test_idx]
-
-    print(f"Total tiles: {num_total_tiles} | Training/Indexed: {len(train_tiles)} | Held out/Testing: {len(test_tiles)}")
-
-    return adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx
-
-
-def configure_and_build_dag(data):
-    print("Configuring adaptive epsilons for blocks...")
-    epsilon_block_wise_dict = {}
-    epsilon_dict = {}
-    for cluster_id in set(data.labels):
-        eps_per_block, eps_elbow_per_block, eps = index.choose_adaptive_epsilons(data, cluster_id, k_target_per_block=64)
-        epsilon_block_wise_dict[int(cluster_id)] = eps_elbow_per_block
-        epsilon_dict[int(cluster_id)] = eps
-
-    config = typing.IndexConfig()
-    config.epsilon_dict = epsilon_dict
-    config.epsilon_block_wise_dict = epsilon_block_wise_dict
-    config.threshold_type = 'block_wise'
-    config.kmean_method = 'epsilon_net'
-
-    print("Creating index DAG...")
-    dag_dict, stat, dist_list = index.index_spds(data, config=config)
-    
-    return dag_dict, config
-
 
 def extract_query_matrices(test_tile_covs):
     query_matrices = []
@@ -442,7 +351,7 @@ def extract_query_matrices(test_tile_covs):
     return query_matrices
 
 
-def perform_search(query_matrices, data, dag_dict, config, budget_multiplier=1):
+def perform_search(query_matrices, data, dag_dict, config, budget_multiplier=0.75):
     search_cfg = search.SearchConfig(max_results=None, debug=False, max_failed_starts=20, max_failed_paths=50, total_paths_limit=5000)
 
     print(f"Starting blind holdout validation for {len(query_matrices)} unseen queries...")
@@ -511,72 +420,6 @@ def summarize_hits(all_matched_train_ids, predicted_clusters):
         print(f"Query {j:3d} [Niche {target_niche:2d}]: {len(hits):4d} matches found")
     print("="*40 + "\n")
 
-def main():
-    parser = argparse.ArgumentParser(description="Split test Spindle")
-    parser.add_argument('--test', action='store_true', help='Run a quick test on a subset of data (10k spots)')
-    args = parser.parse_args()
-
-    current_dir = Path(__file__).resolve().parent
-    project_root = current_dir.parent
-    
-    datasets = {
-        # "brain_cancer": project_root.parent / "dataset" / "xenium_human_brain_cancer.h5ad",
-        "breast_cancer": project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad",
-        "kidney_nondiseased": project_root.parent / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
-        "lymph_node": project_root.parent / "dataset" / "xenium_human_lymph_node.h5ad",
-        "lung_cancer": project_root.parent / "dataset" / "xenium_human_lung_cancer.h5ad",
-        "skin_melanoma": project_root.parent / "dataset" / "xenium_human_skin_melanoma.h5ad",
-        "pancreatic_cancer": project_root.parent / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
-        # "lymph_node_5k": project_root.parent / "dataset" / "xenium_human_lymph_node_5k.h5ad"
-    }
-
-    base_results_dir = project_root / "results" / "split_test"
-    base_results_dir.mkdir(exist_ok=True, parents=True)
-
-    all_overlap_dfs = []
-
-    for dataset_name, adata_path in datasets.items():
-        print(f"\n{'='*80}")
-        print(f"Processing dataset: {dataset_name}")
-        print(f"{'='*80}\n")
-        
-        dataset_out_dir = base_results_dir / dataset_name
-        dataset_out_dir.mkdir(exist_ok=True, parents=True)
-
-        if not adata_path.exists():
-            print(f"Dataset not found at {adata_path}. Skipping.")
-            continue
-
-        n_subsample = 10000 if args.test else None
-        # 1. Load and split data
-        adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path, n_subsample=n_subsample)
-
-        # 2. Run index
-        print("Running index...")
-        data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15)
-
-        # 3. Configure and build DAG
-        dag_dict, config = configure_and_build_dag(data)
-
-        # 4. Extract queries
-        query_matrices = extract_query_matrices(test_tile_covs)
-
-        # 5. Perform search
-        predicted_clusters, all_matched_train_ids = perform_search(query_matrices, data, dag_dict, config)
-
-        # 6. Summarize hits
-        summarize_hits(all_matched_train_ids, predicted_clusters)
-
-        # 7. Evaluate
-        # evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir)
-        df_overlaps = evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir, dataset_name)
-        if df_overlaps is not None and not df_overlaps.empty:
-            all_overlap_dfs.append(df_overlaps)
-
-    if all_overlap_dfs:
-        import pandas as pd
-        combined_overlaps = pd.concat(all_overlap_dfs, ignore_index=True)
-        generate_overall_dataset_plots(combined_overlaps, base_results_dir)
 
 def generate_overall_dataset_plots(combined_df, results_dir):
     print("\nGenerating overall dataset comparison plots...")
@@ -608,6 +451,72 @@ def generate_overall_dataset_plots(combined_df, results_dir):
     plot_path = results_dir / "overall_overlap_performance.png"
     plt.savefig(str(plot_path), dpi=300, bbox_inches='tight')
     print(f"Saved overall benchmark plots to {plot_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Run split test on saved indexed datasets.")
+    parser.add_argument('--test', action='store_true', help='Run a quick test (not used, purely for arg compat)')
+    args = parser.parse_args()
+
+    current_dir = Path(__file__).resolve().parent
+    project_root = current_dir.parent
+    
+    base_indexed_dir = project_root / "results" / "split_test_indexed"
+    base_results_dir = project_root / "results" / "split_test"
+    base_results_dir.mkdir(exist_ok=True, parents=True)
+
+    all_overlap_dfs = []
+
+    if not base_indexed_dir.exists():
+        print(f"Directory {base_indexed_dir} not found. Please run index_datasets.py first.")
+        return
+
+    indexed_files = list(base_indexed_dir.glob("*_indexed.pkl"))
+    if not indexed_files:
+        print(f"No indexed files found in {base_indexed_dir}. Please run index_datasets.py first.")
+        return
+
+    for indexed_file in indexed_files:
+        print(f"\n{'='*80}")
+        print(f"Processing indexed file: {indexed_file.name}")
+        print(f"{'='*80}\n")
+        
+        print("Loading data...")
+        with open(indexed_file, 'rb') as f:
+            saved_data = pickle.load(f)
+            
+        test_tile_covs = saved_data['test_tile_covs']
+        train_tile_covs = saved_data['train_tile_covs']
+        train_idx = saved_data['train_idx']
+        test_idx = saved_data['test_idx']
+        data = saved_data['data']
+        dag_dict = saved_data['dag_dict']
+        config = saved_data['config']
+        dataset_name = saved_data['dataset_name']
+
+        dataset_out_dir = base_results_dir / dataset_name
+        dataset_out_dir.mkdir(exist_ok=True, parents=True)
+
+        # 4. Extract queries
+        query_matrices = extract_query_matrices(test_tile_covs)
+
+        # 5. Perform search
+        predicted_clusters, all_matched_train_ids = perform_search(query_matrices, data, dag_dict, config)
+
+        # 6. Summarize hits
+        summarize_hits(all_matched_train_ids, predicted_clusters)
+
+        # 7. Evaluate
+        # evaluate_block_diagonalized_correlation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir)
+        df_overlaps = evaluate_brute_force_approximation(test_tile_covs, train_tile_covs, train_idx, predicted_clusters, all_matched_train_ids, data, dataset_out_dir, dataset_name)
+        
+        if df_overlaps is not None and not df_overlaps.empty:
+            all_overlap_dfs.append(df_overlaps)
+
+    if all_overlap_dfs:
+        import pandas as pd
+        combined_overlaps = pd.concat(all_overlap_dfs, ignore_index=True)
+        generate_overall_dataset_plots(combined_overlaps, base_results_dir)
 
 if __name__ == "__main__":
     main()
