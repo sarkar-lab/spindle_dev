@@ -441,11 +441,16 @@ def block_metrics_over_t(Z, perm):
 
 
 def _smooth_ma(x, w=7):
+    x_arr = np.asarray(x, float)
     if w is None or w <= 1:
-        return np.asarray(x, float)
+        return x_arr
     w = int(w)
+    if len(x_arr) < w:
+        w = len(x_arr)
+    if w <= 1:
+        return x_arr
     ker = np.ones(w) / w
-    return np.convolve(np.asarray(x, float), ker, mode="same")
+    return np.convolve(x_arr, ker, mode="same")
 
 
 def knee_from_num_blocks(ts, num_blocks, *, smooth=9, left_margin=2, eps=1e-12):
@@ -455,6 +460,12 @@ def knee_from_num_blocks(ts, num_blocks, *, smooth=9, left_margin=2, eps=1e-12):
     """
     t = np.asarray(ts, float)
     k = np.asarray(num_blocks, float)
+
+    if len(t) < 3:
+        idx_knee = 0
+        idx_choice = 0
+        return (float(t[idx_knee]), float(t[idx_choice]),
+                idx_knee, idx_choice, np.zeros_like(t), np.zeros_like(t))
 
     y = np.log(k + eps)
     y = _smooth_ma(y, w=smooth)

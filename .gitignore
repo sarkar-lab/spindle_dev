@@ -63,3 +63,6 @@ ISMB_notebook/logs/
 ISMB_notebook/slurm_jobs/logs/
 *.tmp
 *.bak
+
+#index
+results/split_test_indexed
