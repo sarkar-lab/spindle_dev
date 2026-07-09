@@ -1,0 +1,7 @@
+Dataset,Cells,Build Time (s),Index Size (MB)
+Breast,159226,90.7,23.25
+Kidney,97560,30.27,24.21
+Lymph Node,377985,140.9,22.83
+Lung,162254,58.41,20.25
+Skin,87499,26.89,19.41
+Pancreas,190965,198.37,30.86

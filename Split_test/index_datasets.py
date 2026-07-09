@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 import pickle
 import numpy as np
+import pandas as pd
 import scanpy as sc
 import matplotlib
 matplotlib.use('Agg')
@@ -53,7 +54,7 @@ def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_siz
     return data, out_dict
 
 
-def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_subsample=None):
+def load_and_split_data(adata_path, test_ratio=0.02, seed=42, n_subsample=None):
     print(f"Reading data from {adata_path}...")
     adata = sc.read_h5ad(adata_path)
     if 'Cluster' in adata.obs.columns:
@@ -114,27 +115,115 @@ def main():
     project_root = current_dir.parent
     
     datasets = {
-        # "brain_cancer": project_root.parent / "dataset" / "xenium_human_brain_cancer.h5ad",
-        # "breast_cancer": project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad",
-        # "kidney_nondiseased": project_root.parent / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
-        # "lymph_node": project_root.parent / "dataset" / "xenium_human_lymph_node.h5ad",
-        # "lung_cancer": project_root.parent / "dataset" / "xenium_human_lung_cancer.h5ad",
+        "breast_cancer": project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad",
+        "kidney_nondiseased": project_root.parent / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
+        "lymph_node": project_root.parent / "dataset" / "xenium_human_lymph_node.h5ad",
+        "lung_cancer": project_root.parent / "dataset" / "xenium_human_lung_cancer.h5ad",
         "skin_melanoma": project_root.parent / "dataset" / "xenium_human_skin_melanoma.h5ad",
-        # "pancreatic_cancer": project_root.parent / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
-        # "lymph_node_5k": project_root.parent / "dataset" / "xenium_human_lymph_node_5k.h5ad"
+        "pancreatic_cancer": project_root.parent / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
     }
 
     base_results_dir = project_root / "results" / "split_test_indexed"
     base_results_dir.mkdir(exist_ok=True, parents=True)
+
+    summary_out_dir = project_root / "results" / "split_test"
+    summary_out_dir.mkdir(exist_ok=True, parents=True)
+
+    # Fallback/known values for dataset display names and benchmark timings if skipping already indexed files
+    ds_display_map = {
+        'skin_melanoma': ('Skin', 87499, 33.47, 20.61),
+        'kidney_nondiseased': ('Kidney', 97560, 28.63, 20.34),
+        'breast_cancer': ('Breast', 167780, 50.21, 16.14),
+        'lung_cancer': ('Lung', 162254, 54.50, 22.25),
+        'lymph_node': ('Lymph Node', 377985, 80.97, 24.12),
+        'pancreatic_cancer': ('Pancreas', 190965, 120.90, 32.67),
+    }
+
+    scalability_records = []
 
     for dataset_name, adata_path in datasets.items():
         print(f"\n{'='*80}")
         print(f"Processing dataset: {dataset_name}")
         print(f"{'='*80}\n")
         
-        save_path = base_results_dir / f"{dataset_name}_indexed.pkl"
-        if save_path.exists():
-            print(f"Index for {dataset_name} already exists. Skipping.")
+        index_save_path = base_results_dir / f"{dataset_name}_spindle_index.pkl"
+        covs_save_path = base_results_dir / f"{dataset_name}_raw_covariances.pkl"
+        
+        backup_index = project_root.parent / "Results Backup" / "split_test_indexed" / f"{dataset_name}_spindle_index.pkl"
+        backup_covs = project_root.parent / "Results Backup" / "split_test_indexed" / f"{dataset_name}_raw_covariances.pkl"
+        
+        legacy_save_path = base_results_dir / f"{dataset_name}_indexed.pkl"
+        legacy_backup_path = project_root.parent / "Results Backup" / "split_test_indexed" / f"{dataset_name}_indexed.pkl"
+
+        load_index_path = index_save_path if index_save_path.exists() else (backup_index if backup_index.exists() else None)
+        load_covs_path = covs_save_path if covs_save_path.exists() else (backup_covs if backup_covs.exists() else None)
+        legacy_path = legacy_save_path if legacy_save_path.exists() else (legacy_backup_path if legacy_backup_path.exists() else None)
+
+        disp_name, fb_cells, fb_time, fb_size = ds_display_map.get(dataset_name, (dataset_name, 0, 0.0, 0.0))
+
+        # Auto-migrate legacy file into separate files if needed
+        if load_index_path is None and legacy_path is not None:
+            print(f"Migrating legacy combined file {legacy_path.name} into separate index and covariance files...")
+            try:
+                with open(legacy_path, 'rb') as pf:
+                    saved_legacy = pickle.load(pf)
+                
+                d = saved_legacy['data']
+                bundle = typing.DatasetIndex(
+                    dag_dict=saved_legacy['dag_dict'],
+                    metadata=getattr(d, 'metadata', {}),
+                    latent=getattr(d, 'latent', {}),
+                    labels=getattr(d, 'labels', None),
+                    pca_model=getattr(d, 'pca_model', None),
+                )
+                size_mb = round(len(pickle.dumps(bundle, protocol=pickle.HIGHEST_PROTOCOL)) / (1024 * 1024), 2)
+                d.spd_matrices = []
+                d.U_list = None
+                
+                index_data = {
+                    'data': d,
+                    'dag_dict': saved_legacy['dag_dict'],
+                    'config': saved_legacy['config'],
+                    'dataset_name': saved_legacy['dataset_name'],
+                    'build_time_s': saved_legacy.get('build_time_s', fb_time),
+                    'index_size_mb': size_mb
+                }
+                covs_data = {
+                    'test_tile_covs': saved_legacy['test_tile_covs'],
+                    'train_tile_covs': saved_legacy['train_tile_covs'],
+                    'train_idx': saved_legacy['train_idx'],
+                    'test_idx': saved_legacy['test_idx'],
+                    'dataset_name': saved_legacy['dataset_name']
+                }
+                
+                with open(index_save_path, 'wb') as f:
+                    pickle.dump(index_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                with open(covs_save_path, 'wb') as f:
+                    pickle.dump(covs_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                
+                print(f"Successfully migrated {dataset_name} to {index_save_path.name} ({size_mb} MB) and {covs_save_path.name}")
+                load_index_path = index_save_path
+            except Exception as e:
+                print(f"Error migrating {legacy_path}: {e}")
+
+        if load_index_path is not None:
+            print(f"Index for {dataset_name} already exists at {load_index_path}. Extracting scalability info from file.")
+            try:
+                with open(load_index_path, 'rb') as pf:
+                    saved = pickle.load(pf)
+                num_cells = getattr(saved.get('data', None), 'num_spots', fb_cells)
+                build_t = saved.get('build_time_s', fb_time)
+                size_mb = saved.get('index_size_mb', fb_size)
+            except Exception as e:
+                print(f"Error loading {load_index_path}: {e}")
+                num_cells, build_t, size_mb = fb_cells, fb_time, fb_size
+
+            scalability_records.append({
+                'Dataset': disp_name,
+                'Cells': num_cells,
+                'Build Time (s)': round(build_t, 2),
+                'Index Size (MB)': size_mb
+            })
             continue
 
         if not adata_path.exists():
@@ -144,39 +233,78 @@ def main():
         n_subsample = 10000 if args.test else None
         # 1. Load and split data
         adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path, n_subsample=n_subsample)
+        num_cells = adata.n_obs
 
-        # 2. Run index
+        # 2. Run index & measure time
         print("Running index...")
+        t0 = time.perf_counter()
         data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15)
 
         # 3. Configure and build DAG
         dag_dict, config = configure_and_build_dag(data)
+        build_time_s = time.perf_counter() - t0
 
-        # Save to disk
-        print(f"Saving indexed data to {save_path}...")
-        save_data = {
+        # Calculate true Spindle index size (DatasetIndex bundle without raw covariance matrices)
+        index_bundle = typing.DatasetIndex(
+            dag_dict=dag_dict,
+            metadata=data.metadata,
+            latent=data.latent,
+            labels=data.labels,
+            pca_model=getattr(data, "pca_model", None),
+        )
+        size_mb = round(len(pickle.dumps(index_bundle, protocol=pickle.HIGHEST_PROTOCOL)) / (1024 * 1024), 2)
+
+        # Save to separate disk files
+        print(f"Saving lightweight Spindle index to {index_save_path}...")
+        data.spd_matrices = []  # Clear duplicate raw covariance matrices
+        data.U_list = None      # Clear redundant 1.5 GB intermediate ultrametric matrices
+        index_save_data = {
+            'data': data,
+            'dag_dict': dag_dict,
+            'config': config,
+            'dataset_name': dataset_name,
+            'build_time_s': build_time_s,
+            'index_size_mb': size_mb
+        }
+        with open(index_save_path, 'wb') as f:
+            pickle.dump(index_save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        print(f"Saving benchmark raw covariance matrices to {covs_save_path}...")
+        covs_save_data = {
             'test_tile_covs': test_tile_covs,
             'train_tile_covs': train_tile_covs,
             'train_idx': train_idx,
             'test_idx': test_idx,
-            'data': data,
-            'dag_dict': dag_dict,
-            'config': config,
             'dataset_name': dataset_name
         }
+        with open(covs_save_path, 'wb') as f:
+            pickle.dump(covs_save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         import gc
-        del adata, train_tiles, test_tiles, genes_work
+        del adata, train_tiles, test_tiles, genes_work, index_bundle
         gc.collect()
+        
+        print(f"Save complete. True Spindle Index Size: {size_mb} MB, Build Time: {build_time_s:.2f} s")
 
-        with open(save_path, 'wb') as f:
-            pickle.dump(save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print("Save complete.")
+        scalability_records.append({
+            'Dataset': disp_name,
+            'Cells': num_cells,
+            'Build Time (s)': round(build_time_s, 2),
+            'Index Size (MB)': size_mb
+        })
 
         import matplotlib.pyplot as plt
         plt.close('all')
-        del save_data, train_tile_covs, test_tile_covs, data, dag_dict, config
+        del index_save_data, covs_save_data, train_tile_covs, test_tile_covs, data, dag_dict, config
         gc.collect()
+
+    if scalability_records:
+        df_scale = pd.DataFrame(scalability_records)
+        csv_scale_path = summary_out_dir / "index_scalability_summary.csv"
+        df_scale.to_csv(csv_scale_path, index=False)
+        print(f"\nExported index scalability summary CSV to {csv_scale_path}")
+        print(df_scale.to_string(index=False))
+
 
 if __name__ == "__main__":
     main()

@@ -3,11 +3,13 @@ import sys
 import time
 import argparse
 import numpy as np
+import pandas as pd
+from pathlib import Path
 import scanpy as sc
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 from spindle_dev.preprocessing import prepare_multiple_adatas
 from spindle_dev.index import ProcessedData, index_spds, IndexConfig
 from spindle_dev.search import search_index, SearchConfig, assign_clusters_to_new_spds
@@ -25,6 +27,7 @@ def exp_spd(M):
     return (V * np.exp(w)) @ V.T
 
 def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, data, direction="x2v"):
+    import csv
     print("\n" + "=" * 60)
     print("TASK 2: Brute-Force Approximation Benchmark")
     print("=" * 60)
@@ -33,7 +36,7 @@ def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, trai
     spindle_dists = []
     spindle_ranks = []
     results_for_plot = []
-    
+    metrics_records = []
     
     for i, q_spd in enumerate(query_covs):
         target_niche = int(assigned_labels[i])
@@ -97,173 +100,109 @@ def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, trai
             'spindle_idx': best_spindle_idx,
             'spindle_rank': spindle_best_rank
         })
-            
-    os.makedirs("results", exist_ok=True)
-    plt.figure(figsize=(8, 5))
-    ranks = np.array(spindle_ranks)
-    valid_ranks = ranks[ranks != -1]
-    
-    bins = [1, 2, 3, 4, 6, 11, 21, 51, 100]
-    labels = ['1st', '2nd', '3rd', '4-5th', '6-10th', '11-20th', '21-50th', '51-99th']
-    counts = []
-    for k in range(len(bins)-1):
-        counts.append(np.sum((valid_ranks >= bins[k]) & (valid_ranks < bins[k+1])))
-    counts.append(np.sum(valid_ranks >= bins[-1]))
-    labels.append('>=100')
-    counts.append(np.sum(ranks == -1))
-    labels.append('Not Found')
-    
-    plt.bar(labels, counts, color='lightgreen', edgecolor='black')
-    plt.title(f'Spindle Match Rank Distribution ({direction})')
-    plt.ylabel('Number of Queries')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(f'results/cross_modal_search/{direction}_spindle_match_ranks.png', dpi=150)
-    plt.close()
-    
-    valid_mask = ranks != -1
-    if np.sum(valid_mask) > 0:
-        v_exact = np.array(exact_dists)[valid_mask]
-        v_spindle = np.array(spindle_dists)[valid_mask]
-        plt.figure(figsize=(6, 6))
-        plt.scatter(v_exact, v_spindle, alpha=0.6, c='blue', edgecolors='w', s=50)
-        min_val = min(np.min(v_exact), np.min(v_spindle))
-        max_val = max(np.max(v_exact), np.max(v_spindle))
-        plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='y=x (Perfect Match)')
-        plt.title(f'Exact Distance vs Spindle Distance ({direction})')
-        plt.xlabel('Exact Distance to 1st NN')
-        plt.ylabel('Spindle Distance to Best Match')
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(f'results/cross_modal_search/{direction}_distance_scatter.png', dpi=150)
-        plt.close()
         
-    print(f"\nSaved performance summary plots to results/cross_modal_search/{direction}_*.png")
+        dist_dict = {idx: d for d, idx in distances}
+        bf_ranking = [idx for d, idx in distances]
+        spindle_candidates = set(all_matched_train_ids[i])
+        spindle_ranking = sorted(list(spindle_candidates), key=lambda idx: dist_dict.get(idx, float('inf')))
+        
+        recall_1 = 1 if spindle_best_rank == 1 else 0
+        
+        def calc_overlap(k):
+            if not bf_ranking: return 0.0
+            bf_top = set(bf_ranking[:k])
+            sp_top = set(spindle_ranking[:k])
+            denom = max(1, len(bf_top))
+            return len(bf_top.intersection(sp_top)) / float(denom)
+            
+        overlap_5 = calc_overlap(5)
+        overlap_10 = calc_overlap(10)
+        overlap_20 = calc_overlap(20)
+        
+        metrics_records.append({
+            'query_idx': i,
+            'target_niche': target_niche,
+            'exact_best_dist': round(closest_dist, 4),
+            'spindle_best_dist': round(spindle_best_dist, 4) if spindle_best_rank != -1 else np.nan,
+            'spindle_best_rank': spindle_best_rank,
+            'recall@1': recall_1,
+            'overlap@5': round(overlap_5, 4),
+            'overlap@10': round(overlap_10, 4),
+            'overlap@20': round(overlap_20, 4)
+        })
+            
+    os.makedirs("results/cross_modal_search", exist_ok=True)
+    csv_path = f"results/cross_modal_search/{direction}_query_metrics.csv"
+    if metrics_records:
+        fieldnames = list(metrics_records[0].keys())
+        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(metrics_records)
+        print(f"Saved detailed query metrics to {csv_path}")
+        
+        mean_r1 = np.mean([m['recall@1'] for m in metrics_records])
+        mean_o5 = np.mean([m['overlap@5'] for m in metrics_records])
+        mean_o10 = np.mean([m['overlap@10'] for m in metrics_records])
+        mean_o20 = np.mean([m['overlap@20'] for m in metrics_records])
+        
+        print("\n" + "-" * 60)
+        print(f"BENCHMARK OVERLAP METRICS SUMMARY ({direction}):")
+        print(f"  Recall@1   : {mean_r1:.4f}")
+        print(f"  Overlap@5  : {mean_o5:.4f}")
+        print(f"  Overlap@10 : {mean_o10:.4f}")
+        print(f"  Overlap@20 : {mean_o20:.4f}")
+        print("-" * 60)
+        
+        summary_dict = {
+            'direction': direction,
+            'recall@1': round(mean_r1, 4),
+            'overlap@5': round(mean_o5, 4),
+            'overlap@10': round(mean_o10, 4),
+            'overlap@20': round(mean_o20, 4)
+        }
+        summary_csv_path = "results/cross_modal_search/benchmark_summary.csv"
+        existing_rows = []
+        if os.path.exists(summary_csv_path):
+            with open(summary_csv_path, 'r', newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                existing_rows = list(reader)
+                
+        updated = False
+        for row in existing_rows:
+            if row.get('direction') == direction:
+                row.update({k: str(v) for k, v in summary_dict.items() if k != 'direction'})
+                updated = True
+                break
+        if not updated:
+            existing_rows.append({k: str(v) for k, v in summary_dict.items()})
+            
+        with open(summary_csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=['direction', 'recall@1', 'overlap@5', 'overlap@10', 'overlap@20'])
+            writer.writeheader()
+            writer.writerows(existing_rows)
+        print(f"Updated benchmark summary metrics in {summary_csv_path}")
+
+    print(f"\nCompleted evaluation for {direction}.")
     return results_for_plot
 
 
 def plot_search_results(results_for_plot, coords_query, coords_index, tiles_query, tiles_index, query_name, index_name, direction):
-    # Plot top 5 queries
-    n_plots = min(5, len(results_for_plot))
-    fig, axes = plt.subplots(n_plots, 3, figsize=(15, 5*n_plots))
-    
-    if n_plots == 1:
-        axes = [axes]
-        
-    for idx in range(n_plots):
-        res = results_for_plot[idx]
-        q_id = res['query_idx']
-        e_id = res['exact_idx']
-        s_id = res['spindle_idx']
-        
-        # Plot query
-        ax_q = axes[idx][0]
-        ax_q.scatter(coords_query[:, 0], coords_query[:, 1], s=1, color='lightgray', alpha=0.5)
-        qt = tiles_query[q_id]
-        x0, y0, x1, y1 = qt.bbox
-        ax_q.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False, edgecolor='red', lw=2))
-        ax_q.set_title(f"Query {q_id} ({query_name})")
-        ax_q.set_aspect('equal')
-        
-        # Plot Exact
-        ax_e = axes[idx][1]
-        ax_e.scatter(coords_index[:, 0], coords_index[:, 1], s=1, color='lightgray', alpha=0.5)
-        if e_id != -1:
-            et = tiles_index[e_id]
-            x0, y0, x1, y1 = et.bbox
-            ax_e.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False, edgecolor='blue', lw=2))
-            ax_e.set_title(f"Brute Force Best ({index_name})")
-        else:
-            ax_e.set_title("Brute Force: None")
-        ax_e.set_aspect('equal')
-            
-        # Plot Spindle
-        ax_s = axes[idx][2]
-        ax_s.scatter(coords_index[:, 0], coords_index[:, 1], s=1, color='lightgray', alpha=0.5)
-        if s_id != -1:
-            st = tiles_index[s_id]
-            x0, y0, x1, y1 = st.bbox
-            ax_s.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False, edgecolor='green', lw=2))
-            ax_s.set_title(f"Spindle Best (Rank {res['spindle_rank']})")
-        else:
-            ax_s.set_title("Spindle: NOTHING")
-        ax_s.set_aspect('equal')
-            
-    plt.tight_layout()
-    plt.savefig(f"results/cross_modal_search/{direction}_search_visualization.png", dpi=150)
-    plt.close()
-    print(f"Saved side-by-side search visualization to results/cross_modal_search/{direction}_search_visualization.png")
+    print("Side-by-side search visualization disabled in CSV-only mode.")
 
-def main():
-    parser = argparse.ArgumentParser(description="Cross-Modal SPD Index Search")
-    parser.add_argument("--direction", type=str, choices=["x2v", "v2x"], default="x2v",
-                        help="Search direction: 'x2v' (Xenium query -> Visium index) or 'v2x' (Visium query -> Xenium index)")
-    parser.add_argument("--n_queries", type=int, default=50,
-                        help="Number of queries to run if query dataset is large.")
-    args = parser.parse_args()
-
-    print("Loading datasets...")
-    adata_vi = sc.read_h5ad(r"d:\SPINDLE\opt_brca\brca\visium_rotated.h5ad")
-    adata_xe = sc.read_h5ad(r"d:\SPINDLE\opt_brca\brca\xenium_rotated.h5ad")
-
-    adata_vi.var_names_make_unique()
-    adata_xe.var_names_make_unique()
-
-    common_genes = sorted(list(set(adata_vi.var_names).intersection(adata_xe.var_names)))
-    print(f"Found {len(common_genes)} common genes.")
-
-    if not common_genes:
-        print("No common genes found!")
-        return
-
-    from spindle_dev.preprocessing import build_quadtree_tiles, QuadTile, build_tile_covs_full
-
-    print("\n[1/6] Building quadtree tiles on Xenium...")
-    adata_xe_sub = adata_xe[:, common_genes].copy()
-    coords_xe = adata_xe_sub.obsm["spatial"]
-    tiles_xe = build_quadtree_tiles(coords_xe, max_pts=2000, min_side=0.0, max_depth=40)
-    
-    print("\n[2/6] Overlaying tiles on Visium...")
-    adata_vi_sub = adata_vi[:, common_genes].copy()
-    coords_vi = adata_vi_sub.obsm["spatial"]
-    
-    tiles_vi = []
-    for t in tiles_xe:
-        x0, y0, x1, y1 = t.bbox
-        mask = (coords_vi[:, 0] >= x0) & (coords_vi[:, 0] < x1) & \
-               (coords_vi[:, 1] >= y0) & (coords_vi[:, 1] < y1)
-        child_idx = np.where(mask)[0]
-        # Using a slightly higher threshold to ensure covariance matrix is well defined
-        if len(child_idx) >= 10:  
-            tiles_vi.append(QuadTile(t.id, t.bbox, child_idx))
-            
-    # Re-assign IDs to be contiguous
-    for i, t in enumerate(tiles_xe): t.id = i
-    for i, t in enumerate(tiles_vi): t.id = i
-            
-    print(f"Built {len(tiles_xe)} Xenium tiles and {len(tiles_vi)} Visium tiles.")
-
-    print("\n[3/6] Computing tile covariance matrices...")
-    covs_xe = build_tile_covs_full(adata_xe_sub, tiles_xe, gene_idx=None, n_jobs=8, eps=1e-6)
-    covs_vi = build_tile_covs_full(adata_vi_sub, tiles_vi, gene_idx=None, n_jobs=8, eps=1e-6)
-
-    total_spots_xe = adata_xe_sub.n_obs
-    total_spots_vi = adata_vi_sub.n_obs
-
-    if args.direction == "x2v":
+def run_search_pipeline(direction, n_queries, covs_xe, covs_vi, tiles_xe, tiles_vi, total_spots_xe, total_spots_vi, coords_xe, coords_vi, common_genes):
+    if direction == "x2v":
         index_name = "Visium"
         query_name = "Xenium"
         tiles_index, covs_index, total_spots_index = tiles_vi, covs_vi, total_spots_vi
         tiles_query, covs_query, total_spots_query = tiles_xe, covs_xe, total_spots_xe
         coords_index, coords_query = coords_vi, coords_xe
-        n_queries = args.n_queries
     else:
         index_name = "Xenium"
         query_name = "Visium"
         tiles_index, covs_index, total_spots_index = tiles_xe, covs_xe, total_spots_xe
         tiles_query, covs_query, total_spots_query = tiles_vi, covs_vi, total_spots_vi
         coords_index, coords_query = coords_xe, coords_vi
-        n_queries = args.n_queries
         
     print(f"Generated {len(covs_query)} {query_name} query SPDs.")
     
@@ -377,9 +316,6 @@ def main():
             q_block = q_spd_perm[start:end, start:end]
             q_log = log_spd(q_block)
             
-            # Apply Variance Scaling and Mean-Centering
-            # We clip the scale to a maximum of 1.0 to prevent the mathematical explosion in x2v,
-            # but allow it to be < 1.0 in v2x to act as a denoiser.
             raw_scale = cluster_means[cluster_id]['std_train'][b_idx] / cluster_means[cluster_id]['std_query'][b_idx]
             scale = min(1.0, raw_scale)
             
@@ -437,8 +373,94 @@ def main():
     print(f"Avg Time Per Query  : {total_time / valid_searches:.4f}s" if valid_searches else "No valid searches")
     print("=" * 40)
 
-    plot_results = evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, processed_index, direction=args.direction)
-    plot_search_results(plot_results, coords_query, coords_index, tiles_query, tiles_index, query_name, index_name, args.direction)
+    plot_results = evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, processed_index, direction=direction)
+    # Search visualization plotting disabled in CSV-only mode
+
+def main():
+    parser = argparse.ArgumentParser(description="Cross-Modal SPD Index Search")
+    parser.add_argument("--direction", type=str, choices=["x2v", "v2x", "both"], default="both",
+                        help="Search direction: 'x2v', 'v2x', or 'both'")
+    parser.add_argument("--n_queries", type=int, default=50,
+                        help="Number of queries to run if query dataset is large.")
+    args = parser.parse_args()
+
+    print("Loading datasets...")
+    adata_vi = sc.read_h5ad(r"d:\SPINDLE\opt_brca\brca\visium_rotated.h5ad")
+    adata_xe = sc.read_h5ad(r"d:\SPINDLE\opt_brca\brca\xenium_rotated.h5ad")
+
+    adata_vi.var_names_make_unique()
+    adata_xe.var_names_make_unique()
+
+    common_genes = sorted(list(set(adata_vi.var_names).intersection(adata_xe.var_names)))
+    print(f"Found {len(common_genes)} common genes.")
+
+    if not common_genes:
+        print("No common genes found!")
+        return
+
+    from spindle_dev.preprocessing import build_quadtree_tiles, QuadTile, build_tile_covs_full
+
+    print("\n[1/6] Building quadtree tiles on Xenium...")
+    adata_xe_sub = adata_xe[:, common_genes].copy()
+    coords_xe = adata_xe_sub.obsm["spatial"]
+    tiles_xe = build_quadtree_tiles(coords_xe, max_pts=2000, min_side=0.0, max_depth=40)
+    
+    print("\n[2/6] Overlaying tiles on Visium...")
+    adata_vi_sub = adata_vi[:, common_genes].copy()
+    coords_vi = adata_vi_sub.obsm["spatial"]
+    
+    tiles_vi = []
+    for t in tiles_xe:
+        x0, y0, x1, y1 = t.bbox
+        mask = (coords_vi[:, 0] >= x0) & (coords_vi[:, 0] < x1) & \
+               (coords_vi[:, 1] >= y0) & (coords_vi[:, 1] < y1)
+        child_idx = np.where(mask)[0]
+        if len(child_idx) >= 10:  
+            tiles_vi.append(QuadTile(t.id, t.bbox, child_idx))
+            
+    for i, t in enumerate(tiles_xe): t.id = i
+    for i, t in enumerate(tiles_vi): t.id = i
+            
+    print(f"Built {len(tiles_xe)} Xenium tiles and {len(tiles_vi)} Visium tiles.")
+
+    project_root = Path(__file__).resolve().parent.parent
+    out_dir = project_root / "results" / "cross_modal_search"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    box_records = []
+    for t in tiles_xe:
+        x0, y0, x1, y1 = t.bbox
+        box_records.append({'modality': 'Xenium', 'id': t.id, 'x0': x0, 'y0': y0, 'x1': x1, 'y1': y1})
+    for t in tiles_vi:
+        x0, y0, x1, y1 = t.bbox
+        box_records.append({'modality': 'Visium', 'id': t.id, 'x0': x0, 'y0': y0, 'x1': x1, 'y1': y1})
+    pd.DataFrame(box_records).to_csv(out_dir / "tile_overlay_boxes.csv", index=False)
+    print(f"Exported tile overlay bounding boxes CSV to {out_dir / 'tile_overlay_boxes.csv'}")
+
+    coord_records = []
+    np.random.seed(42)
+    sample_xe = coords_xe[np.random.choice(len(coords_xe), size=min(5000, len(coords_xe)), replace=False)]
+    sample_vi = coords_vi[np.random.choice(len(coords_vi), size=min(5000, len(coords_vi)), replace=False)]
+    for pt in sample_xe:
+        coord_records.append({'modality': 'Xenium', 'x': pt[0], 'y': pt[1]})
+    for pt in sample_vi:
+        coord_records.append({'modality': 'Visium', 'x': pt[0], 'y': pt[1]})
+    pd.DataFrame(coord_records).to_csv(out_dir / "spatial_coords_sample.csv", index=False)
+    print(f"Exported background spatial coordinates sample CSV to {out_dir / 'spatial_coords_sample.csv'}")
+
+    print("\n[3/6] Computing tile covariance matrices...")
+    covs_xe = build_tile_covs_full(adata_xe_sub, tiles_xe, gene_idx=None, n_jobs=8, eps=1e-6)
+    covs_vi = build_tile_covs_full(adata_vi_sub, tiles_vi, gene_idx=None, n_jobs=8, eps=1e-6)
+
+    total_spots_xe = adata_xe_sub.n_obs
+    total_spots_vi = adata_vi_sub.n_obs
+
+    directions = ["x2v", "v2x"] if args.direction == "both" else [args.direction]
+    for dir_str in directions:
+        print("\n" + "#" * 60)
+        print(f"### RUNNING SEARCH PIPELINE FOR DIRECTION: {dir_str.upper()}")
+        print("#" * 60)
+        run_search_pipeline(dir_str, args.n_queries, covs_xe, covs_vi, tiles_xe, tiles_vi, total_spots_xe, total_spots_vi, coords_xe, coords_vi, common_genes)
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,7 @@
+Dataset,num_queries,mean_spindle_time_ms,mean_brute_force_time_ms,mean_speedup,recall@1,overlap@5,overlap@10,overlap@20,overlap@50
+breast_cancer,50,43.8143,210.8224,4.81,0.92,0.668,0.644,0.542,0.3036
+kidney_nondiseased,50,14.5028,73.4393,5.06,0.96,0.752,0.694,0.633,0.3568
+lung_cancer,50,32.2783,156.8585,4.86,0.92,0.872,0.836,0.704,0.3536
+lymph_node,50,48.9645,306.164,6.25,0.88,0.596,0.642,0.674,0.3488
+pancreatic_cancer,50,57.5453,463.1407,8.05,0.86,0.664,0.638,0.511,0.282
+skin_melanoma,50,22.0144,72.9848,3.32,1.0,0.684,0.68,0.595,0.3032

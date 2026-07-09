@@ -1,0 +1,3 @@
+direction,recall@1,overlap@5,overlap@10,overlap@20
+x2v,0.98,0.992,0.97,0.944
+v2x,0.76,0.808,0.844,0.887
