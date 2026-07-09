@@ -111,7 +111,7 @@ def plot_panel_b_speedup(ax, project_root: Path):
         'Pancreas': 'pancreatic_cancer'
     }
 
-    split_test_speedup = [5.69, 4.29, 5.75, 3.78, 3.60, 4.98]
+    split_test_speedup = [9.79, 9.93, 4.83, 6.40, 6.77, 6.04]
     split_csv = project_root / 'results' / 'split_test' / 'benchmark_summary.csv'
     if split_csv.exists():
         try:
@@ -121,8 +121,10 @@ def plot_panel_b_speedup(ax, project_root: Path):
                 if ds_map[d] in df_s['Dataset'].values else s_val
                 for d, s_val in zip(datasets, split_test_speedup)
             ]
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"WARNING: Failed to load split_test/benchmark_summary.csv ({e}). Using accurate fallback speedups.")
+    else:
+        print("WARNING: split_test/benchmark_summary.csv not found. Using accurate fallback speedups.")
 
     partial_test_speedup = [7.91, 7.28, 5.14, 9.13, 9.79, 9.91]
     partial_csv = project_root / 'results' / 'partial_search' / 'benchmark_summary.csv'
@@ -134,8 +136,10 @@ def plot_panel_b_speedup(ax, project_root: Path):
                 if ds_map[d] in df_p['Dataset'].values else p_val
                 for d, p_val in zip(datasets, partial_test_speedup)
             ]
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"WARNING: Failed to load partial_search/benchmark_summary.csv ({e}). Using fallback speedups.")
+    else:
+        print("WARNING: partial_search/benchmark_summary.csv not found. Using fallback speedups.")
 
     df_b = pd.DataFrame({
         'Dataset': np.repeat(datasets, 2),
@@ -161,14 +165,14 @@ def plot_panel_b_speedup(ax, project_root: Path):
             ax.annotate(f"{h:.1f}x", (p.get_x() + p.get_width() / 2., h),
                         ha='center', va='bottom', fontsize=8.5, fontweight='bold', color=SLATE, xytext=(0, 2), textcoords='offset points')
 
-    ax.set_title('Spindle Search Speedup vs Brute Force\n(Orders of Magnitude Acceleration Across Suites)', pad=12)
+    ax.set_title('Spindle Search Speedup vs Brute Force\n(Multi-Fold Acceleration Across Suites)', pad=12)
     add_panel_letter(ax, 'B')
 
 
 def plot_panel_c_accuracy(ax, project_root: Path):
     """Panel C: Spindle Search Accuracy from top1_rank_distribution.csv."""
     labels = ['1st', '2nd', '3rd', '4-5th', '6-10th', '>10th']
-    pcts = [87.2, 8.4, 2.8, 1.0, 0.4, 0.2]
+    pcts = [76.67, 16.67, 0.0, 3.33, 3.33, 0.0]
 
     rank_csv = project_root / 'results' / 'split_test' / 'top1_rank_distribution.csv'
     if rank_csv.exists():
@@ -177,8 +181,10 @@ def plot_panel_c_accuracy(ax, project_root: Path):
             if 'Rank_Category' in df_r.columns and 'Percentage' in df_r.columns:
                 label_map = dict(zip(df_r['Rank_Category'], df_r['Percentage']))
                 pcts = [label_map.get(l, 0.0) for l in labels]
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"WARNING: Failed to load top1_rank_distribution.csv ({e}). Using exact fallback percentages.")
+    else:
+        print("WARNING: top1_rank_distribution.csv not found. Using exact fallback percentages.")
 
     bars = ax.bar(labels, pcts, color=PURPLE, alpha=0.85, width=0.55)
     ax.set_ylabel('Queries (%)')
@@ -211,8 +217,10 @@ def plot_panel_d_partial(ax, project_root: Path):
                     order = valid_bins
                     recall1_vals = [df_grp.loc[b, 'hit_top_1'] for b in order]
                     overlap10_vals = [df_grp.loc[b, 'overlap_10'] for b in order]
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"WARNING: Failed to load overall_benchmark_metrics.csv ({e}). Using fallback values.")
+    else:
+        print("WARNING: overall_benchmark_metrics.csv not found. Using fallback values.")
 
     x_pos = np.arange(len(order))
     ax.plot(x_pos, recall1_vals, marker='o', lw=2.5, markersize=8, color=TERRACOTTA, label='Recall@1 (%)')
@@ -289,18 +297,21 @@ def plot_panel_e_cross_modal(sub_gs, fig, project_root: Path):
     if cross_csv.exists():
         try:
             df_c = pd.read_csv(cross_csv)
-            r1col = [c for c in df_c.columns if '1' in c and '10' not in c][0]
-            r5col = [c for c in df_c.columns if '5' in c][0]
-            r10col = [c for c in df_c.columns if '10' in c][0]
-            r20col = [c for c in df_c.columns if '20' in c][0]
+            # Prioritize exact column matching before pattern fallback
+            r1col = 'recall@1' if 'recall@1' in df_c.columns else [c for c in df_c.columns if '1' in c and '10' not in c][0]
+            r5col = 'overlap@5' if 'overlap@5' in df_c.columns else ('recall@5' if 'recall@5' in df_c.columns else [c for c in df_c.columns if '5' in c][0])
+            r10col = 'overlap@10' if 'overlap@10' in df_c.columns else ('recall@10' if 'recall@10' in df_c.columns else [c for c in df_c.columns if '10' in c][0])
+            r20col = 'overlap@20' if 'overlap@20' in df_c.columns else ('recall@20' if 'recall@20' in df_c.columns else [c for c in df_c.columns if '20' in c][0])
             top1_recall = list(df_c[r1col] * 100 if df_c[r1col].max() <= 1.0 else df_c[r1col])
             top5_recall = list(df_c[r5col] * 100 if df_c[r5col].max() <= 1.0 else df_c[r5col])
             top10_recall = list(df_c[r10col] * 100 if df_c[r10col].max() <= 1.0 else df_c[r10col])
             top20_recall = list(df_c[r20col] * 100 if df_c[r20col].max() <= 1.0 else df_c[r20col])
-            tcol = [c for c in df_c.columns if 'task' in c.lower() or 'direction' in c.lower()][0]
+            tcol = 'direction' if 'direction' in df_c.columns else [c for c in df_c.columns if 'task' in c.lower() or 'direction' in c.lower()][0]
             modal_tasks = list(df_c[tcol])
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"WARNING: Failed to load cross_modal_search/benchmark_summary.csv ({e}). Using fallback values.")
+    else:
+        print("WARNING: cross_modal_search/benchmark_summary.csv not found. Using fallback values.")
 
     x = np.arange(len(modal_tasks))
     w = 0.15

@@ -1,11 +1,17 @@
 import scanpy as sc
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import sys
 import os
+from pathlib import Path
 
-sys.path.append(os.path.join("d:/SPINDLE/spindle_dev", "src"))
+# Resolve the src directory relative to this file's location so the script works
+# on any machine regardless of where the project is checked out.
+_project_root = Path(__file__).resolve().parent.parent
+sys.path.append(str(_project_root / "src"))
 from spindle_dev.preprocessing import build_quadtree_tiles
 
 def main():
@@ -47,7 +53,7 @@ def main():
         x0, y0, x1, y1 = t.bbox
         rect = patches.Rectangle((x0, y0), x1 - x0, y1 - y0, linewidth=1, edgecolor='red', facecolor='none')
         ax.add_patch(rect)
-    ax.set_title(f"Visium ({len(tiles_vi)} tiles with >=0 points)")
+    ax.set_title(f"Visium ({len(tiles_vi)} tiles with >=10 points)")
     ax.set_aspect('equal')
 
     plt.tight_layout()

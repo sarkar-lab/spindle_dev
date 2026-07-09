@@ -458,7 +458,8 @@ def query_arbitrary_interval(
         scores: Dict[int, float] = {}
         for dist, members in piece_results:
             for m in members:
-                scores[m] = dist
+                if m not in scores or dist < scores[m]:
+                    scores[m] = dist
         piece_scores.append(scores)
 
     # intersect: keep only tiles present in every piece
@@ -518,7 +519,8 @@ def search_multiblock_intervals(interval_index_obj, cluster_id, block_intervals_
             scores = {}
             for dist, members in piece_results:
                 for m in members:
-                    scores[m] = dist
+                    if m not in scores or dist < scores[m]:
+                        scores[m] = dist
             piece_scores.append(scores)
             piece_scales.append(scale)
             total_valid_len += p
