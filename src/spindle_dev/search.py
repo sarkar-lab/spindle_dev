@@ -258,6 +258,8 @@ def search_index(
         logger.info("No query blocks align to index layers; returning no search results.")
         return [SearchResults(paths=[])]
 
+    query_blocks_log = [log_spd(qb) for qb in query_blocks]
+
     first_block = used_blocks[0]
     first_layer_nodes = block_to_node_indices.get(first_block, [])
     if not first_layer_nodes:
@@ -377,7 +379,7 @@ def search_index(
             # dist = log_euclidean_distance(query_block_next, child.metadata.mean, normalize=True)
             # this is log distance
             p = child.metadata.mean.shape[0]
-            L_block = log_spd(query_block_next)
+            L_block = query_blocks_log[next_layer_idx]
             diff = L_block - child.metadata.mean
             dist = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
             child_dists.append((child_idx, dist, new_valid_spds))
@@ -443,7 +445,7 @@ def search_index(
         node = nodes[node_idx]
         # dist = log_euclidean_distance(query_block_0, node.metadata.mean, normalize=True)
         p = node.metadata.mean.shape[0]
-        L_block = log_spd(query_block_0)
+        L_block = query_blocks_log[0]
         diff = L_block - node.metadata.mean
         dist = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
         start_candidates.append((node_idx, dist))
@@ -508,19 +510,6 @@ def search_index(
         logger.info("Search complete: found %d hits within budget %.4f", len(paths_sorted), budget)
     if config.max_results is not None:
         paths_sorted = paths_sorted[: config.max_results]
-
-    # Flatten members from all kept leaves, preserving path order.
-    # hits: List[int] = []
-    # seen: set[int] = set()
-    # for p in paths_sorted:
-    #     # Leaf node is the last node in the path.
-    #     leaf_global_id = p.node_path[-1]
-    #     leaf_node = nodes[leaf_global_id]
-    #     for spd_id, _ in leaf_node.metadata.members:
-    #         sid = int(spd_id)
-    #         if sid not in seen:
-    #             seen.add(sid)
-    #             hits.append(sid)
 
     return SearchResults(paths=paths_sorted)
 
