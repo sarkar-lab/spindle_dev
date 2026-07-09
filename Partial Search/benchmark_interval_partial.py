@@ -22,6 +22,11 @@ import spindle_dev.search as search
 import data_helper  # type: ignore
 import spindle_dev.interval_index as interval_index
 
+# Folder (relative to project_root/results) where index_datasets.py saves its output.
+# Keeping this as a named constant avoids the magic string being silently out of sync
+# if the output directory is ever renamed.
+INDEXED_RESULTS_SUBDIR = "split_test_indexed"
+
 
 
 
@@ -61,8 +66,8 @@ def main():
         print(f"STARTING BENCHMARK FOR {dataset_name.upper()}")
         print(f"{'='*60}")
         
-        indexed_file = project_root / "results" / "split_test_indexed" / f"{dataset_name}_spindle_index.pkl"
-        covs_file = project_root / "results" / "split_test_indexed" / f"{dataset_name}_raw_covariances.pkl"
+        indexed_file = project_root / "results" / INDEXED_RESULTS_SUBDIR / f"{dataset_name}_spindle_index.pkl"
+        covs_file = project_root / "results" / INDEXED_RESULTS_SUBDIR / f"{dataset_name}_raw_covariances.pkl"
         if indexed_file.exists() and covs_file.exists():
             print(f"Loading pre-indexed Spindle data from {indexed_file.name} and {covs_file.name}...")
             with open(indexed_file, 'rb') as f:
@@ -72,7 +77,18 @@ def main():
             data = saved_data['data']
             config = saved_data['config']
             test_tile_covs = covs_data['test_tile_covs']
-            data.spd_matrices = [t if not isinstance(t, dict) else t.get('cov', t) for t in covs_data['train_tile_covs']]
+            # Restore raw covariance matrices that were stripped before saving (index_datasets.py
+            # clears data.spd_matrices to reduce file size).  train_tile_covs is ordered
+            # identically to the local train-tile list built during ProcessedData construction,
+            # which is the same ordering as data.spd_ids.  The assertion below guards against any
+            # future ordering drift between the two files.
+            restored = [t if not isinstance(t, dict) else t.get('cov', t) for t in covs_data['train_tile_covs']]
+            data.spd_matrices = restored
+            assert len(data.spd_matrices) == len(data.spd_ids), (
+                f"SPD matrix/ID count mismatch after restoration for {dataset_name}: "
+                f"{len(data.spd_matrices)} matrices vs {len(data.spd_ids)} IDs. "
+                "The index file and covariance file may be from different runs."
+            )
         else:
             print("Preparing the Index Base Dataset...")
             adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = data_helper.load_and_split_data(adata_path)
@@ -82,7 +98,7 @@ def main():
             
             dag_dict, config = data_helper.configure_and_build_dag(data)
         
-        ivl_file = project_root / "results" / "split_test_indexed" / f"{dataset_name}_interval_index.pkl"
+        ivl_file = project_root / "results" / INDEXED_RESULTS_SUBDIR / f"{dataset_name}_interval_index.pkl"
         if ivl_file.exists():
             print(f"Loading pre-built Dyadic Interval Index from {ivl_file.name}...")
             with open(ivl_file, 'rb') as f:
@@ -108,10 +124,15 @@ def main():
             cluster_id = int(cluster_id)
             block_runs = data.block_dict.get(cluster_id, [])
             if len(block_runs) > 0:
+                # Rotate block_index round-robin across available blocks so the benchmark
+                # samples a representative spread of block sizes / gene orderings rather
+                # than always exercising block 0 only.
+                block_index = len(queries) % len(block_runs)
                 queries.append({
                     'id': j,
                     'q_spd': q_spd,
-                    'cluster_id': cluster_id
+                    'cluster_id': cluster_id,
+                    'block_index': block_index,
                 })
                 
         print(f"-> Secured {len(queries)} valid test queries.")

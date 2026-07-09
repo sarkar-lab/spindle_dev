@@ -4,6 +4,8 @@ from pathlib import Path
 import random
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -19,18 +21,7 @@ if str(current_dir) not in sys.path:
 import spindle_dev.search as search
 import data_helper  # type: ignore
 import spindle_dev.interval_index as interval_index
-
-def log_spd(M, eps=1e-6):
-    M = 0.5 * (M + M.T)
-    w, V = np.linalg.eigh(M)
-    w = np.maximum(w, eps)
-    return (V * np.log(w)) @ V.T
-
-def exp_spd(M):
-    M = 0.5 * (M + M.T)
-    w, V = np.linalg.eigh(M)
-    w = np.clip(w, -20, 20)
-    return (V * np.exp(w)) @ V.T
+from spindle_dev.utils import log_spd, exp_spd
 
 def find_best_matching_block(target_genes, genes_work, data):
     """

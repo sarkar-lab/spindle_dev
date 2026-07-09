@@ -6,25 +6,21 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import scanpy as sc
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+_this_dir = Path(__file__).resolve().parent
+sys.path.append(str(_this_dir.parent / "src"))
 from spindle_dev.preprocessing import prepare_multiple_adatas
+# IndexConfig is imported from spindle_dev.index (not spindle_dev.typing) — this is the
+# dataclass used by index_spds() and must match the one stored in the saved index files.
 from spindle_dev.index import ProcessedData, index_spds, IndexConfig
 from spindle_dev.search import search_index, SearchConfig, assign_clusters_to_new_spds
 
-def log_spd(M, eps=1e-6):
-    M = 0.5 * (M + M.T)
-    w, V = np.linalg.eigh(M)
-    w = np.maximum(w, eps)
-    return (V * np.log(w)) @ V.T
-
-def exp_spd(M):
-    M = 0.5 * (M + M.T)
-    w, V = np.linalg.eigh(M)
-    w = np.clip(w, -20, 20)
-    return (V * np.exp(w)) @ V.T
+# Shared SPD math utilities — import from the existing spindle_dev.utils module.
+from spindle_dev.utils import log_spd, exp_spd
 
 def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, data, direction="x2v"):
     import csv
@@ -65,25 +61,35 @@ def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, trai
         
         best_exact_idx = distances[0][1] if len(distances) > 0 else -1
         
-        spindle_best_dist = float('inf')
-        spindle_best_rank = -1
-        best_spindle_idx = -1
-        
+        # Stage 2: Spindle performs exact re-ranking on retrieved candidate tiles
+        spindle_reranked = []
         for match_global_idx in all_matched_train_ids[i]:
-            local_match_idx = match_global_idx
-            match_rank = -1
-            match_dist = -1
+            t_spd = train_covs[match_global_idx]
+            t_perm = t_spd[np.ix_(perm, perm)]
+            cand_dist = 0.0
+            for b_idx, (start, end) in enumerate(block_runs):
+                t_block = t_perm[start:end, start:end]
+                t_block_log = log_spd(t_block)
+                diff = q_corr_blocks_log[b_idx] - t_block_log
+                p_block = t_block.shape[0]
+                cand_dist += np.linalg.norm(diff, ord='fro') / np.sqrt(p_block)
+            spindle_reranked.append((cand_dist, match_global_idx))
+            
+        spindle_reranked.sort(key=lambda x: x[0])
+        
+        spindle_best_dist = spindle_reranked[0][0] if spindle_reranked else float('inf')
+        best_spindle_idx = spindle_reranked[0][1] if spindle_reranked else -1
+        spindle_best_rank = -1
+        if best_spindle_idx != -1:
             for r, (d, idx) in enumerate(distances):
-                if idx == local_match_idx:
-                    match_rank = r + 1
-                    match_dist = d
+                if idx == best_spindle_idx:
+                    spindle_best_rank = r + 1
                     break
-            if match_dist != -1 and match_dist < spindle_best_dist:
-                spindle_best_dist = match_dist
-                spindle_best_rank = match_rank
-                best_spindle_idx = local_match_idx
+            if spindle_best_rank == -1:
+                # If best_spindle_idx was outside niche_train_indices, check exact rank across all distances or assign end of niche rank
+                spindle_best_rank = len(distances) + 1
                 
-        if spindle_best_rank == -1:
+        if not spindle_reranked:
             print(f"Query {i:3d} (Niche {target_niche}): Exact closest dist = {closest_dist:.3f} | Spindle found NOTHING.")
             exact_dists.append(closest_dist)
             spindle_dists.append(float('inf'))
@@ -101,10 +107,8 @@ def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, trai
             'spindle_rank': spindle_best_rank
         })
         
-        dist_dict = {idx: d for d, idx in distances}
         bf_ranking = [idx for d, idx in distances]
-        spindle_candidates = set(all_matched_train_ids[i])
-        spindle_ranking = sorted(list(spindle_candidates), key=lambda idx: dist_dict.get(idx, float('inf')))
+        spindle_ranking = [idx for _, idx in spindle_reranked]
         
         recall_1 = 1 if spindle_best_rank == 1 else 0
         
@@ -131,8 +135,12 @@ def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, trai
             'overlap@20': round(overlap_20, 4)
         })
             
-    os.makedirs("results/cross_modal_search", exist_ok=True)
-    csv_path = f"results/cross_modal_search/{direction}_query_metrics.csv"
+    # Use an absolute path derived from the project root so outputs go to the correct location
+    # regardless of the working directory from which this script is invoked.
+    _project_root = _this_dir.parent
+    _out_dir = _project_root / "results" / "cross_modal_search"
+    _out_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = str(_out_dir / f"{direction}_query_metrics.csv")
     if metrics_records:
         fieldnames = list(metrics_records[0].keys())
         with open(csv_path, 'w', newline='', encoding='utf-8') as f:
@@ -161,7 +169,7 @@ def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, trai
             'overlap@10': round(mean_o10, 4),
             'overlap@20': round(mean_o20, 4)
         }
-        summary_csv_path = "results/cross_modal_search/benchmark_summary.csv"
+        summary_csv_path = str(_out_dir / "benchmark_summary.csv")
         existing_rows = []
         if os.path.exists(summary_csv_path):
             with open(summary_csv_path, 'r', newline='', encoding='utf-8') as f:
@@ -317,6 +325,12 @@ def run_search_pipeline(direction, n_queries, covs_xe, covs_vi, tiles_xe, tiles_
             q_log = log_spd(q_block)
             
             raw_scale = cluster_means[cluster_id]['std_train'][b_idx] / cluster_means[cluster_id]['std_query'][b_idx]
+            # Cap the scale at 1.0 to prevent over-correction: when the index (train) modality
+            # has a larger spread than the query modality we still shrink the gap, but we never
+            # amplify the query variance beyond its natural level.  This is intentionally
+            # conservative — it means x2v (Xenium query, Visium index) benefits more from
+            # correction than v2x when Xenium std is larger, which accounts for part of the
+            # observed recall asymmetry between the two directions.
             scale = min(1.0, raw_scale)
             
             L_corr = (q_log - cluster_means[cluster_id]['query'][b_idx]) * scale + cluster_means[cluster_id]['train'][b_idx]

@@ -53,3 +53,53 @@ def get_logger(name: str = "spindle_dev") -> logging.Logger:
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
     return logger
+
+
+# ---------------------------------------------------------------------------
+# SPD manifold math helpers
+# ---------------------------------------------------------------------------
+
+def log_spd(M: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    """Matrix logarithm of a Symmetric Positive Definite (SPD) matrix.
+
+    Uses eigendecomposition: log(M) = V diag(log(w)) V^T, with eigenvalues
+    clipped to *eps* to guarantee numerical stability.
+
+    Parameters
+    ----------
+    M : np.ndarray, shape (p, p)
+        A symmetric positive (semi-)definite matrix.
+    eps : float
+        Minimum eigenvalue floor.
+
+    Returns
+    -------
+    np.ndarray, shape (p, p)
+        The matrix logarithm of M.
+    """
+    M = 0.5 * (M + M.T)          # enforce exact symmetry
+    w, V = np.linalg.eigh(M)
+    w = np.maximum(w, eps)
+    return (V * np.log(w)) @ V.T
+
+
+def exp_spd(M: np.ndarray) -> np.ndarray:
+    """Matrix exponential of a symmetric matrix (maps back to SPD manifold).
+
+    Uses eigendecomposition: exp(M) = V diag(exp(w)) V^T, with exponent
+    values clipped to [-20, 20] to prevent overflow.
+
+    Parameters
+    ----------
+    M : np.ndarray, shape (p, p)
+        A symmetric matrix (e.g. the output of :func:`log_spd`).
+
+    Returns
+    -------
+    np.ndarray, shape (p, p)
+        The matrix exponential of M (an SPD matrix).
+    """
+    M = 0.5 * (M + M.T)          # enforce exact symmetry
+    w, V = np.linalg.eigh(M)
+    w = np.clip(w, -20, 20)
+    return (V * np.exp(w)) @ V.T

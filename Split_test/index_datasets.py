@@ -129,14 +129,17 @@ def main():
     summary_out_dir = project_root / "results" / "split_test"
     summary_out_dir.mkdir(exist_ok=True, parents=True)
 
-    # Fallback/known values for dataset display names and benchmark timings if skipping already indexed files
+    # Fallback/known values for dataset display names and benchmark timings if skipping already
+    # indexed files.  Cell counts are post-filter (after removing 'Unlabeled' clusters), matching
+    # the actual adata.n_obs values stored inside the index files and reported in
+    # results/split_test/index_scalability_summary.csv.
     ds_display_map = {
-        'skin_melanoma': ('Skin', 87499, 33.47, 20.61),
-        'kidney_nondiseased': ('Kidney', 97560, 28.63, 20.34),
-        'breast_cancer': ('Breast', 167780, 50.21, 16.14),
-        'lung_cancer': ('Lung', 162254, 54.50, 22.25),
-        'lymph_node': ('Lymph Node', 377985, 80.97, 24.12),
-        'pancreatic_cancer': ('Pancreas', 190965, 120.90, 32.67),
+        'skin_melanoma': ('Skin', 87499, 26.89, 19.41),
+        'kidney_nondiseased': ('Kidney', 97560, 30.27, 24.21),
+        'breast_cancer': ('Breast', 159226, 90.70, 23.25),
+        'lung_cancer': ('Lung', 162254, 58.41, 20.25),
+        'lymph_node': ('Lymph Node', 377985, 140.90, 22.83),
+        'pancreatic_cancer': ('Pancreas', 190965, 198.37, 30.86),
     }
 
     scalability_records = []

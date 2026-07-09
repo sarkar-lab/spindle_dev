@@ -76,6 +76,8 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
 
     print("Step 1/2: Assigning queries to Covariance-Niches using latent space...")
     if query_matrices:
+        # Warmup call: runs one assignment to trigger any JIT / lazy-init paths so
+        # the subsequent timed batch is not penalised by first-call overhead.
         _ = search.assign_clusters_to_new_spds(query_matrices[:1], data)
 
     assign_start = time.perf_counter()
@@ -85,7 +87,7 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
     print(f"Assignment complete in {assign_total_time:.3f}s ({assign_time_ms_per_query:.2f}ms per query)\n")
 
     print("Step 2/2: Performing distance-budgeted search across DAG...")
-    search_start = time.time()
+    search_start = time.perf_counter()  # use perf_counter throughout for consistent precision
     all_matched_train_ids = []
     spindle_search_times = []
 
@@ -132,7 +134,7 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
 
         all_matched_train_ids.append(matched_ids_for_query)
 
-    search_time = time.time() - search_start
+    search_time = time.perf_counter() - search_start
     print("-" * 65)
     print(f"Index Querying Complete! Total time: {search_time:.3f}s ({search_time/len(predicted_clusters):.4f}s per query)")
 
@@ -198,7 +200,11 @@ def evaluate_brute_force_approximation(
         q_perm = q_spd[np.ix_(perm, perm)]
         q_blocks_log = [log_spd(q_perm[s:e, s:e]) for s, e in block_runs]
 
-        # Measure true exact brute-force search time (including log_spd on raw candidate tiles)
+        # Measure true exact brute-force search time (including log_spd on raw candidate tiles).
+        # We time a sample of up to 100 tiles from the *same niche* and extrapolate to the full
+        # niche size.  Using the total train-set size (across all niches) would over-inflate the
+        # BF baseline because a real brute-force search would also be restricted to the predicted
+        # niche after cluster assignment.
         bf_start = time.perf_counter()
         raw_dists = []
         sample_indices = niche_train_indices[:min(100, len(niche_train_indices))]
@@ -212,8 +218,8 @@ def evaluate_brute_force_approximation(
             raw_dists.append(d_val)
         bf_time_sample_ms = (time.perf_counter() - bf_start) * 1000
 
-        # Scale sample exact brute force time across full database of N tiles without index
-        bf_time_ms = bf_time_sample_ms * (len(train_tile_covs) / max(1, len(raw_dists)))
+        # Scale sample time to full niche size (not full train set — see comment above).
+        bf_time_ms = bf_time_sample_ms * (len(niche_train_indices) / max(1, len(raw_dists)))
 
         # For fast ranking evaluation, use pre-cached logs within target niche
         distances = []
@@ -288,6 +294,9 @@ def evaluate_brute_force_approximation(
             'recall@1': recall_1
         }
 
+        # overlap@K: fraction of the true top-K (within the predicted niche) that appear in
+        # Spindle's re-ranked top-K candidates.  Both numerator and denominator are intra-niche;
+        # tiles assigned to other niches by the cluster step are not evaluated here.
         for K in [5, 10, 20, 30, 50]:
             true_top_k = set(true_order[:K])
             stage2_top_k = set(stage2_reranked[:K])

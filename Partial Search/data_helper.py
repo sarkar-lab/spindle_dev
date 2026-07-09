@@ -150,7 +150,8 @@ def search_all_clusters_spindle(interval_index_obj, data, perm_ivl, q_spd, top_k
                     scores = {}
                     for dist, members in piece_results:
                         for m in members:
-                            scores[m] = dist
+                            if m not in scores or dist < scores[m]:
+                                scores[m] = dist
                     piece_scores.append(scores)
                     piece_scales.append(scale)
                     
