@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 import random
 import numpy as np
+import scanpy as sc
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
@@ -100,16 +101,15 @@ def construct_partial_query(cluster_id, overlapping_indices, data, num_genes):
     
     return q_spd, mean_spd_sub
 
-def compute_tile_enrichment(top_k_results, adata, data, target_clusters):
+def compute_tile_enrichment(top_k_results, adata, data):
     coords = adata.obsm["spatial"]
-    clusters = adata.obs["Cluster"].values
-    bg_mask = np.isin(clusters, target_clusters)
-    bg_pct = bg_mask.mean() * 100
+    pathway_scores = adata.obs["pathway_score"].values
+    bg_score = np.mean(pathway_scores)
 
     def get_stats_for_k(k_val):
         retrieved = top_k_results[:k_val]
         total_cells = 0
-        target_cells = 0
+        sum_scores = 0.0
         for dist, tids in retrieved:
             for tid in tids:
                 if tid in data.spd_ids:
@@ -117,59 +117,45 @@ def compute_tile_enrichment(top_k_results, adata, data, target_clusters):
                     tile = data.metadata["tiles"][local_idx]
                     x0, y0, x1, y1 = tile.bbox
                     mask = (coords[:, 0] >= x0) & (coords[:, 0] <= x1) & (coords[:, 1] >= y0) & (coords[:, 1] <= y1)
-                    spot_clusters = clusters[mask]
-                    total_cells += len(spot_clusters)
-                    target_cells += np.isin(spot_clusters, target_clusters).sum()
-        pct = (target_cells / total_cells * 100) if total_cells > 0 else 0.0
-        lift = (pct / bg_pct) if bg_pct > 0 else 0.0
-        return pct, lift, total_cells, target_cells
+                    spot_scores = pathway_scores[mask]
+                    total_cells += len(spot_scores)
+                    sum_scores += np.sum(spot_scores)
+        score = (sum_scores / total_cells) if total_cells > 0 else 0.0
+        return score, total_cells
 
-    top5_pct, top5_lift, total5, target5 = get_stats_for_k(5)
-    top10_pct, top10_lift, total10, target10 = get_stats_for_k(10)
-    top20_pct, top20_lift, total20, target20 = get_stats_for_k(20)
-    top50_pct, top50_lift, total50, target50 = get_stats_for_k(50)
+    top5_score, total5 = get_stats_for_k(5)
+    top10_score, total10 = get_stats_for_k(10)
+    top20_score, total20 = get_stats_for_k(20)
+    top50_score, total50 = get_stats_for_k(50)
+    top200_score, total200 = get_stats_for_k(200)
 
     return {
-        "bg_pct": bg_pct,
-        "top5_pct": top5_pct,
-        "top5_lift": top5_lift,
-        "top10_pct": top10_pct,
-        "top10_lift": top10_lift,
-        "top20_pct": top20_pct,
-        "top20_lift": top20_lift,
-        "top50_pct": top50_pct,
-        "top50_lift": top50_lift,
-        "total10_cells": total10,
-        "target10_cells": target10
+        "bg_score": bg_score,
+        "top5_score": top5_score,
+        "top10_score": top10_score,
+        "top20_score": top20_score,
+        "top50_score": top50_score,
+        "top200_score": top200_score,
+        "total10_cells": total10
     }
 
 def plot_biological_module_results(mod_name, mod_info, top_k_results, enrichment_stats, adata, data, overlapping_indices, genes_work, mean_spd_sub, dataset_name):
-    out_dir = project_root / "results" / "gene_list_search"
+    out_dir = project_root / "results" / "gene_list_search" / dataset_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     coords = adata.obsm["spatial"]
-    clusters = adata.obs["Cluster"].values
-    is_target = np.isin(clusters, mod_info["target_clusters"])
-
-    np.random.seed(42)
-    bg_idx = np.where(~is_target)[0]
-    if len(bg_idx) > 15000:
-        bg_sub = np.random.choice(bg_idx, size=15000, replace=False)
-    else:
-        bg_sub = bg_idx
-    target_idx = np.where(is_target)[0]
-    selected_idx = np.concatenate([bg_sub, target_idx])
+    pathway_scores = adata.obs["pathway_score"].values
 
     cell_records = pd.DataFrame({
-        'x': coords[selected_idx, 0],
-        'y': coords[selected_idx, 1],
-        'is_target': is_target[selected_idx]
+        'x': coords[:, 0],
+        'y': coords[:, 1],
+        'pathway_score': pathway_scores
     })
     cells_csv_path = out_dir / f"{mod_name}_spatial_cells.csv"
     cell_records.to_csv(cells_csv_path, index=False)
 
     match_records = []
-    n_plot = min(5, len(top_k_results))
+    n_plot = len(top_k_results)
     for i in range(n_plot):
         dist, tids = top_k_results[i]
         for tid in tids:
@@ -194,8 +180,8 @@ def main():
     np.random.seed(42)
     random.seed(42)
     
-    dataset_name = "breast_cancer"
-    adata_path = project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad"
+    dataset_name = "lymph_node"
+    adata_path = project_root / "dataset" / "xenium_human_lymph_node.h5ad"
     
     if not adata_path.exists():
         print(f"Dataset not found at {adata_path}. Adjust path to test.")
@@ -256,7 +242,7 @@ def main():
     print("BENCHMARKING BIOLOGICALLY MEANINGFUL GENE LISTS (SPINDLE PARTIAL SEARCH)")
     print("="*70)
     
-    search_budget = 50
+    search_budget = 500
     
     for mod_name, mod_info in BIOLOGICAL_MODULES.items():
         print(f"\n--- Testing Module: {mod_name} ({mod_info['description']}) ---")
@@ -281,10 +267,13 @@ def main():
             print(f"No matching spatial patches found for {mod_name}.")
             continue
             
-        # Step 4: Compute biological enrichment statistics
-        enrichment_stats = compute_tile_enrichment(top_k_results, adata, data, mod_info["target_clusters"])
+        # Calculate pathway score
+        sc.tl.score_genes(adata, gene_list=target_genes, score_name='pathway_score', use_raw=False)
         
-        print(f"Top-10 Target Cell Density: {enrichment_stats['top10_pct']:.2f}% vs Background: {enrichment_stats['bg_pct']:.2f}% | Enrichment Lift: {enrichment_stats['top10_lift']:.2f}x")
+        # Step 4: Compute biological enrichment statistics
+        enrichment_stats = compute_tile_enrichment(top_k_results, adata, data)
+        
+        print(f"Top-10 Mean Pathway Score: {enrichment_stats['top10_score']:.3f} vs Background: {enrichment_stats['bg_score']:.3f}")
         
         # Step 5: Plot individual validation figure
         plot_biological_module_results(mod_name, mod_info, top_k_results, enrichment_stats, adata, data, overlapping_indices, genes_work, mean_spd_sub, dataset_name)
@@ -294,15 +283,12 @@ def main():
             "description": mod_info["description"],
             "color": mod_info["color"],
             "overlap_genes": len(overlapping_indices),
-            "bg_pct": enrichment_stats["bg_pct"],
-            "top5_pct": enrichment_stats["top5_pct"],
-            "top5_lift": enrichment_stats["top5_lift"],
-            "top10_pct": enrichment_stats["top10_pct"],
-            "top10_lift": enrichment_stats["top10_lift"],
-            "top20_pct": enrichment_stats["top20_pct"],
-            "top20_lift": enrichment_stats["top20_lift"],
-            "top50_pct": enrichment_stats["top50_pct"],
-            "top50_lift": enrichment_stats["top50_lift"]
+            "bg_score": enrichment_stats["bg_score"],
+            "top5_score": enrichment_stats["top5_score"],
+            "top10_score": enrichment_stats["top10_score"],
+            "top20_score": enrichment_stats["top20_score"],
+            "top50_score": enrichment_stats["top50_score"],
+            "top200_score": enrichment_stats["top200_score"]
         }
         
     if benchmark_summary:

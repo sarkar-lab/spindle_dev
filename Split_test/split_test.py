@@ -275,7 +275,13 @@ def evaluate_brute_force_approximation(
             spindle_dists.append(spindle_best_dist)
             spindle_ranks.append(spindle_best_rank)
 
-        recall_1 = 1 if spindle_best_rank == 1 else 0
+        # Tie-aware recall@1: counts as a hit if Spindle's top result matches the true
+        # minimum distance within floating-point tolerance, even if another tile shares
+        # that exact distance (ties). For full-tile queries ties are extremely rare, so
+        # this is equivalent to the strict rank==1 check in practice, but is consistent
+        # with the partial search hit_in_k() definition which uses the same logic.
+        recall_1 = 1 if (stage2_reranked and
+            abs(dist_dict[stage2_reranked[0]] - closest_dist) < 1e-5) else 0
         dag_time_ms = spindle_search_times[i] * 1000 if i < len(spindle_search_times) else 0.0
         spindle_total_ms = assign_time_ms_per_query + dag_time_ms + rerank_time_ms
 

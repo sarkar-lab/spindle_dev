@@ -32,7 +32,7 @@ INDEXED_RESULTS_SUBDIR = "split_test_indexed"
 
 def main():
     parser = argparse.ArgumentParser(description="Spindle Interval Index Partial Search Benchmark")
-    parser.add_argument("--top-k", type=int, default=20, help="Candidate pool size retrieved from interval index")
+    parser.add_argument("--top-k", type=int, default=50, help="Candidate pool size retrieved from interval index")
     parser.add_argument("--num-queries", type=int, default=5, help="Number of query tiles per dataset (5 tiles * 2 cases * 5 iterations = 50 total queries)")
     parser.add_argument("--datasets", nargs="+", help="Specific datasets to benchmark")
     args = parser.parse_args()

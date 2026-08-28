@@ -54,7 +54,7 @@ def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_siz
     return data, out_dict
 
 
-def load_and_split_data(adata_path, test_ratio=0.02, seed=42, n_subsample=None):
+def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_subsample=None):
     print(f"Reading data from {adata_path}...")
     adata = sc.read_h5ad(adata_path)
     if 'Cluster' in adata.obs.columns:
@@ -115,12 +115,12 @@ def main():
     project_root = current_dir.parent
     
     datasets = {
-        "breast_cancer": project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad",
-        "kidney_nondiseased": project_root.parent / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
-        "lymph_node": project_root.parent / "dataset" / "xenium_human_lymph_node.h5ad",
-        "lung_cancer": project_root.parent / "dataset" / "xenium_human_lung_cancer.h5ad",
-        "skin_melanoma": project_root.parent / "dataset" / "xenium_human_skin_melanoma.h5ad",
-        "pancreatic_cancer": project_root.parent / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
+        "breast_cancer": project_root/ "dataset" / "xenium_human_breast_cancer.h5ad",
+        "kidney_nondiseased": project_root / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
+        "lymph_node": project_root / "dataset" / "xenium_human_lymph_node.h5ad",
+        "lung_cancer": project_root / "dataset" / "xenium_human_lung_cancer.h5ad",
+        "skin_melanoma": project_root / "dataset" / "xenium_human_skin_melanoma.h5ad",
+        "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
     }
 
     base_results_dir = project_root / "results" / "split_test_indexed"
