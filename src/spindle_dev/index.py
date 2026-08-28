@@ -1534,12 +1534,13 @@ def index_spds(data: ProcessedData, config: IndexConfig):
                         representative_mean=clust["actual_log_mean"],  # type: ignore[arg-type]
                         radius=clust["radius"]
                     )
-                metadata = BlockClusterMetadata(
-                    members=metadata_members,
-                    mean=clust["log_mean"],  # type: ignore[arg-type]
-                    representative_mean=clust["log_mean"],  # type: ignore[arg-type]
-                    radius=clust["radius"]
-                )
+                else:
+                    metadata = BlockClusterMetadata(
+                        members=metadata_members,
+                        mean=clust["log_mean"],  # type: ignore[arg-type]
+                        representative_mean=clust["log_mean"],  # type: ignore[arg-type]
+                        radius=clust["radius"]
+                    )
                 children_set = set()
                 for spd_id in member_spd_ids:
                     if spd_id in spd_to_next_clusters:
