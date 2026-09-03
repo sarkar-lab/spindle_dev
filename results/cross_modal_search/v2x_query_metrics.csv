@@ -1,4 +1,4 @@
-query_idx,target_niche,exact_best_dist,spindle_best_dist,spindle_best_rank,recall@1,overlap@5,overlap@10,overlap@20
+query_idx,target_niche,exact_best_dist,spindle_best_dist,spindle_best_rank,recall_at_1,overlap_at_5,overlap_at_10,overlap_at_20
 0,2,23.7999,23.7999,1,1,1.0,1.0,1.0
 1,0,43.33,nan,-1,0,0.0,0.0,0.0
 2,0,29.6483,29.6483,1,1,1.0,1.0,1.0

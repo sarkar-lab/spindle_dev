@@ -30,7 +30,7 @@ ENV/
 .env/
 .env.*
 
-# Jupyter notebooks
+# Jupyter notebooks checkpoints
 .ipynb_checkpoints/
 
 # VS Code
@@ -54,15 +54,19 @@ Thumbs.db
 
 # Documentation build artifacts
 docs/_build/
-docs/*.html
-docs/objects.inv
-docs/searchindex.js
-# Logs
+
+# Logs and temporaries
 *.log
-ISMB_notebook/logs/
-ISMB_notebook/slurm_jobs/logs/
 *.tmp
 *.bak
 
-#index
-results/split_test_indexed
+# Large data files (store externally, not in the repo)
+dataset/
+*.h5ad
+paper/
+
+# Benchmark pre-built index files (large, re-generable)
+results/holdout_validation_indexed/*
+
+# HPC-specific job scripts (not part of paper code)
+hpc/
