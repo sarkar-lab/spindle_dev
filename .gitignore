@@ -66,7 +66,7 @@ dataset/
 paper/
 
 # Benchmark pre-built index files (large, re-generable)
-results/holdout_validation_indexed/*
+*.pkl
 
 # HPC-specific job scripts (not part of paper code)
 hpc/
