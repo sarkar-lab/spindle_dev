@@ -34,23 +34,23 @@ INDEXED_RESULTS_SUBDIR = "holdout_validation_indexed"
 def main():
     parser = argparse.ArgumentParser(description="Spindle Interval Index Partial Search Benchmark")
     parser.add_argument("--top-k", type=int, default=50, help="Candidate pool size retrieved from interval index")
-    parser.add_argument("--num-queries", type=int, default=5, help="Number of query tiles per dataset (5 tiles * 2 cases * 5 iterations = 50 total queries)")
-    parser.add_argument("--datasets", nargs="+", help="Specific datasets to benchmark")
+    parser.add_argument("--num-queries", type=int, default=5, help="Number of query tiles per dataset")
+    parser.add_argument("--dataset-paths", nargs="*", default=None, help="Paths to specific datasets to benchmark")
     args = parser.parse_args()
 
     np.random.seed(42)
     random.seed(42)
-    datasets = {
-        "breast_cancer": project_root.parent / "dataset" / "xenium_human_breast_cancer.h5ad",
-        "kidney_nondiseased": project_root.parent / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
-        "lymph_node": project_root.parent / "dataset" / "xenium_human_lymph_node.h5ad",
-        "lung_cancer": project_root.parent / "dataset" / "xenium_human_lung_cancer.h5ad",
-        "skin_melanoma": project_root.parent / "dataset" / "xenium_human_skin_melanoma.h5ad",
-        "pancreatic_cancer": project_root.parent / "dataset" / "xenium_human_pancreatic_cancer.h5ad",
-    }
-    
-    if args.datasets:
-        datasets = {k: v for k, v in datasets.items() if any(d in k for d in args.datasets)}
+    if args.dataset_paths:
+        datasets = {Path(p).stem: Path(p) for p in args.dataset_paths}
+    else:
+        datasets = {
+            "breast_cancer": project_root / "dataset" / "xenium_human_breast_cancer.h5ad",
+            "kidney_nondiseased": project_root / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
+            "lymph_node": project_root / "dataset" / "xenium_human_lymph_node.h5ad",
+            "lung_cancer": project_root / "dataset" / "xenium_human_lung_cancer.h5ad",
+            "skin_melanoma": project_root / "dataset" / "xenium_human_skin_melanoma.h5ad",
+            "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad",
+        }
     
     test_cases = [
         ('Contiguous Random', 'contiguous'),
