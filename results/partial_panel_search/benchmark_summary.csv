@@ -1,7 +1,3 @@
 Dataset,num_queries,mean_spindle_time_ms,mean_brute_force_time_ms,mean_speedup,recall_at_1,overlap_at_5,overlap_at_10,overlap_at_20,overlap_at_50
-breast_cancer,50,15.8031,69.3621,4.39,0.98,0.732,0.728,0.71,0.6168
-kidney_nondiseased,50,6.8317,27.2457,3.99,1.0,0.868,0.84,0.841,0.7596
-lung_cancer,50,13.818,61.2191,4.43,0.98,0.948,0.94,0.914,0.7464
-lymph_node,50,14.7473,79.317,5.38,1.0,0.7,0.712,0.699,0.5844
-pancreatic_cancer,50,14.4025,74.461,5.17,0.94,0.828,0.774,0.687,0.5348
-skin_melanoma,50,9.3602,25.8551,2.76,0.98,0.728,0.756,0.736,0.6812
+xenium_human_breast_cancer,100,21.521,97.353,4.52,0.94,0.81,0.814,0.8015,0.6828
+xenium_human_kidney_nondiseased,100,9.8499,35.2555,3.58,1.0,0.826,0.794,0.803,0.7314

@@ -106,22 +106,9 @@ def configure_and_build_dag(data):
     return dag_dict, config
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Index datasets and save to disk")
-    parser.add_argument('--test', action='store_true', help='Run a quick test on a subset of data (10k spots)')
-    args = parser.parse_args()
-
+def run_indexing_for_datasets(datasets, is_test=False, train_test_ratio=0.05):
     current_dir = Path(__file__).resolve().parent
     project_root = current_dir.parent
-    
-    datasets = {
-        "breast_cancer": project_root/ "dataset" / "xenium_human_breast_cancer.h5ad",
-        "kidney_nondiseased": project_root / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
-        "lymph_node": project_root / "dataset" / "xenium_human_lymph_node.h5ad",
-        "lung_cancer": project_root / "dataset" / "xenium_human_lung_cancer.h5ad",
-        "skin_melanoma": project_root / "dataset" / "xenium_human_skin_melanoma.h5ad",
-        "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
-    }
 
     base_results_dir = project_root / "results" / "holdout_validation_indexed"
     base_results_dir.mkdir(exist_ok=True, parents=True)
@@ -233,9 +220,9 @@ def main():
             print(f"Dataset not found at {adata_path}. Skipping.")
             continue
 
-        n_subsample = 10000 if args.test else None
+        n_subsample = 10000 if is_test else None
         # 1. Load and split data
-        adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path, n_subsample=n_subsample)
+        adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path, test_ratio=train_test_ratio, n_subsample=n_subsample)
         num_cells = adata.n_obs
 
         # 2. Run index & measure time
@@ -308,6 +295,30 @@ def main():
         print(f"\nExported index scalability summary CSV to {csv_scale_path}")
         print(df_scale.to_string(index=False))
 
+
+def main():
+    parser = argparse.ArgumentParser(description="Index datasets and save to disk")
+    parser.add_argument('--test', action='store_true', help='Run a quick test on a subset of data (10k spots)')
+    parser.add_argument('--dataset-paths', nargs='*', default=None, help='Paths to the datasets')
+    parser.add_argument('--train-test-ratio', type=float, default=0.05, help='Train test ratio')
+    args = parser.parse_args()
+
+    current_dir = Path(__file__).resolve().parent
+    project_root = current_dir.parent
+
+    if args.dataset_paths:
+        datasets = {Path(p).stem: Path(p) for p in args.dataset_paths}
+    else:
+        datasets = {
+            "breast_cancer": project_root/ "dataset" / "xenium_human_breast_cancer.h5ad",
+            "kidney_nondiseased": project_root / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
+            "lymph_node": project_root / "dataset" / "xenium_human_lymph_node.h5ad",
+            "lung_cancer": project_root / "dataset" / "xenium_human_lung_cancer.h5ad",
+            "skin_melanoma": project_root / "dataset" / "xenium_human_skin_melanoma.h5ad",
+            "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
+        }
+
+    run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio)
 
 if __name__ == "__main__":
     main()

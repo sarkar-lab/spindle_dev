@@ -1,7 +1,2 @@
 Dataset,Cells,Build Time (s),Index Size (MB)
-Breast,159226,51.67,14.69
-Kidney,97560,18.62,18.47
-Lymph Node,377985,71.51,22.83
-Lung,162254,45.86,19.98
-Skin,87499,25.53,19.41
-Pancreas,190965,88.9,30.86
+xenium_human_breast_cancer,159226,87.15,14.99

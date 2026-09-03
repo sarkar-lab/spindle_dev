@@ -24,6 +24,7 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 import spindle_dev.search as search
+import index_datasets   # type: ignore
 
 
 # =====================================================================
@@ -384,7 +385,8 @@ def main():
     parser.add_argument('--test', action='store_true', help='Run quick test (arg compat)')
     parser.add_argument('--top-c', type=int, default=400, help='Stage 1 candidate pool retrieval cap for Stage 2 re-ranking')
     parser.add_argument('--budget-mult', type=float, default=1.0, help='Distance budget multiplier for DAG search')
-    parser.add_argument('--datasets', nargs='*', default=None, help='Optional list of dataset keywords to execute in specific order (e.g. kidney lung breast)')
+    parser.add_argument('--dataset-paths', nargs='*', default=None, help='Paths to the datasets')
+    parser.add_argument('--train-test-ratio', type=float, default=0.05, help='Train test ratio')
     args = parser.parse_args()
 
     current_dir = Path(__file__).resolve().parent
@@ -393,28 +395,31 @@ def main():
     base_results_dir = project_root / "results" / "holdout_validation"
     base_results_dir.mkdir(exist_ok=True, parents=True)
 
-    if not base_indexed_dir.exists():
-        print(f"Directory {base_indexed_dir} not found. Please run index_datasets.py first.")
-        return
-
-    indexed_files = list(base_indexed_dir.glob("*_spindle_index.pkl"))
-    if not indexed_files:
-        indexed_files = list(base_indexed_dir.glob("*_indexed.pkl"))
-    if not indexed_files:
-        print(f"No indexed files found in {base_indexed_dir}. Please run index_datasets.py first.")
-        return
-
-    if args.datasets:
-        ordered_files = []
-        for kw in args.datasets:
-            matched = [f for f in indexed_files if kw.lower() in f.name.lower() and f not in ordered_files]
-            if matched:
-                ordered_files.extend(matched)
-            else:
-                print(f"Warning: No indexed file matched dataset keyword '{kw}'")
-        indexed_files = ordered_files
+    if args.dataset_paths:
+        datasets = {Path(p).stem: Path(p) for p in args.dataset_paths}
     else:
-        indexed_files.sort(key=lambda f: f.name)
+        datasets = {
+            "breast_cancer": project_root / "dataset" / "xenium_human_breast_cancer.h5ad",
+            "kidney_nondiseased": project_root / "dataset" / "xenium_human_kidney_nondiseased.h5ad",
+            "lymph_node": project_root / "dataset" / "xenium_human_lymph_node.h5ad",
+            "lung_cancer": project_root / "dataset" / "xenium_human_lung_cancer.h5ad",
+            "skin_melanoma": project_root / "dataset" / "xenium_human_skin_melanoma.h5ad",
+            "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
+        }
+
+    # Run indexing first
+    index_datasets.run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio)
+
+    indexed_files = []
+    for ds_name in datasets.keys():
+        idx_path = base_indexed_dir / f"{ds_name}_spindle_index.pkl"
+        if not idx_path.exists():
+            idx_path = base_indexed_dir / f"{ds_name}_indexed.pkl"
+        if idx_path.exists():
+            indexed_files.append(idx_path)
+        else:
+            print(f"Warning: Index file for {ds_name} not found.")
+
 
     all_query_metrics_dfs = []
     summary_records = []
@@ -474,7 +479,7 @@ def main():
     if summary_records:
         df_summary = pd.DataFrame(summary_records)
         summary_csv_path = base_results_dir / "benchmark_summary.csv"
-        if summary_csv_path.exists() and args.datasets:
+        if summary_csv_path.exists() and args.dataset_paths:
             try:
                 existing_df = pd.read_csv(summary_csv_path)
                 df_summary = pd.concat(
