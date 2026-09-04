@@ -8,3 +8,6 @@ markdown
 sphinx
 sphinx-rtd-theme
 myst-parser
+plotly
+igraph
+leidenalg
