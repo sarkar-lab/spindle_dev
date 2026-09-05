@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
 """
-Master Figure 1 Generator
-=========================
-Generates publication-quality Figure 1 panels and exports:
-  - Individual high-resolution standalone panel files for manual assembly
-      → figures/panels/panel_A.pdf/.png  …  panel_F.pdf/.png
-  - One auto-merged composite figure as a backup
-      → results/fig_main_result.pdf/.png  (LaTeX-compatible path)
+generate_figure_1.py
+====================
+Generates publication-quality Figure 1 panels for SPINDLE.
 
-Panels
-------
-  A — Index scalability: dual-line scatter sorted by cell count
-  B — Query acceleration: horizontal lollipop speedup chart
-  C — Holdout validation accuracy: cumulative recall area curve
-  D — Partial-query robustness: worst vs. best gene-bin bar summary
-  E — Cross-modal retrieval: tile overlays + paired Recall@1 dot plot
-  F — Gene signature niche discovery: Luminal Tumour Core spatial map
-      + top-10 pathway score bar chart
+Reads from ``results/panel_data/`` (produced by ``organize_panel_data.py``).
+All panels are exported as individual high-resolution standalone files, and a
+composite backup is saved to ``results/fig_main_result.pdf/.png``.
+
+Individual exports
+------------------
+  figures/panels/panel_A.pdf/.png        — Index scalability
+  figures/panels/panel_B.pdf/.png        — Query speedup (horizontal bar)
+  figures/panels/panel_C.pdf/.png        — Holdout rank distribution
+  figures/panels/panel_D.pdf/.png        — Partial-query robustness
+  figures/panels/panel_E_xenium.pdf/.png — Xenium tile overlay
+  figures/panels/panel_E_visium.pdf/.png — Visium tile overlay
+  figures/panels/panel_E_recall.pdf/.png — Cross-modal recall bar chart
+  figures/panels/panel_F_map.pdf/.png    — Gene-sig spatial map (dual)
+  figures/panels/panel_F_pathway.pdf/.png— Pathway score bar chart
 """
 
-import sys
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -28,44 +29,93 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as patches
-import matplotlib.image as mpimg
+from matplotlib.colors import Normalize
+from matplotlib.cm import ScalarMappable
 import seaborn as sns
-from matplotlib.ticker import FuncFormatter
 
 # ── Shared color palette ─────────────────────────────────────────────────────
 NAVY       = '#1B365D'
-TEAL       = '#008080'
+TEAL       = '#2A9D8F'
 TERRACOTTA = '#C85A32'
 SLATE      = '#4A607A'
 PURPLE     = '#6B4C9A'
 LIGHT_GRAY = '#F0F2F5'
 DARK_GRAY  = '#2C3E50'
 GOLD       = '#D4AF37'
-
+STEEL_BLUE = '#3A7CBF'
+SAGE       = '#6B8E77'
 
 # ── Publication style ────────────────────────────────────────────────────────
+BASE_FONT   = 13.0   # axis labels
+TICK_FONT   = 11.5   # tick labels
+LEGEND_FONT = 11.0
+ANNOT_FONT  = 11.0   # bar / dot annotations
+TITLE_FONT  = 14.0
+LETTER_FONT = 18.0   # panel letter (A, B, …)
+
+
 def set_publication_style():
-    """Apply clean, publication-ready styling rules."""
-    sns.set_theme(style='whitegrid', context='paper')
-    plt.rcParams['font.family']          = 'sans-serif'
-    plt.rcParams['font.sans-serif']      = ['Arial', 'Helvetica', 'DejaVu Sans']
-    plt.rcParams['axes.edgecolor']       = '#D1D5DB'
-    plt.rcParams['axes.linewidth']       = 1.0
-    plt.rcParams['axes.titlesize']       = 13.5
-    plt.rcParams['axes.titleweight']     = 'bold'
-    plt.rcParams['axes.labelsize']       = 11.5
-    plt.rcParams['axes.labelweight']     = 'bold'
-    plt.rcParams['xtick.labelsize']      = 9.5
-    plt.rcParams['ytick.labelsize']      = 9.5
-    plt.rcParams['legend.fontsize']      = 9.5
-    plt.rcParams['figure.titlesize']     = 16
-    plt.rcParams['figure.titleweight']   = 'bold'
+    """Apply clean, publication-ready styling — no grids, larger fonts."""
+    sns.set_theme(style='ticks', context='paper')  # 'ticks' removes grid
+    plt.rcParams.update({
+        'font.family':        'sans-serif',
+        'font.sans-serif':    ['Arial', 'Helvetica', 'DejaVu Sans'],
+        # axes
+        'axes.edgecolor':     '#4A4A4A',
+        'axes.linewidth':     1.2,
+        'axes.titlesize':     TITLE_FONT,
+        'axes.titleweight':   'bold',
+        'axes.labelsize':     BASE_FONT,
+        'axes.labelweight':   'bold',
+        'axes.grid':          False,      # globally disable grids
+        'grid.alpha':         0.0,
+        # ticks
+        'xtick.labelsize':    TICK_FONT,
+        'ytick.labelsize':    TICK_FONT,
+        'xtick.direction':    'out',
+        'ytick.direction':    'out',
+        'xtick.major.size':   5,
+        'ytick.major.size':   5,
+        # legend
+        'legend.fontsize':    LEGEND_FONT,
+        'legend.framealpha':  0.9,
+        # figure
+        'figure.titlesize':   16,
+        'figure.titleweight': 'bold',
+        'savefig.dpi':        300,
+    })
+
+
+def _clean_axes(ax):
+    """Remove top and right spines; keep only left and bottom."""
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(False)
 
 
 def add_panel_letter(ax, letter: str):
-    """Add a bold panel label (A, B, C …) in the upper-left corner of an axes."""
-    ax.text(-0.08, 1.12, letter, transform=ax.transAxes,
-            fontsize=16, fontweight='bold', va='top', ha='right', color='#000000')
+    """Bold panel label in the upper-left corner."""
+    ax.text(-0.10, 1.14, letter, transform=ax.transAxes,
+            fontsize=LETTER_FONT, fontweight='bold',
+            va='top', ha='right', color='#000000')
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def _read_panel_csv(project_root: Path, filename: str) -> pd.DataFrame | None:
+    """Read a panel CSV from results/panel_data/, skipping comment lines."""
+    path = project_root / 'results' / 'panel_data' / filename
+    if not path.exists():
+        print(f'  WARNING: {path.relative_to(project_root)} not found — using fallback values')
+        return None
+    return pd.read_csv(path, comment='#')
+
+
+def _save(fig_obj, panels_dir: Path, name: str):
+    for fmt in ('pdf', 'png'):
+        p = panels_dir / f'{name}.{fmt}'
+        fig_obj.savefig(str(p), bbox_inches='tight', dpi=300, format=fmt)
+        print(f'    saved -> {p.relative_to(panels_dir.parent.parent)}')
+    plt.close(fig_obj)
 
 
 # ── Panel A: Index Scalability — Dual-axis Bar Chart ────────────────────────
@@ -73,566 +123,653 @@ def plot_panel_a_scalability(ax, project_root: Path):
     """
     Panel A — Dual-axis grouped bar chart: Build Time (left, NAVY) and
     Index Size (right, TERRACOTTA) per dataset, sorted by cell count.
-    Distinct from the subsection scatter plot; emphasises the per-dataset
-    absolute values rather than the growth trajectory.
     """
+    # Fallback values (sorted by cell count)
     datasets = ['Skin', 'Kidney', 'Breast', 'Lung', 'Pancreas', 'Lymph Node']
-    cells    = [87499,  97560,  159226, 162254, 190965, 377985]
     build_t  = [25.53,  18.62,   51.67,  45.86,  88.90,  71.51]
     idx_size = [19.41,  18.47,   14.69,  19.98,  30.86,  22.83]
 
-    csv_path = project_root / 'results' / 'holdout_validation' / 'index_scalability_summary.csv'
-    if csv_path.exists():
+    df = _read_panel_csv(project_root, 'panel_A.csv')
+    if df is not None:
         try:
-            df_csv = pd.read_csv(csv_path)
-            if all(c in df_csv.columns
-                   for c in ['Dataset', 'Cells', 'Build Time (s)', 'Index Size (MB)']):
-                df_a     = df_csv.sort_values('Cells')
-                datasets = df_a['Dataset'].tolist()
-                cells    = df_a['Cells'].tolist()
-                build_t  = df_a['Build Time (s)'].tolist()
-                idx_size = df_a['Index Size (MB)'].tolist()
+            col_ds = next(c for c in df.columns if 'dataset' in c.lower())
+            col_bt = next(c for c in df.columns if 'build' in c.lower())
+            col_sz = next(c for c in df.columns if 'size' in c.lower() or 'index' in c.lower())
+            datasets = df[col_ds].tolist()
+            build_t  = df[col_bt].tolist()
+            idx_size = df[col_sz].tolist()
         except Exception as e:
-            print(f'WARNING (Panel A): {e}')
+            print(f'  WARNING (Panel A): {e}')
 
     x     = np.arange(len(datasets))
     width = 0.35
     ax2   = ax.twinx()
 
-    ax.bar( x - width/2, build_t,  width, label='Build Time (s)',  color=NAVY,       alpha=0.85, edgecolor='none')
-    ax2.bar(x + width/2, idx_size, width, label='Index Size (MB)', color=TERRACOTTA, alpha=0.85, edgecolor='none')
+    ax.bar( x - width/2, build_t,  width, color=NAVY,       alpha=0.88, edgecolor='none')
+    ax2.bar(x + width/2, idx_size, width, color=TERRACOTTA,  alpha=0.88, edgecolor='none')
 
-    ax.set_ylabel('Index Build Time (s)',    color=NAVY,       fontweight='bold')
-    ax2.set_ylabel('Index Size on Disk (MB)', color=TERRACOTTA, fontweight='bold')
+    ax.set_ylabel('Index Build Time (s)',    color=NAVY,      fontweight='bold', fontsize=BASE_FONT)
+    ax2.set_ylabel('Index Size on Disk (MB)', color=TERRACOTTA, fontweight='bold', fontsize=BASE_FONT)
     ax.set_xticks(x)
-    ax.set_xticklabels(datasets, rotation=25, ha='right')
-    ax.tick_params(axis='y', labelcolor=NAVY)
-    ax2.tick_params(axis='y', labelcolor=TERRACOTTA)
-    ax.grid(axis='y', linestyle='--', alpha=0.4)
-    ax2.grid(False)
+    ax.set_xticklabels(datasets, rotation=20, ha='right', fontsize=TICK_FONT)
+    ax.tick_params(axis='y', labelcolor=NAVY,       labelsize=TICK_FONT)
+    ax2.tick_params(axis='y', labelcolor=TERRACOTTA, labelsize=TICK_FONT)
+
     ax.spines['top'].set_visible(False)
     ax2.spines['top'].set_visible(False)
+    ax.grid(False)
+    ax2.grid(False)
 
-    lines1, labels1 = ax.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left',
-              frameon=True, facecolor='white', framealpha=0.9)
-    add_panel_letter(ax, 'A')
+    # Custom legend
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor=NAVY,       label='Build Time (s)'),
+        Patch(facecolor=TERRACOTTA, label='Index Size (MB)'),
+    ]
+    ax.legend(handles=legend_elements, loc='upper left', frameon=True,
+              facecolor='white', fontsize=LEGEND_FONT)
 
 
-# ── Panel B: Query Acceleration — Horizontal Lollipop ───────────────────────
+
+# ── Panel B: Query Acceleration — Horizontal Bar Chart ──────────────────────
 def plot_panel_b_speedup(ax, project_root: Path):
     """
-    Panel B — Horizontal lollipop chart of query speedup (×) per dataset.
-    Shows holdout-validation benchmark only; sorted so highest speedup is at top.
+    Panel B — Horizontal bar chart of query speedup (x) per dataset.
+    Replaces the lollipop chart.  Brute-force baseline shown as a dashed line.
     """
-    ds_labels = ['Skin', 'Kidney', 'Breast', 'Lung', 'Lymph Node', 'Pancreas']
-    ds_keys   = ['skin_melanoma', 'kidney_nondiseased', 'breast_cancer',
-                 'lung_cancer', 'lymph_node', 'pancreatic_cancer']
-    speedups  = [9.19, 16.97, 11.06, 8.94, 9.18, 9.58]   # fallback
+    # Fallback
+    lbl_s = ['Skin', 'Lymph Node', 'Lung', 'Pancreas', 'Breast', 'Kidney']
+    spd_s = [5.83,    7.38,        7.70,   7.84,       9.31,     9.93]
 
-    split_csv = project_root / 'results' / 'holdout_validation' / 'benchmark_summary.csv'
-    if split_csv.exists():
+    df = _read_panel_csv(project_root, 'panel_B.csv')
+    if df is not None:
         try:
-            df_s = pd.read_csv(split_csv)
-            speedups = [
-                float(df_s.loc[df_s['Dataset'] == k, 'mean_speedup'].values[0])
-                if k in df_s['Dataset'].values else spd
-                for k, spd in zip(ds_keys, speedups)
-            ]
+            col_spd = next(c for c in df.columns if 'speedup' in c.lower())
+            col_lbl = 'label' if 'label' in df.columns else df.columns[0]
+            lbl_s = df[col_lbl].tolist()
+            spd_s = df[col_spd].tolist()
         except Exception as e:
-            print(f"WARNING (Panel B): {e}")
+            print(f'  WARNING (Panel B): {e}')
 
-    # Sort ascending so highest speedup appears at top of the horizontal chart
-    paired  = sorted(zip(speedups, ds_labels), reverse=False)
-    spd_s, lbl_s = zip(*paired)
+    # Sort descending so tallest bar is on the right
+    paired = sorted(zip(lbl_s, spd_s), key=lambda t: t[1])
+    lbl_s  = [p[0] for p in paired]
+    spd_s  = [p[1] for p in paired]
 
-    y = np.arange(len(lbl_s))
+    x = np.arange(len(lbl_s))
 
-    ax.hlines(y, 0, spd_s, colors=TEAL, alpha=0.55, linewidth=2.2)
-    ax.scatter(spd_s, y, color=TEAL, s=100, zorder=4)
+    ax.bar(x, spd_s, width=0.55, color=TEAL, alpha=0.88, edgecolor='none')
 
-    for spd, yi in zip(spd_s, y):
-        ax.text(spd + 0.25, yi, f'{spd:.1f}×', va='center', fontsize=9.5,
-                fontweight='bold', color=SLATE)
+    # Value labels above each bar
+    for xi, spd in zip(x, spd_s):
+        ax.text(xi, spd + 0.3, f'{spd:.1f}\u00d7', ha='center',
+                fontsize=ANNOT_FONT, fontweight='bold', color=SLATE)
 
-    ax.axvline(x=1, color='crimson', linestyle='--', alpha=0.65, lw=1.5,
-               label='Brute-Force baseline (1×)')
+    ax.axhline(y=1, color='crimson', linestyle='--', alpha=0.70, lw=1.8,
+               label='Brute-Force baseline (1\u00d7)')
 
-    ax.set_yticks(y)
-    ax.set_yticklabels(lbl_s, fontsize=10)
-    ax.set_xlabel('Speedup vs. Exact Brute-Force Search (×)', fontweight='bold')
-    ax.set_xlim(0, max(spd_s) * 1.25)
-    ax.grid(axis='x', linestyle='--', alpha=0.35)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.legend(loc='lower right', frameon=True, facecolor='white', fontsize=9)
-    add_panel_letter(ax, 'B')
+    ax.set_xticks(x)
+    ax.set_xticklabels(lbl_s, rotation=20, ha='right', fontsize=TICK_FONT)
+    ax.set_ylabel('Speedup vs. Exact Brute-Force Search (\u00d7)', fontweight='bold',
+                  fontsize=BASE_FONT)
+    ax.set_ylim(0, max(spd_s) * 1.25)
+    ax.legend(loc='upper left', frameon=True, facecolor='white', fontsize=LEGEND_FONT)
+    _clean_axes(ax)
+
 
 
 # ── Panel C: Holdout Validation — Rank-Bucket Bar Chart ─────────────────────
 def plot_panel_c_accuracy(ax, project_root: Path):
     """
-    Panel C — Bar chart of rank-bucket percentages from top1_rank_distribution.csv.
-    Shows the raw rank distribution; distinct from the subsection cumulative curve.
-    The dominant 74.8% first-rank bar makes the accuracy story immediately legible.
+    Panel C — Bar chart of rank-bucket percentages.
     """
     labels = ['1st', '2nd', '3rd', '4-5th', '6-10th', '>10th']
     pcts   = [74.77, 13.55, 3.27, 6.07, 1.87, 0.47]   # fallback
 
-    rank_csv = project_root / 'results' / 'holdout_validation' / 'top1_rank_distribution.csv'
-    if rank_csv.exists():
+    df = _read_panel_csv(project_root, 'panel_C.csv')
+    if df is not None:
         try:
-            df_r = pd.read_csv(rank_csv)
-            if 'Rank_Category' in df_r.columns and 'Percentage' in df_r.columns:
-                lmap = dict(zip(df_r['Rank_Category'], df_r['Percentage']))
-                pcts = [lmap.get(l, 0.0) for l in labels]
+            col_cat = next(c for c in df.columns if 'rank' in c.lower() or 'category' in c.lower())
+            col_pct = next(c for c in df.columns if 'percent' in c.lower() or 'pct' in c.lower())
+            lmap = dict(zip(df[col_cat], df[col_pct]))
+            pcts = [lmap.get(l, 0.0) for l in labels]
         except Exception as e:
-            print(f'WARNING (Panel C): {e}')
+            print(f'  WARNING (Panel C): {e}')
 
-    ax.bar(labels, pcts, color=PURPLE, alpha=0.85, width=0.55, edgecolor='none')
+    ax.bar(labels, pcts, color=PURPLE, alpha=0.88, width=0.55, edgecolor='none')
 
-    # Annotate every bar
-    for lbl, p in zip(labels, pcts):
+    for i, (lbl, p) in enumerate(zip(labels, pcts)):
         if p > 0.3:
-            ax.text(labels.index(lbl), p + 1.2, f'{p:.1f}%',
-                    ha='center', va='bottom', fontsize=9, fontweight='bold', color=PURPLE)
+            ax.text(i, p + 1.2, f'{p:.1f}%',
+                    ha='center', va='bottom', fontsize=ANNOT_FONT,
+                    fontweight='bold', color=PURPLE)
 
-    ax.set_ylabel('Queries (%)', fontweight='bold')
+    ax.set_ylabel('Queries (%)', fontweight='bold', fontsize=BASE_FONT)
     ax.set_ylim(0, 100)
-    ax.tick_params(axis='x', rotation=25)
-    ax.grid(axis='y', linestyle='--', alpha=0.4)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    add_panel_letter(ax, 'C')
+    ax.tick_params(axis='x', rotation=20, labelsize=TICK_FONT)
+    ax.tick_params(axis='y', labelsize=TICK_FONT)
+    _clean_axes(ax)
+
 
 
 # ── Panel D: Partial Query — 4-Bin Line Chart ───────────────────────────────
 def plot_panel_d_partial(ax, project_root: Path):
     """
-    Panel D — Line chart of Recall@1 and Overlap@10 across all four gene-coverage
-    bins (≤6, 7-12, 13-16, >16 genes), pooled across all 6 datasets.
-    Distinct from the subsection per-dataset bar chart; shows the coverage gradient.
+    Panel D — Line chart of Recall@1 and Overlap@10 across gene-coverage bins.
     """
-    order          = ['<=6 genes', '7-12 genes', '13-16 genes', '>16 genes']
-    order_labels   = ['≤6 genes',  '7–12 genes', '13–16 genes', '>16 genes']
-    recall1_vals   = [62.4, 78.5, 88.2, 94.8]    # fallback
-    overlap10_vals = [51.2, 71.4, 83.5, 90.9]    # fallback
+    order_labels   = ['\u22646 genes', '7\u201312 genes', '13\u201316 genes', '>16 genes']
+    recall1_vals   = [62.4, 78.5, 88.2, 94.8]
+    overlap10_vals = [51.2, 71.4, 83.5, 90.9]
 
-    metrics_path = project_root / 'results' / 'partial_panel_search' / 'overall_benchmark_metrics.csv'
-    if metrics_path.exists():
+    df = _read_panel_csv(project_root, 'panel_D.csv')
+    if df is not None:
         try:
-            df_m = pd.read_csv(metrics_path)
-            if 'Length_Bin' in df_m.columns and 'hit_top_1' in df_m.columns:
-                grp  = df_m.groupby('Length_Bin')[['hit_top_1', 'overlap_10']].mean() * 100
-                valid = [b for b in order if b in grp.index]
-                if valid:
-                    order          = valid
-                    order_labels   = [b.replace('<=', '≤').replace('-', '–') for b in valid]
-                    recall1_vals   = [grp.loc[b, 'hit_top_1']  for b in order]
-                    overlap10_vals = [grp.loc[b, 'overlap_10'] for b in order]
+            col_bin = next(c for c in df.columns if 'bin' in c.lower() or 'length' in c.lower())
+            col_r1  = next(c for c in df.columns if 'recall' in c.lower())
+            col_ov  = next(c for c in df.columns if 'overlap' in c.lower())
+            order_labels   = (df[col_bin]
+                              .str.replace('<=', '\u2264', regex=False)
+                              .str.replace('-', '\u2013', regex=False)
+                              .tolist())
+            recall1_vals   = df[col_r1].tolist()
+            overlap10_vals = df[col_ov].tolist()
         except Exception as e:
-            print(f'WARNING (Panel D): {e}')
+            print(f'  WARNING (Panel D): {e}')
 
-    x_pos = np.arange(len(order))
-    ax.plot(x_pos, recall1_vals,   marker='o', lw=2.5, markersize=8,
+    x_pos = np.arange(len(order_labels))
+    ax.plot(x_pos, recall1_vals,   marker='o', lw=2.5, markersize=9,
             color=TERRACOTTA, label='Recall@1 (%)')
-    ax.plot(x_pos, overlap10_vals, marker='s', lw=2.5, markersize=8,
+    ax.plot(x_pos, overlap10_vals, marker='s', lw=2.5, markersize=9,
             color=NAVY,       label='Overlap@10 (%)')
 
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(order_labels)
-    ax.set_ylabel('Score (%)', fontweight='bold')
-    ax.set_xlabel('Partial Query Coverage (Gene Transcript Length)', fontweight='bold')
+    ax.set_xticklabels(order_labels, fontsize=TICK_FONT)
+    ax.set_ylabel('Score (%)', fontweight='bold', fontsize=BASE_FONT)
+    ax.set_xlabel('Partial Query Coverage (Gene Transcript Length)',
+                  fontweight='bold', fontsize=BASE_FONT)
     ax.set_ylim(0, 105)
-    ax.grid(axis='y', linestyle='--', alpha=0.4)
-    ax.legend(loc='lower right', frameon=True, facecolor='white', framealpha=0.9)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    add_panel_letter(ax, 'D')
+    ax.tick_params(axis='y', labelsize=TICK_FONT)
+    ax.legend(loc='lower right', frameon=True, facecolor='white', fontsize=LEGEND_FONT)
+    _clean_axes(ax)
 
 
-# ── Panel E: Cross-Modal Retrieval ───────────────────────────────────────────
-def plot_panel_e_cross_modal(sub_gs, fig, project_root: Path):
+
+# ── Panel E: Xenium tile overlay ─────────────────────────────────────────────
+def plot_panel_e_xenium(ax, project_root: Path):
     """
-    Panel E — Xenium and Visium tile overlays (left/centre) plus a paired dot
-    plot of Recall@1 per query direction (right).  Replaces the multi-K grouped
-    bar chart with a cleaner two-point summary at main-figure scale.
+    Panel E (left) — Xenium cell scatter + tile bounding boxes.
+    Cells coloured by density (2-D KDE-like binning) to improve visibility.
     """
-    ax_xe  = fig.add_subplot(sub_gs[0])
-    ax_vi  = fig.add_subplot(sub_gs[1])
-    ax_dot = fig.add_subplot(sub_gs[2])
-
-    # ── Spatial overlays from CSV ──────────────────────────────────────────
-    coords_csv = project_root / 'results' / 'cross_modal_search' / 'spatial_coords_sample.csv'
-    boxes_csv  = project_root / 'results' / 'cross_modal_search' / 'tile_overlay_boxes.csv'
-
-    if coords_csv.exists() and boxes_csv.exists():
-        try:
-            df_coords = pd.read_csv(coords_csv)
-            df_boxes  = pd.read_csv(boxes_csv)
-
-            xe = df_coords[df_coords['modality'] == 'Xenium']
-            vi = df_coords[df_coords['modality'] == 'Visium']
-
-            ax_xe.scatter(xe['x'], xe['y'], s=0.8, color='lightgray', alpha=0.5)
-            for _, row in df_boxes[df_boxes['modality'] == 'Xenium'].iterrows():
-                ax_xe.add_patch(patches.Rectangle(
-                    (row['x0'], row['y0']), row['x1']-row['x0'], row['y1']-row['y0'],
-                    lw=0.5, edgecolor=NAVY, facecolor='none', alpha=0.4))
-            n_xe = len(df_boxes[df_boxes['modality'] == 'Xenium'])
-            ax_xe.set_title(f'Xenium ({n_xe} tiles)', fontsize=10.5, pad=8)
-            ax_xe.set_aspect('equal')
-            ax_xe.axis('off')
-
-            ax_vi.scatter(vi['x'], vi['y'], s=4, color='#FFA500', alpha=0.8)
-            for _, row in df_boxes[df_boxes['modality'] == 'Visium'].iterrows():
-                ax_vi.add_patch(patches.Rectangle(
-                    (row['x0'], row['y0']), row['x1']-row['x0'], row['y1']-row['y0'],
-                    lw=1.0, edgecolor=TERRACOTTA, facecolor='none'))
-            n_vi = len(df_boxes[df_boxes['modality'] == 'Visium'])
-            ax_vi.set_title(f'Visium ({n_vi} tiles)', fontsize=10.5, pad=8)
-            ax_vi.set_aspect('equal')
-            ax_vi.axis('off')
-
-        except Exception as e:
-            print(f"WARNING (Panel E overlays): {e}")
-            for ax_tmp, lbl in [(ax_xe, 'Xenium Overlay'), (ax_vi, 'Visium Overlay')]:
-                ax_tmp.text(0.5, 0.5, lbl, ha='center', va='center')
-                ax_tmp.axis('off')
-    else:
-        for ax_tmp, lbl in [(ax_xe, 'Xenium\n[CSV missing]'),
-                            (ax_vi, 'Visium\n[CSV missing]')]:
-            ax_tmp.text(0.5, 0.5, lbl, ha='center', va='center',
-                        bbox=dict(fc=LIGHT_GRAY))
-            ax_tmp.axis('off')
-
-    add_panel_letter(ax_xe, 'E')
-
-    # ── Paired dot plot: Recall@1 per query direction ─────────────────────
-    directions = ['Xenium → Visium', 'Visium → Xenium']
-    recall1    = [100.0, 84.0]   # fallback from benchmark_summary.csv
-
-    cross_csv = project_root / 'results' / 'cross_modal_search' / 'benchmark_summary.csv'
-    if cross_csv.exists():
-        try:
-            df_c = pd.read_csv(cross_csv)
-            if 'recall@1' in df_c.columns:
-                vals    = df_c['recall@1'].values
-                recall1 = [v * 100 if v <= 1.0 else v for v in vals]
-            if 'direction' in df_c.columns:
-                dir_map    = {'x2v': 'Xenium → Visium', 'v2x': 'Visium → Xenium'}
-                directions = [dir_map.get(d, d) for d in df_c['direction'].tolist()]
-        except Exception as e:
-            print(f"WARNING (Panel E dot): {e}")
-
-    colors = [TEAL, TERRACOTTA]
-    for i, (d, r, c) in enumerate(zip(directions, recall1, colors)):
-        ax_dot.hlines(i, 0, r, colors=c, alpha=0.5, lw=2.2)
-        ax_dot.scatter([r], [i], color=c, s=140, zorder=4)
-        ax_dot.text(r + 1.8, i, f'{r:.0f}%', va='center', fontsize=11,
-                    fontweight='bold', color=c)
-
-    ax_dot.set_yticks(range(len(directions)))
-    ax_dot.set_yticklabels(directions, fontsize=10)
-    ax_dot.set_xlabel('Recall@1 (%)', fontweight='bold')
-    ax_dot.set_xlim(0, 118)
-    ax_dot.set_ylim(-0.6, len(directions) - 0.4)
-    ax_dot.axvline(x=100, color=SLATE, linestyle=':', alpha=0.55, lw=1.2,
-                   label='Perfect recall')
-    ax_dot.grid(axis='x', linestyle='--', alpha=0.35)
-    ax_dot.spines['top'].set_visible(False)
-    ax_dot.spines['right'].set_visible(False)
-    ax_dot.legend(loc='lower right', frameon=True, fontsize=9)
-
-
-# ── Panel F: Gene Signature Niche Discovery ──────────────────────────────────
-# Pathway scores are the raw Scanpy sc.score_genes values reported in the paper.
-# These are loaded from results/gene_signature_search/benchmark_metrics.csv when
-# available (produced by benchmarks/gene_signature_search.py run on breast_cancer).
-# The hardcoded dict below is the paper-reported fallback.
-#
-# IMPORTANT: benchmark_metrics.csv was previously generated on the lymph_node
-# dataset (wrong dataset). The benchmark has been fixed to use breast_cancer.
-# Re-run benchmarks/gene_signature_search.py to regenerate correct CSV values.
-_PATHWAY_SCORES = {
-    'Invasive Tumour\n& DCIS Core':   {'bg':  2.231, 'top10': 5.579},
-    'Myoepithelial\n& Basal Layer':   {'bg': -0.017, 'top10': 0.994},
-    'Proliferating\nTumour Cells':    {'bg':  0.029, 'top10': 0.287},
-    'Vasculature &\nEndothelial':     {'bg':  0.011, 'top10': 0.191},
-    'Macrophage &\nDendritic Cell':   {'bg':  0.007, 'top10': -0.067},
-}
-
-
-def _load_pathway_scores(project_root: Path) -> dict:
-    """
-    Load pathway scores from benchmark_metrics.csv (breast_cancer run).
-
-    The CSV stores the raw Scanpy sc.score_genes values:
-      - background_score        → mean over all tissue cells
-      - enrichment_score_at_10  → mean over cells inside the top-10 retrieved tiles
-
-    A plausibility check guards against accidentally loading scores from a
-    wrong-dataset run (e.g. lymph_node) where all values collapse near zero.
-    Falls back to the hardcoded _PATHWAY_SCORES paper values otherwise.
-    """
-    ROW_TO_LABEL = {
-        'Luminal_Tumor_Core':      'Invasive Tumour\n& DCIS Core',
-        'Basal_Myoepithelial':     'Myoepithelial\n& Basal Layer',
-        'Proliferation_Signature': 'Proliferating\nTumour Cells',
-        'Endothelial_Vascular':    'Vasculature &\nEndothelial',
-        'Macrophage_Myeloid':      'Macrophage &\nDendritic Cell',
-    }
-    csv_path = (project_root / 'results' / 'gene_signature_search'
-                / 'benchmark_metrics.csv')
-    if not csv_path.exists():
-        print('  INFO (Panel F): benchmark_metrics.csv not found — using paper values.')
-        return _PATHWAY_SCORES
-    try:
-        df = pd.read_csv(csv_path, index_col=0)
-        req = {'background_score', 'enrichment_score_at_10'}
-        if not req.issubset(df.columns):
-            raise ValueError(f'Missing columns: {req - set(df.columns)}')
-        # Plausibility guard: near-zero scores → wrong dataset
-        if df['background_score'].abs().max() < 0.1:
-            print('  WARNING (Panel F): benchmark_metrics.csv scores appear implausible '
-                  '(|background| < 0.1 for all niches). '
-                  'Was the benchmark run on breast_cancer? Falling back to paper values.')
-            return _PATHWAY_SCORES
-        scores = {}
-        for row_key, label in ROW_TO_LABEL.items():
-            if row_key in df.index:
-                scores[label] = {
-                    'bg':    float(df.loc[row_key, 'background_score']),
-                    'top10': float(df.loc[row_key, 'enrichment_score_at_10']),
-                }
-            else:
-                scores[label] = _PATHWAY_SCORES.get(label, {'bg': 0.0, 'top10': 0.0})
-        print('  INFO (Panel F): Loaded pathway scores from benchmark_metrics.csv.')
-        return scores
-    except Exception as e:
-        print(f'  WARNING (Panel F): Could not load benchmark_metrics.csv ({e}). '
-              'Using paper values.')
-        return _PATHWAY_SCORES
-
-
-def plot_panel_f_gene_list(sub_gs, fig, project_root: Path):
-    """
-    Panel F — Luminal Tumour Core spatial discovery map (left) and pathway score
-    bar chart for all five gene-list queries (right, top-10 only).
-    Pathway scores are loaded from results/gene_signature_search/benchmark_metrics.csv
-    (produced by benchmarks/gene_signature_search.py on the breast cancer dataset),
-    with hardcoded paper values as a documented fallback.
-    """
-    ax_map = fig.add_subplot(sub_gs[0])
-    ax_bar = fig.add_subplot(sub_gs[1])
-
-    # ── Luminal Tumour Core spatial map ───────────────────────────────────
-    cells_csv   = (project_root / 'results' / 'gene_signature_search' / 'breast_cancer'
-                   / 'Luminal_Tumor_Core_spatial_cells.csv')
-    matches_csv = (project_root / 'results' / 'gene_signature_search' / 'breast_cancer'
-                   / 'Luminal_Tumor_Core_top_matches.csv')
+    df_xe    = _read_panel_csv(project_root, 'panel_E_xenium_coords.csv')
+    df_boxes = _read_panel_csv(project_root, 'panel_E_tile_boxes.csv')
 
     rendered = False
-    if cells_csv.exists() and matches_csv.exists():
+    if df_xe is not None:
         try:
-            df_cells   = pd.read_csv(cells_csv)
-            df_matches = pd.read_csv(matches_csv)
+            x, y = df_xe['x'].values, df_xe['y'].values
 
-            # Colour cells by continuous pathway score
-            sc = ax_map.scatter(
-                df_cells['x'], df_cells['y'],
-                c=df_cells['pathway_score'], cmap='viridis',
-                s=1.0, alpha=0.7, rasterized=True)
-            plt.colorbar(sc, ax=ax_map, shrink=0.6, label='Pathway Score')
+            # Hexbin density instead of plain scatter — visually rich + readable
+            hb = ax.hexbin(x, y, gridsize=60, cmap='Blues', mincnt=1,
+                           linewidths=0.0, alpha=0.85)
+            plt.colorbar(hb, ax=ax, shrink=0.55, label='Cell density',
+                         pad=0.02).ax.tick_params(labelsize=TICK_FONT - 1)
 
-            rank_colors = ['#000000', '#D35400', '#27AE60', '#2980B9', '#8E44AD']
-            for _, row in df_matches.iterrows():
-                r = int(row['rank']) - 1
-                c = rank_colors[r] if r < len(rank_colors) else '#333333'
-                ax_map.add_patch(patches.Rectangle(
-                    (row['x0'], row['y0']), row['x1']-row['x0'], row['y1']-row['y0'],
-                    fill=False, edgecolor=c, lw=2.5 if r == 0 else 1.8))
-            ax_map.set_aspect('equal')
+            if df_boxes is not None:
+                xe_boxes = df_boxes[df_boxes['modality'] == 'Xenium']
+                for _, row in xe_boxes.iterrows():
+                    w = row['x1'] - row['x0']
+                    h = row['y1'] - row['y0']
+                    ax.add_patch(patches.FancyBboxPatch(
+                        (row['x0'], row['y0']), w, h,
+                        boxstyle='square,pad=0',
+                        lw=1.5, edgecolor=TERRACOTTA,
+                        facecolor=TERRACOTTA, alpha=0.12))
+                    ax.add_patch(patches.Rectangle(
+                        (row['x0'], row['y0']), w, h,
+                        lw=1.5, edgecolor=TERRACOTTA, facecolor='none'))
+                n_xe = len(xe_boxes)
+            else:
+                n_xe = '?'
+
+            ax.set_title(f'Xenium ({n_xe} tiles)', fontsize=TITLE_FONT, pad=8, fontweight='bold')
+            # Use 'auto' aspect in the composite so no dead whitespace on sides
+            ax.set_aspect('auto')
+            ax.axis('off')
             rendered = True
         except Exception as e:
-            print(f"WARNING (Panel F map): {e}")
-
+            print(f'  WARNING (Panel E Xenium): {e}')
 
     if not rendered:
-        ax_map.text(0.5, 0.5,
-                    'Luminal Tumour Core\nSpatial Discovery Map\n[Requires CSV data]',
-                    ha='center', va='center', bbox=dict(fc=LIGHT_GRAY))
+        ax.text(0.5, 0.5, 'Xenium\n[CSV missing]', ha='center', va='center',
+                bbox=dict(fc=LIGHT_GRAY), fontsize=ANNOT_FONT)
+        ax.axis('off')
 
-    ax_map.axis('off')
-    add_panel_letter(ax_map, 'F')
 
-    # ── Pathway score bar: Top-10 enrichment per niche ────────────────────
-    pathway_scores = _load_pathway_scores(project_root)
-    niches  = list(pathway_scores.keys())
-    top10   = [v['top10'] for v in pathway_scores.values()]
-    bg_vals = [v['bg']    for v in pathway_scores.values()]
 
-    # Sort by top-10 ascending for horizontal readability
+
+def plot_panel_e_visium(ax, project_root: Path):
+    """
+    Panel E (centre) — Visium spot scatter + tile bounding boxes.
+    Uses a perceptually uniform colormap (viridis) instead of flat orange.
+    """
+    df_vi    = _read_panel_csv(project_root, 'panel_E_visium_coords.csv')
+    df_boxes = _read_panel_csv(project_root, 'panel_E_tile_boxes.csv')
+
+    rendered = False
+    if df_vi is not None:
+        try:
+            x, y = df_vi['x'].values, df_vi['y'].values
+
+            # Colour Visium spots by density using hexbin (matches Xenium style)
+            hb = ax.hexbin(x, y, gridsize=40, cmap='YlOrRd', mincnt=1,
+                           linewidths=0.0, alpha=0.85)
+            plt.colorbar(hb, ax=ax, shrink=0.55, label='Spot density',
+                         pad=0.02).ax.tick_params(labelsize=TICK_FONT - 1)
+
+            if df_boxes is not None:
+                vi_boxes = df_boxes[df_boxes['modality'] == 'Visium']
+                for _, row in vi_boxes.iterrows():
+                    w = row['x1'] - row['x0']
+                    h = row['y1'] - row['y0']
+                    ax.add_patch(patches.Rectangle(
+                        (row['x0'], row['y0']), w, h,
+                        lw=1.5, edgecolor=TEAL, facecolor=TEAL, alpha=0.12))
+                    ax.add_patch(patches.Rectangle(
+                        (row['x0'], row['y0']), w, h,
+                        lw=1.5, edgecolor=TEAL, facecolor='none'))
+                n_vi = len(vi_boxes)
+            else:
+                n_vi = '?'
+
+            ax.set_title(f'Visium ({n_vi} tiles)', fontsize=TITLE_FONT, pad=8, fontweight='bold')
+            # Use 'auto' aspect so the tile grid fills its subplot cell
+            ax.set_aspect('auto')
+            ax.axis('off')
+            rendered = True
+        except Exception as e:
+            print(f'  WARNING (Panel E Visium): {e}')
+
+    if not rendered:
+        ax.text(0.5, 0.5, 'Visium\n[CSV missing]', ha='center', va='center',
+                bbox=dict(fc=LIGHT_GRAY), fontsize=ANNOT_FONT)
+        ax.axis('off')
+
+
+def plot_panel_e_recall(ax, project_root: Path):
+    """
+    Panel E (right) — Grouped horizontal bar chart: Recall@1 + Overlap@10
+    per cross-modal query direction.
+    """
+    # Fallback
+    directions  = ['Xenium \u2192 Visium', 'Visium \u2192 Xenium']
+    recall1     = [100.0, 84.0]
+    overlap10   = [90.0,  78.2]
+
+    df = _read_panel_csv(project_root, 'panel_E_recall_metrics.csv')
+    if df is not None:
+        try:
+            col_lbl = next((c for c in df.columns if 'label' in c.lower()), None)
+            if col_lbl is None:
+                col_dir = next(c for c in df.columns if 'direction' in c.lower())
+                dir_map = {'x2v': 'Xenium \u2192 Visium', 'v2x': 'Visium \u2192 Xenium'}
+                directions = [dir_map.get(d, d) for d in df[col_dir].tolist()]
+            else:
+                # Unicode arrows
+                directions = [d.replace('->', '\u2192') for d in df[col_lbl].tolist()]
+
+            col_r = next(c for c in df.columns if 'recall' in c.lower())
+            col_o = next(c for c in df.columns if 'overlap' in c.lower() and '10' in c)
+            recall1   = df[col_r].tolist()
+            overlap10 = df[col_o].tolist()
+        except Exception as e:
+            print(f'  WARNING (Panel E recall): {e}')
+
+    n   = len(directions)
+    y   = np.arange(n)
+    bh  = 0.30
+
+    # Two grouped bars per direction
+    bars_r  = ax.barh(y + bh/2, recall1,   height=bh, color=TEAL,       alpha=0.88, edgecolor='none', label='Recall@1 (%)')
+    bars_o  = ax.barh(y - bh/2, overlap10, height=bh, color=TERRACOTTA, alpha=0.88, edgecolor='none', label='Overlap@10 (%)')
+
+    for val, bar in list(zip(recall1, bars_r)) + list(zip(overlap10, bars_o)):
+        w = bar.get_width()
+        ax.text(w + 0.8, bar.get_y() + bar.get_height() / 2,
+                f'{val:.0f}%', va='center', fontsize=ANNOT_FONT,
+                fontweight='bold', color=SLATE)
+
+    ax.axvline(x=100, color=SLATE, linestyle=':', alpha=0.55, lw=1.5, label='Perfect recall')
+    ax.set_yticks(y)
+    ax.set_yticklabels(directions, fontsize=TICK_FONT)
+    ax.set_xlabel('Score (%)', fontweight='bold', fontsize=BASE_FONT)
+    ax.set_xlim(0, 120)
+    ax.set_ylim(-0.7, n - 0.3)
+    ax.legend(loc='lower right', frameon=True, facecolor='white', fontsize=LEGEND_FONT)
+    _clean_axes(ax)
+
+
+# ── Panel F: Gene Signature Spatial Map ──────────────────────────────────────
+def plot_panel_f_map(fig, gs_left, gs_right, project_root: Path):
+    """
+    Panel F (left) — Dual spatial map styled like fig_gene_sig_luminal.png:
+      LEFT  sub-axis: all cells coloured by continuous pathway score (viridis)
+      RIGHT sub-axis: SPINDLE top-match tiles highlighted over greyscale H&E-like bg
+    """
+    ax_cont  = fig.add_subplot(gs_left)
+    ax_match = fig.add_subplot(gs_right)
+
+    df_cells   = _read_panel_csv(project_root, 'panel_F_spatial_cells.csv')
+    df_matches = _read_panel_csv(project_root, 'panel_F_top_matches.csv')
+
+    rendered = False
+    if df_cells is not None:
+        try:
+            x  = df_cells['x'].values
+            y  = df_cells['y'].values
+            ps = df_cells['pathway_score'].values
+
+            vmin, vmax = np.percentile(ps, 2), np.percentile(ps, 98)
+
+            # LEFT: continuous pathway score (viridis, all cells)
+            sc = ax_cont.scatter(x, y, c=ps, cmap='magma',
+                                 vmin=vmin, vmax=vmax,
+                                 s=0.6, alpha=0.75, rasterized=True,
+                                 linewidths=0)
+            cb = fig.colorbar(sc, ax=ax_cont, shrink=0.65, pad=0.02)
+            cb.set_label('Pathway Score', fontsize=BASE_FONT - 1, fontweight='bold')
+            cb.ax.tick_params(labelsize=TICK_FONT - 1)
+            ax_cont.set_aspect('equal')
+            ax_cont.axis('off')
+
+            # RIGHT: greyscale background + SPINDLE tiles highlighted
+            # Cells not in top matches: render as light gray
+            ax_match.scatter(x, y, c='#D0D0D0', s=0.4, alpha=0.40,
+                             rasterized=True, linewidths=0)
+
+            if df_matches is not None and len(df_matches) > 0:
+                # Collect all cells inside top-match tiles
+                in_match = np.zeros(len(x), dtype=bool)
+                for _, row in df_matches.iterrows():
+                    mask = ((x >= row['x0']) & (x <= row['x1']) &
+                            (y >= row['y0']) & (y <= row['y1']))
+                    in_match |= mask
+
+                # Highlight matched cells with pathway score colour
+                if in_match.any():
+                    sc2 = ax_match.scatter(
+                        x[in_match], y[in_match],
+                        c=ps[in_match], cmap='magma',
+                        vmin=vmin, vmax=vmax,
+                        s=1.8, alpha=0.90, rasterized=True, linewidths=0)
+                    cb2 = fig.colorbar(sc2, ax=ax_match, shrink=0.65, pad=0.02)
+                    cb2.set_label('Pathway Score', fontsize=BASE_FONT - 1, fontweight='bold')
+                    cb2.ax.tick_params(labelsize=TICK_FONT - 1)
+
+                # Draw tile bounding boxes
+                n_tiles = len(df_matches)
+                rank_cmap = plt.get_cmap('plasma', n_tiles)
+                for _, row in df_matches.iterrows():
+                    r   = int(row['rank']) - 1
+                    clr = rank_cmap(r / max(n_tiles - 1, 1))
+                    lw  = 2.8 if r == 0 else 1.8
+                    ax_match.add_patch(patches.Rectangle(
+                        (row['x0'], row['y0']),
+                        row['x1'] - row['x0'], row['y1'] - row['y0'],
+                        fill=False, edgecolor=clr, lw=lw))
+
+            ax_match.set_aspect('equal')
+            ax_match.axis('off')
+
+            # Shared title
+            n_q = len(df_matches) if df_matches is not None else 0
+            ax_match.set_title(f'Luminal Tumor Core\u2014SPINDLE Matches (n={n_q})',
+                               fontsize=TITLE_FONT, pad=6, fontweight='bold')
+            ax_cont.set_title('Luminal Tumor Core\u2014Pathway Score',
+                              fontsize=TITLE_FONT, pad=6, fontweight='bold')
+
+            rendered = True
+        except Exception as e:
+            print(f'  WARNING (Panel F map): {e}')
+
+    if not rendered:
+        for ax_tmp in [ax_cont, ax_match]:
+            ax_tmp.text(0.5, 0.5, 'Gene-sig map\n[Requires CSV data]',
+                        ha='center', va='center', bbox=dict(fc=LIGHT_GRAY),
+                        fontsize=ANNOT_FONT)
+            ax_tmp.axis('off')
+
+
+    return ax_cont, ax_match
+
+
+# ── Panel F: Pathway Score Bar Chart ─────────────────────────────────────────
+def plot_panel_f_pathway(ax, project_root: Path):
+    """
+    Panel F (right) — Horizontal grouped bar chart: tissue background vs.
+    SPINDLE Top-10 enrichment score per niche.
+    """
+    # Fallback
+    niches  = ['Invasive Tumour\n& DCIS Core',
+                'Myoepithelial\n& Basal Layer',
+                'Proliferating\nTumour Cells',
+                'Vasculature &\nEndothelial',
+                'Macrophage &\nDendritic Cell']
+    top10   = [5.579, 0.994, 0.287, 0.191, -0.067]
+    bg_vals = [2.231, -0.017, 0.029, 0.011, 0.007]
+
+    df = _read_panel_csv(project_root, 'panel_F_pathway_scores.csv')
+    if df is not None:
+        try:
+            col_lbl = next(c for c in df.columns if 'label' in c.lower())
+            col_t10 = next(c for c in df.columns if 'enrich' in c.lower() or 'top' in c.lower())
+            col_bg  = next(c for c in df.columns if 'background' in c.lower() or 'bg' in c.lower())
+            niches  = df[col_lbl].tolist()
+            top10   = df[col_t10].tolist()
+            bg_vals = df[col_bg].tolist()
+        except Exception as e:
+            print(f'  WARNING (Panel F pathway): {e}')
+
+    # Sort ascending by top-10 score
     order   = sorted(range(len(niches)), key=lambda i: top10[i])
     niches  = [niches[i]  for i in order]
     top10   = [top10[i]   for i in order]
     bg_vals = [bg_vals[i] for i in order]
 
     y_pos = np.arange(len(niches))
-    bar_h = 0.32
+    bh    = 0.32
 
-    ax_bar.barh(y_pos - bar_h / 2, bg_vals, height=bar_h,
-                color='#CFD8DC', edgecolor='black', lw=0.5,
-                label='Tissue Background')
-    bars10 = ax_bar.barh(y_pos + bar_h / 2, top10, height=bar_h,
-                          color=TEAL, edgecolor='black', lw=0.5,
-                          label='SPINDLE Top-10')
+    ax.barh(y_pos - bh/2, bg_vals, height=bh,
+            color='#CFD8DC', edgecolor='#808080', lw=0.6, label='Tissue Background')
+    bars10 = ax.barh(y_pos + bh/2, top10, height=bh,
+                     color=TEAL, edgecolor='none', lw=0.0, label='SPINDLE Top-10')
 
     for b, v in zip(bars10, top10):
-        w = b.get_width()
+        w  = b.get_width()
         ha = 'left' if w >= 0 else 'right'
-        xoff = w + 0.08 if w >= 0 else w - 0.08
-        ax_bar.text(xoff, b.get_y() + b.get_height() / 2, f'{v:.2f}',
-                    va='center', fontweight='bold', fontsize=9.5, ha=ha)
+        xoff = w + 0.06 if w >= 0 else w - 0.06
+        ax.text(xoff, b.get_y() + b.get_height() / 2,
+                f'{v:.2f}', va='center', fontweight='bold',
+                fontsize=ANNOT_FONT, ha=ha, color=SLATE)
 
-    ax_bar.set_yticks(y_pos)
-    ax_bar.set_yticklabels(niches, fontsize=9.5)
-    ax_bar.set_xlabel('Pathway Score (Scanpy sc.score_genes)', fontweight='bold')
-    ax_bar.axvline(x=0, color='gray', lw=0.8, linestyle='-')
-    ax_bar.legend(loc='lower right', frameon=True, fontsize=9)
-    ax_bar.grid(axis='x', linestyle='--', alpha=0.4)
-    ax_bar.spines['top'].set_visible(False)
-    ax_bar.spines['right'].set_visible(False)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(niches, fontsize=TICK_FONT)
+    ax.set_xlabel('Pathway Score (Scanpy sc.score_genes)', fontweight='bold', fontsize=BASE_FONT)
+    ax.tick_params(axis='x', labelsize=TICK_FONT)
+    ax.axvline(x=0, color='gray', lw=0.8)
+    ax.legend(loc='lower right', frameon=True, facecolor='white', fontsize=LEGEND_FONT)
+    _clean_axes(ax)
 
 
 # ── Individual Panel Export ───────────────────────────────────────────────────
 def export_individual_panels(project_root: Path):
-    """
-    Export each panel as a standalone high-resolution file for manual assembly.
-    Outputs to figures/panels/panel_A.pdf/.png … panel_F.pdf/.png
-    """
+    """Export each sub-panel as a separate standalone high-resolution file."""
     panels_dir = project_root / 'figures' / 'panels'
     panels_dir.mkdir(parents=True, exist_ok=True)
 
-    def _save(fig_obj, name):
-        for fmt in ('pdf', 'png'):
-            p = panels_dir / f'{name}.{fmt}'
-            fig_obj.savefig(p, bbox_inches='tight', dpi=300, format=fmt)
-            print(f'    saved → {p}')
-        plt.close(fig_obj)
-
-    print('  Panel A …')
-    fig_a, ax_a = plt.subplots(figsize=(8, 5))
+    # Panel A
+    print('  Panel A ...')
+    fig_a, ax_a = plt.subplots(figsize=(8, 5.5))
     plot_panel_a_scalability(ax_a, project_root)
-    plt.tight_layout()
-    _save(fig_a, 'panel_A')
+    fig_a.tight_layout()
+    _save(fig_a, panels_dir, 'panel_A')
 
-    print('  Panel B …')
-    fig_b, ax_b = plt.subplots(figsize=(7, 5))
+    # Panel B
+    print('  Panel B ...')
+    fig_b, ax_b = plt.subplots(figsize=(7.5, 5.5))
     plot_panel_b_speedup(ax_b, project_root)
-    plt.tight_layout()
-    _save(fig_b, 'panel_B')
+    fig_b.tight_layout()
+    _save(fig_b, panels_dir, 'panel_B')
 
-    print('  Panel C …')
-    fig_c, ax_c = plt.subplots(figsize=(7, 5))
+    # Panel C
+    print('  Panel C ...')
+    fig_c, ax_c = plt.subplots(figsize=(7, 5.5))
     plot_panel_c_accuracy(ax_c, project_root)
-    plt.tight_layout()
-    _save(fig_c, 'panel_C')
+    fig_c.tight_layout()
+    _save(fig_c, panels_dir, 'panel_C')
 
-    print('  Panel D …')
-    fig_d, ax_d = plt.subplots(figsize=(7, 5))
+    # Panel D
+    print('  Panel D ...')
+    fig_d, ax_d = plt.subplots(figsize=(7.5, 5.5))
     plot_panel_d_partial(ax_d, project_root)
-    plt.tight_layout()
-    _save(fig_d, 'panel_D')
+    fig_d.tight_layout()
+    _save(fig_d, panels_dir, 'panel_D')
 
-    print('  Panel E …')
-    fig_e = plt.figure(figsize=(14, 5))
-    gs_e  = gridspec.GridSpec(1, 3, figure=fig_e,
-                              width_ratios=[1.0, 1.0, 1.0], wspace=0.25)
-    plot_panel_e_cross_modal(gs_e, fig_e, project_root)
-    fig_e.tight_layout()
-    _save(fig_e, 'panel_E')
+    # Panel E — three separate files
+    print('  Panel E (Xenium) ...')
+    fig_xe, ax_xe = plt.subplots(figsize=(7, 7))
+    plot_panel_e_xenium(ax_xe, project_root)
+    fig_xe.tight_layout()
+    _save(fig_xe, panels_dir, 'panel_E_xenium')
 
-    print('  Panel F …')
-    fig_f = plt.figure(figsize=(14, 6))
-    gs_f  = gridspec.GridSpec(1, 2, figure=fig_f,
-                              width_ratios=[1.0, 1.2], wspace=0.28)
-    plot_panel_f_gene_list(gs_f, fig_f, project_root)
-    fig_f.tight_layout()
-    _save(fig_f, 'panel_F')
+    print('  Panel E (Visium) ...')
+    fig_vi, ax_vi = plt.subplots(figsize=(7, 7))
+    plot_panel_e_visium(ax_vi, project_root)
+    fig_vi.tight_layout()
+    _save(fig_vi, panels_dir, 'panel_E_visium')
 
-    print(f'\n  All individual panels saved to {panels_dir}')
+    print('  Panel E (Recall bar chart) ...')
+    fig_re, ax_re = plt.subplots(figsize=(7.5, 4))
+    plot_panel_e_recall(ax_re, project_root)
+    fig_re.tight_layout()
+    _save(fig_re, panels_dir, 'panel_E_recall')
+
+    # Panel F — two separate files
+    print('  Panel F (spatial map) ...')
+    fig_fm = plt.figure(figsize=(14, 7))
+    gs_fm  = gridspec.GridSpec(1, 2, figure=fig_fm, wspace=0.08,
+                               left=0.01, right=0.93, top=0.92, bottom=0.02)
+    plot_panel_f_map(fig_fm, gs_fm[0], gs_fm[1], project_root)
+    _save(fig_fm, panels_dir, 'panel_F_map')
+
+    print('  Panel F (pathway bar chart) ...')
+    fig_fp, ax_fp = plt.subplots(figsize=(8, 5.5))
+    plot_panel_f_pathway(ax_fp, project_root)
+    fig_fp.tight_layout()
+    _save(fig_fp, panels_dir, 'panel_F_pathway')
+
+    print(f'\n  All individual panels saved to {panels_dir.relative_to(project_root)}')
 
 
 # ── Composite Backup Figure ───────────────────────────────────────────────────
 def build_composite_figure(project_root: Path) -> plt.Figure:
     """
-    Build the merged 6-panel composite (backup for auto-assembly).
-    No suptitle is added; the figure is intended for manual captioning in LaTeX.
-    """
-    fig = plt.figure(figsize=(16, 18.5), dpi=300)
+    Build a merged multi-panel composite figure.
 
+    Row 0: A | B
+    Row 1: C | D
+    Row 2: E-Xenium | E-Visium | E-Recall  (full-width)
+    Row 3: F-Map-left | F-Map-right         (full-width, 2/3 of width)
+    Row 4: F-Pathway                        (full-width, 1/3 used centrally)
+
+    Rows 3+4 are nested inside a single outer row so F-map and F-pathway
+    never overlap.
+    """
+    fig = plt.figure(figsize=(17, 24), dpi=300)
+
+    # Outer grid: 5 logical rows
     gs = gridspec.GridSpec(
-        4, 2,
-        height_ratios=[1.0, 1.0, 1.22, 1.45],
-        hspace=0.46, wspace=0.26,
-        left=0.06, right=0.97, top=0.96, bottom=0.05,
+        5, 2,
+        height_ratios=[1.0, 1.0, 1.4, 1.4, 1.1],
+        hspace=0.45, wspace=0.28,
+        left=0.07, right=0.97, top=0.96, bottom=0.03,
     )
 
+    # A
     ax_a = fig.add_subplot(gs[0, 0])
     plot_panel_a_scalability(ax_a, project_root)
 
+    # B
     ax_b = fig.add_subplot(gs[0, 1])
     plot_panel_b_speedup(ax_b, project_root)
 
+    # C
     ax_c = fig.add_subplot(gs[1, 0])
     plot_panel_c_accuracy(ax_c, project_root)
 
+    # D
     ax_d = fig.add_subplot(gs[1, 1])
     plot_panel_d_partial(ax_d, project_root)
 
+    # E — three tight sub-columns (small wspace to close the gap)
     sub_gs_e = gridspec.GridSpecFromSubplotSpec(
         1, 3, subplot_spec=gs[2, :],
-        width_ratios=[1.0, 1.0, 1.15], wspace=0.18)
-    plot_panel_e_cross_modal(sub_gs_e, fig, project_root)
+        width_ratios=[1.0, 1.0, 1.0], wspace=0.06)
+    ax_xe_c = fig.add_subplot(sub_gs_e[0])
+    plot_panel_e_xenium(ax_xe_c, project_root)
+    ax_vi_c = fig.add_subplot(sub_gs_e[1])
+    plot_panel_e_visium(ax_vi_c, project_root)
+    ax_re_c = fig.add_subplot(sub_gs_e[2])
+    plot_panel_e_recall(ax_re_c, project_root)
 
-    sub_gs_f = gridspec.GridSpecFromSubplotSpec(
+    # F-Map — occupies full width of row 3
+    sub_gs_fm = gridspec.GridSpecFromSubplotSpec(
         1, 2, subplot_spec=gs[3, :],
-        width_ratios=[1.0, 1.25], wspace=0.28)
-    plot_panel_f_gene_list(sub_gs_f, fig, project_root)
+        width_ratios=[1.0, 1.0], wspace=0.08)
+    plot_panel_f_map(fig, sub_gs_fm[0], sub_gs_fm[1], project_root)
+
+    # F-Pathway — occupies the centre 60% of row 4 to avoid being too wide
+    sub_gs_fp = gridspec.GridSpecFromSubplotSpec(
+        1, 5, subplot_spec=gs[4, :],
+        width_ratios=[0.5, 4.0, 0.5, 0.5, 0.5], wspace=0.0)
+    ax_fp_c = fig.add_subplot(sub_gs_fp[1])
+    plot_panel_f_pathway(ax_fp_c, project_root)
 
     return fig
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 def main():
-    print('Initializing SPINDLE Figure 1 Generator …')
+    print('Initializing SPINDLE Figure 1 Generator ...')
     set_publication_style()
 
     current_dir  = Path(__file__).resolve().parent
     project_root = current_dir.parent
 
-    # 1. Export individual panels for manual assembly
-    print('\n── Exporting individual panels ──────────────────────────────────────')
+    panel_data_dir = project_root / 'results' / 'panel_data'
+    if not panel_data_dir.exists():
+        print('\n  WARNING: results/panel_data/ not found.')
+        print('  Run:  python scripts/organize_panel_data.py')
+        print('  Proceeding with hardcoded fallback values.\n')
+
+    # 1. Export individual panels
+    print('\n-- Exporting individual panels ---------------------------------------')
     export_individual_panels(project_root)
 
-    # 2. Build and save the merged composite backup
-    print('\n── Building composite backup figure ────────────────────────────────')
+    # 2. Composite backup
+    print('\n-- Building composite backup figure ---------------------------------')
     fig = build_composite_figure(project_root)
-
     out_stem = project_root / 'results' / 'fig_main_result'
     for fmt in ('pdf', 'png'):
         p = out_stem.with_suffix(f'.{fmt}')
         fig.savefig(str(p), format=fmt, bbox_inches='tight', dpi=300)
-        print(f'  saved → {p}')
+        print(f'  saved -> {p.relative_to(project_root)}')
     plt.close(fig)
 
-    print(f'\n{"="*72}')
+    print(f'\n{"="*70}')
     print('SUCCESS: Figure 1 generation complete.')
-    print(f'  Panels    → {project_root / "figures" / "panels"}/')
-    print(f'  Composite → {out_stem}.pdf / .png')
-    print(f'{"="*72}')
+    print(f'  Panels    -> {project_root / "figures" / "panels"}/')
+    print(f'  Composite -> results/fig_main_result.pdf / .png')
+    print(f'{"="*70}')
 
 
 if __name__ == '__main__':

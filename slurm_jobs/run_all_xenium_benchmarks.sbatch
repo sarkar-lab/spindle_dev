@@ -33,6 +33,9 @@ echo "============================================================"
 echo "PHASE 1: INDEXING ALL DATASETS"
 echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
+    if [[ "$DATASET_PATH" == *"5k"* ]]; then
+        continue
+    fi
     echo "Indexing $(basename "$DATASET_PATH")..."
     python benchmarks/index_datasets.py --dataset-paths "$DATASET_PATH"
 done
@@ -43,6 +46,9 @@ echo "============================================================"
 echo "PHASE 2: HOLDOUT VALIDATION ON ALL DATASETS"
 echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
+    if [[ "$DATASET_PATH" == *"5k"* ]]; then
+        continue
+    fi
     echo "Holdout validation for $(basename "$DATASET_PATH")..."
     python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH" --train-test-ratio 0.05
 done
@@ -53,6 +59,9 @@ echo "============================================================"
 echo "PHASE 3: PARTIAL PANEL SEARCH ON ALL DATASETS"
 echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
+    if [[ "$DATASET_PATH" == *"5k"* ]]; then
+        continue
+    fi
     echo "Partial panel search for $(basename "$DATASET_PATH")..."
     python benchmarks/partial_panel_search.py --dataset-paths "$DATASET_PATH" --num-queries 5
 done
