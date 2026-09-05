@@ -407,8 +407,8 @@ def main():
             "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
         }
 
-    # Run indexing first
-    index_datasets.run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio)
+    # Indexing is handled in Phase 1 (index_datasets.py)
+    # index_datasets.run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio)
 
     indexed_files = []
     for ds_name in datasets.keys():
