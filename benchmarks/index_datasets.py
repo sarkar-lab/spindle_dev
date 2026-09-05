@@ -32,7 +32,7 @@ def prepare_to_index(adata):
     coords = adata.obsm["spatial"]
     tiles = preprocessing.build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=40)
     num_genes = adata.n_vars
-    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=num_genes)  
+    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=min(800, num_genes))
     tile_covs = spindle_dev.preprocessing.build_tile_covs_full(adata, tiles, gene_idx, n_jobs=8, eps=1e-6)
 
     return tiles, tile_covs, genes_work
