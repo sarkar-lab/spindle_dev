@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16            
-#SBATCH --mem=256G                     
+#SBATCH --mem=512G                     
 #SBATCH --output=logs/%x_%j.out       
 #SBATCH --mail-type=END,FAIL          
 #SBATCH --mail-user=ghoss18@vanderbilt.edu
@@ -29,20 +29,34 @@ cd $SLURM_SUBMIT_DIR
 
 DATASET_DIR="/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium"
 
-# Loop over all .h5ad files in the dataset directory
+echo "============================================================"
+echo "PHASE 1: INDEXING ALL DATASETS"
+echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
-    echo "============================================================"
-    echo "STARTING BENCHMARKS FOR: $(basename "$DATASET_PATH")"
-    echo "============================================================"
-
-    echo "Running Holdout Validation Benchmark..."
-    python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH" --train-test-ratio 0.05
-
-    echo "Running Partial Panel Search Benchmark..."
-    python benchmarks/partial_panel_search.py --dataset-paths "$DATASET_PATH" --num-queries 5
-
-    echo "Finished benchmarks for $(basename "$DATASET_PATH")"
-    echo ""
+    echo "Indexing $(basename "$DATASET_PATH")..."
+    python benchmarks/index_datasets.py --dataset-paths "$DATASET_PATH"
 done
+echo "Phase 1 Complete."
+echo ""
+
+echo "============================================================"
+echo "PHASE 2: HOLDOUT VALIDATION ON ALL DATASETS"
+echo "============================================================"
+for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
+    echo "Holdout validation for $(basename "$DATASET_PATH")..."
+    python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH" --train-test-ratio 0.05
+done
+echo "Phase 2 Complete."
+echo ""
+
+echo "============================================================"
+echo "PHASE 3: PARTIAL PANEL SEARCH ON ALL DATASETS"
+echo "============================================================"
+for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
+    echo "Partial panel search for $(basename "$DATASET_PATH")..."
+    python benchmarks/partial_panel_search.py --dataset-paths "$DATASET_PATH" --num-queries 5
+done
+echo "Phase 3 Complete."
+echo ""
 
 echo "All datasets processed successfully!"

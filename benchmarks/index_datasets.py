@@ -289,8 +289,29 @@ def run_indexing_for_datasets(datasets, is_test=False, train_test_ratio=0.05):
         gc.collect()
 
     if scalability_records:
-        df_scale = pd.DataFrame(scalability_records)
+        df_new = pd.DataFrame(scalability_records)
         csv_scale_path = summary_out_dir / "index_scalability_summary.csv"
+        
+        if csv_scale_path.exists():
+            try:
+                df_existing = pd.read_csv(csv_scale_path)
+                # Set index to update or append easily
+                df_existing.set_index('Dataset', inplace=True)
+                df_new.set_index('Dataset', inplace=True)
+                
+                # Update existing and append new
+                df_existing.update(df_new)
+                new_rows = df_new[~df_new.index.isin(df_existing.index)]
+                if not new_rows.empty:
+                    df_existing = pd.concat([df_existing, new_rows])
+                
+                df_scale = df_existing.reset_index()
+            except Exception as e:
+                print(f"Warning: Could not update existing CSV: {e}")
+                df_scale = df_new.reset_index() if 'Dataset' in df_new.index.names else df_new
+        else:
+            df_scale = df_new
+            
         df_scale.to_csv(csv_scale_path, index=False)
         print(f"\nExported index scalability summary CSV to {csv_scale_path}")
         print(df_scale.to_string(index=False))
