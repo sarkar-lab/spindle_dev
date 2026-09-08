@@ -163,11 +163,28 @@ def main():
         all_dfs.append(df)
 
     if all_dfs:
-        combined_df = pd.concat(all_dfs, ignore_index=True)
+        new_df = pd.concat(all_dfs, ignore_index=True)
         overall_results_dir = project_root / "results" / "partial_panel_search"
         overall_results_dir.mkdir(parents=True, exist_ok=True)
-        combined_df.to_csv(overall_results_dir / "overall_benchmark_metrics.csv", index=False)
-        
+
+        # ── overall_benchmark_metrics.csv  (upsert: keep existing rows for OTHER datasets) ──
+        overall_metrics_path = overall_results_dir / "overall_benchmark_metrics.csv"
+        if overall_metrics_path.exists():
+            try:
+                existing_metrics = pd.read_csv(overall_metrics_path)
+                new_datasets = new_df['Dataset'].unique()
+                combined_df = pd.concat(
+                    [existing_metrics[~existing_metrics['Dataset'].isin(new_datasets)], new_df],
+                    ignore_index=True
+                )
+            except Exception as e:
+                print(f"Note: Could not merge existing overall metrics ({e}); overwriting.")
+                combined_df = new_df
+        else:
+            combined_df = new_df
+        combined_df.to_csv(overall_metrics_path, index=False)
+
+        # ── benchmark_summary.csv  (upsert) ──
         summary_records = []
         for ds_name, grp in combined_df.groupby('Dataset'):
             mean_sp = round(grp['spindle_time_ms'].mean(), 4)
@@ -185,7 +202,19 @@ def main():
                 'overlap_at_20': round(grp['overlap_at_20'].mean(), 4),
                 'overlap_at_50': round(grp['overlap_at_50'].mean(), 4),
             })
-        pd.DataFrame(summary_records).to_csv(overall_results_dir / "benchmark_summary.csv", index=False)
+        summary_path = overall_results_dir / "benchmark_summary.csv"
+        df_summary = pd.DataFrame(summary_records)
+        if summary_path.exists():
+            try:
+                existing_summary = pd.read_csv(summary_path)
+                new_datasets = df_summary['Dataset'].unique()
+                df_summary = pd.concat(
+                    [existing_summary[~existing_summary['Dataset'].isin(new_datasets)], df_summary],
+                    ignore_index=True
+                )
+            except Exception as e:
+                print(f"Note: Could not merge existing benchmark summary ({e}); overwriting.")
+        df_summary.to_csv(summary_path, index=False)
         # Plotting disabled in CSV-only mode
 
 if __name__ == "__main__":

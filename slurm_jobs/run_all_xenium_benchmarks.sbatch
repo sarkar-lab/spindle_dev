@@ -28,13 +28,18 @@ conda activate spindle_env
 cd $SLURM_SUBMIT_DIR
 
 DATASET_DIR="/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium"
+# Fraction of tiles held out as unseen test queries during PHASE 1 indexing
+# (the split happens once, at index-build time -- PHASE 2 only loads the
+# already-built index/covariance pickles, so this must be passed here, not
+# to holdout_validation.py).
+TRAIN_TEST_RATIO=${1:-0.1}
 
 echo "============================================================"
 echo "PHASE 1: INDEXING ALL DATASETS"
 echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
-    echo "Indexing $(basename "$DATASET_PATH")..."
-    python benchmarks/index_datasets.py --dataset-paths "$DATASET_PATH"
+    echo "Indexing $(basename "$DATASET_PATH") with train-test-ratio=$TRAIN_TEST_RATIO..."
+    python benchmarks/index_datasets.py --dataset-paths "$DATASET_PATH" --train-test-ratio "$TRAIN_TEST_RATIO"
 done
 echo "Phase 1 Complete."
 echo ""
@@ -44,7 +49,7 @@ echo "PHASE 2: HOLDOUT VALIDATION ON ALL DATASETS"
 echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
     echo "Holdout validation for $(basename "$DATASET_PATH")..."
-    python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH" --train-test-ratio 0.05
+    python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH"
 done
 echo "Phase 2 Complete."
 echo ""
@@ -54,7 +59,7 @@ echo "PHASE 3: PARTIAL PANEL SEARCH ON ALL DATASETS"
 echo "============================================================"
 for DATASET_PATH in "$DATASET_DIR"/*.h5ad; do
     echo "Partial panel search for $(basename "$DATASET_PATH")..."
-    python benchmarks/partial_panel_search.py --dataset-paths "$DATASET_PATH" --num-queries 5
+    python benchmarks/partial_panel_search.py --dataset-paths "$DATASET_PATH" --num-queries 50
 done
 echo "Phase 3 Complete."
 echo ""

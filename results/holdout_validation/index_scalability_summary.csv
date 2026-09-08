@@ -1,2 +1,9 @@
 Dataset,Cells,Build Time (s),Index Size (MB)
-xenium_human_breast_cancer,159226,87.15,14.99
+xenium_human_brain_cancer,816769,223.64,51.68
+xenium_human_breast_cancer,159226,25.78,15.17
+xenium_human_kidney_nondiseased,97560,15.41,18.32
+xenium_human_lung_cancer,162254,27.93,21.82
+xenium_human_lymph_node_5k,708983,389.71,101.41
+xenium_human_lymph_node,377985,42.23,25.75
+xenium_human_pancreatic_cancer,190965,46.68,30.91
+xenium_human_skin_melanoma,87499,17.95,20.37

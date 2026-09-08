@@ -62,15 +62,41 @@ def extract_query_matrices(test_tile_covs: list) -> list:
 # Stage 1: Spindle DAG Candidate Retrieval
 # =====================================================================
 
+def _niche_scale_factor(n_niche: int, typical: int = 500, min_factor: float = 1.0, max_factor: float = 6.0) -> float:
+    """Scale search effort with niche candidate-pool size.
+
+    Sub-linear (sqrt) scaling anchored so niches at or below ``typical`` size
+    get a factor of exactly 1.0 (i.e. no change from today's fixed
+    constants -- effort/budget must never be reduced below the baseline that
+    already works), while much larger niches get a bounded, proportional
+    increase in search effort.
+    """
+    return float(np.clip(np.sqrt(max(n_niche, 1) / typical), min_factor, max_factor))
+
+
 def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_multiplier: float = 2.0):
     """Query the Spindle DAG index to retrieve Stage 1 candidate pools."""
-    search_cfg = search.SearchConfig(
-        max_results=None,
-        debug=False,
-        max_failed_starts=10,
-        max_failed_paths=20,
-        total_paths_limit=300
-    )
+    niche_sizes = {int(c): int(np.sum(data.labels == c)) for c in set(data.labels)}
+    niche_search_cfgs = {}
+    for c, n_niche in niche_sizes.items():
+        f = _niche_scale_factor(n_niche)
+        # Base effort caps (100 / 200 / 3000) are 10x the original constants
+        # (10 / 20 / 300). The radius-aware pruning fix in search.py's dfs()
+        # correctly widens which branches survive pruning (using a valid
+        # distance lower bound instead of the raw distance-to-cluster-mean),
+        # which means more of the DAG must actually be traversed to reach a
+        # leaf -- the old caps were calibrated against the previous,
+        # incorrectly-narrow pruning and were too tight once that was fixed.
+        # 10x was empirically calibrated to match unlimited-budget Stage-1
+        # candidate coverage (checked against exact brute-force ground truth)
+        # across both tight-radius and large-radius datasets.
+        niche_search_cfgs[c] = search.SearchConfig(
+            max_results=None,
+            debug=False,
+            max_failed_starts=max(1, round(100 * f)),
+            max_failed_paths=max(1, round(200 * f)),
+            total_paths_limit=max(1, round(3000 * f)),
+        )
 
     print(f"Starting blind holdout validation for {len(query_matrices)} unseen queries...")
     print("-" * 65)
@@ -97,8 +123,9 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
         index_handle = dag_dict[cluster_id]
         epsilon = config.epsilon_dict[cluster_id]
         num_blocks = len(index_handle.sorted_blocks)
+        f = _niche_scale_factor(niche_sizes[cluster_id])
 
-        budget = float(epsilon) * float(num_blocks) * float(budget_multiplier)
+        budget = float(epsilon) * float(num_blocks) * float(budget_multiplier) * f
 
         q_spd = query_matrices[j]
         perm = data.perm_list[cluster_id]
@@ -112,7 +139,7 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
             [],
             query_block_runs,
             budget,
-            config=search_cfg,
+            config=niche_search_cfgs[cluster_id],
         )
         spindle_search_times.append(time.perf_counter() - t0)
 
@@ -386,7 +413,6 @@ def main():
     parser.add_argument('--top-c', type=int, default=400, help='Stage 1 candidate pool retrieval cap for Stage 2 re-ranking')
     parser.add_argument('--budget-mult', type=float, default=1.0, help='Distance budget multiplier for DAG search')
     parser.add_argument('--dataset-paths', nargs='*', default=None, help='Paths to the datasets')
-    parser.add_argument('--train-test-ratio', type=float, default=0.05, help='Train test ratio')
     args = parser.parse_args()
 
     current_dir = Path(__file__).resolve().parent
@@ -407,8 +433,10 @@ def main():
             "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
         }
 
-    # Indexing is handled in Phase 1 (index_datasets.py)
-    # index_datasets.run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio)
+    # Indexing (including the train/test split, via --train-test-ratio) is handled
+    # separately in Phase 1 (index_datasets.py) — this script only loads the
+    # already-built index and covariance pickles.
+    # index_datasets.run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=0.05)
 
     indexed_files = []
     for ds_name in datasets.keys():

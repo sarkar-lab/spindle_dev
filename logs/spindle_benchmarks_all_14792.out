@@ -1,0 +1,333 @@
+Activating Conda environment...
+Selected dataset: xenium_human_skin_melanoma
+============================================================
+PHASE 1: INDEXING SINGLE DATASET
+============================================================
+Indexing xenium_human_skin_melanoma with train-test-ratio=0.1...
+
+================================================================================
+Processing dataset: xenium_human_skin_melanoma
+================================================================================
+
+Index for xenium_human_skin_melanoma already exists at /home/NAShome/ghoss18/spindle_dev/results/holdout_validation_indexed/xenium_human_skin_melanoma_spindle_index.pkl. Extracting scalability info from file.
+
+Exported index scalability summary CSV to /home/NAShome/ghoss18/spindle_dev/results/holdout_validation/index_scalability_summary.csv
+                        Dataset  Cells  Build Time (s)  Index Size (MB)
+      xenium_human_brain_cancer 816769          223.64            51.68
+     xenium_human_breast_cancer 159226           25.78            15.17
+xenium_human_kidney_nondiseased  97560           15.41            18.32
+       xenium_human_lung_cancer 162254           27.93            21.82
+     xenium_human_lymph_node_5k 708983          389.71           101.41
+        xenium_human_lymph_node 377985           42.23            25.75
+ xenium_human_pancreatic_cancer 190965           46.68            30.91
+     xenium_human_skin_melanoma  87499           17.95            20.37
+Phase 1 Complete.
+
+============================================================
+PHASE 2: HOLDOUT VALIDATION ON SINGLE DATASET
+============================================================
+Holdout validation for xenium_human_skin_melanoma...
+
+================================================================================
+Processing indexed file: xenium_human_skin_melanoma_spindle_index.pkl
+================================================================================
+
+Loading Spindle index data...
+Loading benchmark raw covariance matrices from xenium_human_skin_melanoma_raw_covariances.pkl...
+Starting blind holdout validation for 95 unseen queries...
+-----------------------------------------------------------------
+Step 1/2: Assigning queries to Covariance-Niches using latent space...
+Assignment complete in 0.291s (3.06ms per query)
+
+Step 2/2: Performing distance-budgeted search across DAG...
+Querying Index:   0%|          | 0/95 [00:00<?, ?it/s]Querying Index:   2%|▏         | 2/95 [00:00<00:05, 18.19it/s]Querying Index:   4%|▍         | 4/95 [00:00<00:08, 10.63it/s]Querying Index:   6%|▋         | 6/95 [00:00<00:06, 13.11it/s]Querying Index:   8%|▊         | 8/95 [00:00<00:08, 10.68it/s]Querying Index:  11%|█         | 10/95 [00:00<00:08,  9.67it/s]Querying Index:  13%|█▎        | 12/95 [00:01<00:08, 10.16it/s]Querying Index:  15%|█▍        | 14/95 [00:01<00:07, 10.57it/s]Querying Index:  17%|█▋        | 16/95 [00:01<00:07, 10.73it/s]Querying Index:  20%|██        | 19/95 [00:01<00:05, 13.95it/s]Querying Index:  22%|██▏       | 21/95 [00:01<00:04, 15.03it/s]Querying Index:  24%|██▍       | 23/95 [00:01<00:05, 14.09it/s]Querying Index:  26%|██▋       | 25/95 [00:01<00:04, 15.12it/s]Querying Index:  28%|██▊       | 27/95 [00:02<00:04, 16.10it/s]Querying Index:  31%|███       | 29/95 [00:02<00:05, 12.59it/s]Querying Index:  33%|███▎      | 31/95 [00:02<00:05, 12.11it/s]Querying Index:  35%|███▍      | 33/95 [00:02<00:04, 13.42it/s]Querying Index:  37%|███▋      | 35/95 [00:02<00:04, 13.17it/s]Querying Index:  39%|███▉      | 37/95 [00:02<00:04, 12.64it/s]Querying Index:  41%|████      | 39/95 [00:03<00:04, 12.25it/s]Querying Index:  43%|████▎     | 41/95 [00:03<00:04, 11.93it/s]Querying Index:  45%|████▌     | 43/95 [00:03<00:04, 11.80it/s]Querying Index:  47%|████▋     | 45/95 [00:03<00:04, 11.61it/s]Querying Index:  49%|████▉     | 47/95 [00:03<00:03, 13.02it/s]Querying Index:  52%|█████▏    | 49/95 [00:04<00:04, 11.10it/s]Querying Index:  54%|█████▎    | 51/95 [00:04<00:03, 12.56it/s]Querying Index:  56%|█████▌    | 53/95 [00:04<00:03, 12.19it/s]Querying Index:  58%|█████▊    | 55/95 [00:04<00:03, 11.93it/s]Querying Index:  60%|██████    | 57/95 [00:04<00:02, 13.35it/s]Querying Index:  62%|██████▏   | 59/95 [00:04<00:02, 14.49it/s]Querying Index:  64%|██████▍   | 61/95 [00:04<00:02, 13.42it/s]Querying Index:  66%|██████▋   | 63/95 [00:05<00:02, 12.66it/s]Querying Index:  68%|██████▊   | 65/95 [00:05<00:02, 10.89it/s]Querying Index:  72%|███████▏  | 68/95 [00:05<00:02, 12.46it/s]Querying Index:  75%|███████▍  | 71/95 [00:05<00:01, 13.50it/s]Querying Index:  77%|███████▋  | 73/95 [00:05<00:01, 13.92it/s]Querying Index:  80%|████████  | 76/95 [00:05<00:01, 14.65it/s]Querying Index:  82%|████████▏ | 78/95 [00:06<00:01, 13.61it/s]Querying Index:  84%|████████▍ | 80/95 [00:06<00:01, 14.47it/s]Querying Index:  86%|████████▋ | 82/95 [00:06<00:00, 13.63it/s]Querying Index:  88%|████████▊ | 84/95 [00:06<00:00, 12.95it/s]Querying Index:  91%|█████████ | 86/95 [00:06<00:00, 11.14it/s]Querying Index:  93%|█████████▎| 88/95 [00:06<00:00, 12.66it/s]Querying Index:  95%|█████████▍| 90/95 [00:07<00:00, 10.98it/s]Querying Index:  97%|█████████▋| 92/95 [00:07<00:00, 10.01it/s]Querying Index:  99%|█████████▉| 94/95 [00:07<00:00, 11.62it/s]Querying Index: 100%|██████████| 95/95 [00:07<00:00, 12.51it/s]
+-----------------------------------------------------------------
+Index Querying Complete! Total time: 7.598s (0.0800s per query)
+
+========================================
+           QUERY HITS SUMMARY
+========================================
+Query   0 [Niche  2]:  212 matches found
+Query   1 [Niche  1]:  216 matches found
+Query   2 [Niche  0]:  348 matches found
+Query   3 [Niche  0]:  348 matches found
+Query   4 [Niche  1]:  216 matches found
+Query   5 [Niche  2]:  214 matches found
+Query   6 [Niche  0]:  348 matches found
+Query   7 [Niche  0]:  349 matches found
+Query   8 [Niche  0]:  348 matches found
+Query   9 [Niche  0]:  346 matches found
+Query  10 [Niche  2]:  208 matches found
+Query  11 [Niche  0]:  348 matches found
+Query  12 [Niche  0]:  349 matches found
+Query  13 [Niche  1]:  211 matches found
+Query  14 [Niche  0]:  348 matches found
+Query  15 [Niche  2]:  214 matches found
+Query  16 [Niche  1]:  216 matches found
+Query  17 [Niche  3]:   49 matches found
+Query  18 [Niche  2]:  214 matches found
+Query  19 [Niche  1]:  216 matches found
+Query  20 [Niche  1]:  216 matches found
+Query  21 [Niche  1]:  159 matches found
+Query  22 [Niche  0]:  348 matches found
+Query  23 [Niche  1]:  216 matches found
+Query  24 [Niche  2]:  214 matches found
+Query  25 [Niche  1]:  216 matches found
+Query  26 [Niche  1]:  211 matches found
+Query  27 [Niche  0]:  348 matches found
+Query  28 [Niche  0]:  348 matches found
+Query  29 [Niche  0]:  349 matches found
+Query  30 [Niche  2]:  214 matches found
+Query  31 [Niche  2]:  214 matches found
+Query  32 [Niche  1]:  216 matches found
+Query  33 [Niche  0]:  120 matches found
+Query  34 [Niche  0]:  348 matches found
+Query  35 [Niche  1]:  216 matches found
+Query  36 [Niche  0]:  348 matches found
+Query  37 [Niche  1]:  216 matches found
+Query  38 [Niche  0]:  348 matches found
+Query  39 [Niche  0]:  348 matches found
+Query  40 [Niche  2]:  214 matches found
+Query  41 [Niche  1]:  216 matches found
+Query  42 [Niche  0]:  348 matches found
+Query  43 [Niche  2]:  214 matches found
+Query  44 [Niche  0]:  347 matches found
+Query  45 [Niche  1]:  216 matches found
+Query  46 [Niche  2]:  212 matches found
+Query  47 [Niche  0]:  347 matches found
+Query  48 [Niche  0]:  348 matches found
+Query  49 [Niche  2]:  214 matches found
+Query  50 [Niche  1]:  205 matches found
+Query  51 [Niche  0]:  348 matches found
+Query  52 [Niche  1]:  216 matches found
+Query  53 [Niche  1]:  216 matches found
+Query  54 [Niche  0]:  348 matches found
+Query  55 [Niche  1]:  216 matches found
+Query  56 [Niche  1]:  216 matches found
+Query  57 [Niche  1]:  216 matches found
+Query  58 [Niche  2]:  213 matches found
+Query  59 [Niche  1]:  210 matches found
+Query  60 [Niche  0]:  348 matches found
+Query  61 [Niche  0]:  348 matches found
+Query  62 [Niche  2]:  214 matches found
+Query  63 [Niche  0]:  348 matches found
+Query  64 [Niche  0]:  346 matches found
+Query  65 [Niche  2]:  214 matches found
+Query  66 [Niche  3]:   50 matches found
+Query  67 [Niche  0]:  347 matches found
+Query  68 [Niche  2]:  214 matches found
+Query  69 [Niche  1]:   23 matches found
+Query  70 [Niche  0]:  347 matches found
+Query  71 [Niche  0]:  347 matches found
+Query  72 [Niche  3]:   49 matches found
+Query  73 [Niche  3]:   49 matches found
+Query  74 [Niche  1]:  214 matches found
+Query  75 [Niche  0]:  348 matches found
+Query  76 [Niche  0]:  348 matches found
+Query  77 [Niche  2]:  214 matches found
+Query  78 [Niche  2]:  214 matches found
+Query  79 [Niche  2]:  214 matches found
+Query  80 [Niche  0]:  348 matches found
+Query  81 [Niche  2]:  162 matches found
+Query  82 [Niche  1]:  213 matches found
+Query  83 [Niche  0]:  347 matches found
+Query  84 [Niche  0]:  346 matches found
+Query  85 [Niche  0]:  348 matches found
+Query  86 [Niche  1]:  213 matches found
+Query  87 [Niche  1]:  212 matches found
+Query  88 [Niche  0]:  348 matches found
+Query  89 [Niche  0]:  348 matches found
+Query  90 [Niche  0]:  347 matches found
+Query  91 [Niche  0]:  348 matches found
+Query  92 [Niche  1]:  215 matches found
+Query  93 [Niche  1]:  215 matches found
+Query  94 [Niche  1]:  214 matches found
+========================================
+
+
+============================================================
+TASK 2: Two-Stage ANN Search Benchmark (Top-400 Candidates)
+============================================================
+Pre-computing matrix logarithms for training tiles...
+Query   0 (Niche 2): Exact closest dist = 56.117, Spindle dist = 56.117 | Spindle found 1st closest neighbor.
+Query   1 (Niche 1): Exact closest dist = 51.057, Spindle dist = 51.057 | Spindle found 1st closest neighbor.
+Query   2 (Niche 0): Exact closest dist = 71.440, Spindle dist = 71.440 | Spindle found 1st closest neighbor.
+Query   3 (Niche 0): Exact closest dist = 60.198, Spindle dist = 60.198 | Spindle found 1st closest neighbor.
+Query   4 (Niche 1): Exact closest dist = 55.969, Spindle dist = 55.969 | Spindle found 1st closest neighbor.
+Query   5 (Niche 2): Exact closest dist = 69.716, Spindle dist = 69.716 | Spindle found 1st closest neighbor.
+Query   6 (Niche 0): Exact closest dist = 70.936, Spindle dist = 70.936 | Spindle found 1st closest neighbor.
+Query   7 (Niche 0): Exact closest dist = 83.046, Spindle dist = 83.046 | Spindle found 1st closest neighbor.
+Query   8 (Niche 0): Exact closest dist = 77.286, Spindle dist = 77.286 | Spindle found 1st closest neighbor.
+Query   9 (Niche 0): Exact closest dist = 69.406, Spindle dist = 69.406 | Spindle found 1st closest neighbor.
+Query  10 (Niche 2): Exact closest dist = 80.986, Spindle dist = 80.986 | Spindle found 1st closest neighbor.
+Query  11 (Niche 0): Exact closest dist = 78.831, Spindle dist = 78.831 | Spindle found 1st closest neighbor.
+Query  12 (Niche 0): Exact closest dist = 61.479, Spindle dist = 61.479 | Spindle found 1st closest neighbor.
+Query  13 (Niche 1): Exact closest dist = 48.629, Spindle dist = 48.629 | Spindle found 1st closest neighbor.
+Query  14 (Niche 0): Exact closest dist = 71.862, Spindle dist = 71.862 | Spindle found 1st closest neighbor.
+Query  15 (Niche 2): Exact closest dist = 71.254, Spindle dist = 71.254 | Spindle found 1st closest neighbor.
+Query  16 (Niche 1): Exact closest dist = 58.379, Spindle dist = 58.379 | Spindle found 1st closest neighbor.
+Query  17 (Niche 3): Exact closest dist = 56.775, Spindle dist = 56.775 | Spindle found 1st closest neighbor.
+Query  18 (Niche 2): Exact closest dist = 82.966, Spindle dist = 82.966 | Spindle found 1st closest neighbor.
+Query  19 (Niche 1): Exact closest dist = 49.204, Spindle dist = 49.204 | Spindle found 1st closest neighbor.
+Query  20 (Niche 1): Exact closest dist = 61.966, Spindle dist = 61.966 | Spindle found 1st closest neighbor.
+Query  21 (Niche 1): Exact closest dist = 74.185, Spindle dist = 74.185 | Spindle found 1st closest neighbor.
+Query  22 (Niche 0): Exact closest dist = 45.587, Spindle dist = 45.587 | Spindle found 1st closest neighbor.
+Query  23 (Niche 1): Exact closest dist = 73.410, Spindle dist = 73.410 | Spindle found 1st closest neighbor.
+Query  24 (Niche 2): Exact closest dist = 84.339, Spindle dist = 84.339 | Spindle found 1st closest neighbor.
+Query  25 (Niche 1): Exact closest dist = 52.774, Spindle dist = 52.774 | Spindle found 1st closest neighbor.
+Query  26 (Niche 1): Exact closest dist = 49.062, Spindle dist = 49.062 | Spindle found 1st closest neighbor.
+Query  27 (Niche 0): Exact closest dist = 46.806, Spindle dist = 46.806 | Spindle found 1st closest neighbor.
+Query  28 (Niche 0): Exact closest dist = 80.183, Spindle dist = 80.183 | Spindle found 1st closest neighbor.
+Query  29 (Niche 0): Exact closest dist = 65.293, Spindle dist = 65.293 | Spindle found 1st closest neighbor.
+Query  30 (Niche 2): Exact closest dist = 71.338, Spindle dist = 71.338 | Spindle found 1st closest neighbor.
+Query  31 (Niche 2): Exact closest dist = 68.519, Spindle dist = 68.519 | Spindle found 1st closest neighbor.
+Query  32 (Niche 1): Exact closest dist = 51.141, Spindle dist = 51.141 | Spindle found 1st closest neighbor.
+Query  33 (Niche 0): Exact closest dist = 101.975, Spindle dist = 104.635 | Spindle found 2nd closest neighbor.
+Query  34 (Niche 0): Exact closest dist = 57.130, Spindle dist = 57.130 | Spindle found 1st closest neighbor.
+Query  35 (Niche 1): Exact closest dist = 59.100, Spindle dist = 59.100 | Spindle found 1st closest neighbor.
+Query  36 (Niche 0): Exact closest dist = 86.704, Spindle dist = 86.704 | Spindle found 1st closest neighbor.
+Query  37 (Niche 1): Exact closest dist = 60.935, Spindle dist = 60.935 | Spindle found 1st closest neighbor.
+Query  38 (Niche 0): Exact closest dist = 70.572, Spindle dist = 70.572 | Spindle found 1st closest neighbor.
+Query  39 (Niche 0): Exact closest dist = 72.791, Spindle dist = 72.791 | Spindle found 1st closest neighbor.
+Query  40 (Niche 2): Exact closest dist = 77.385, Spindle dist = 77.385 | Spindle found 1st closest neighbor.
+Query  41 (Niche 1): Exact closest dist = 52.400, Spindle dist = 52.400 | Spindle found 1st closest neighbor.
+Query  42 (Niche 0): Exact closest dist = 63.999, Spindle dist = 63.999 | Spindle found 1st closest neighbor.
+Query  43 (Niche 2): Exact closest dist = 73.653, Spindle dist = 73.653 | Spindle found 1st closest neighbor.
+Query  44 (Niche 0): Exact closest dist = 62.808, Spindle dist = 62.808 | Spindle found 1st closest neighbor.
+Query  45 (Niche 1): Exact closest dist = 59.867, Spindle dist = 59.867 | Spindle found 1st closest neighbor.
+Query  46 (Niche 2): Exact closest dist = 65.897, Spindle dist = 65.897 | Spindle found 1st closest neighbor.
+Query  47 (Niche 0): Exact closest dist = 70.431, Spindle dist = 70.431 | Spindle found 1st closest neighbor.
+Query  48 (Niche 0): Exact closest dist = 67.737, Spindle dist = 67.737 | Spindle found 1st closest neighbor.
+Query  49 (Niche 2): Exact closest dist = 77.647, Spindle dist = 77.647 | Spindle found 1st closest neighbor.
+Query  50 (Niche 1): Exact closest dist = 70.705, Spindle dist = 70.705 | Spindle found 1st closest neighbor.
+Query  51 (Niche 0): Exact closest dist = 64.496, Spindle dist = 64.496 | Spindle found 1st closest neighbor.
+Query  52 (Niche 1): Exact closest dist = 66.598, Spindle dist = 66.598 | Spindle found 1st closest neighbor.
+Query  53 (Niche 1): Exact closest dist = 51.971, Spindle dist = 51.971 | Spindle found 1st closest neighbor.
+Query  54 (Niche 0): Exact closest dist = 67.648, Spindle dist = 67.648 | Spindle found 1st closest neighbor.
+Query  55 (Niche 1): Exact closest dist = 69.269, Spindle dist = 69.269 | Spindle found 1st closest neighbor.
+Query  56 (Niche 1): Exact closest dist = 46.190, Spindle dist = 46.190 | Spindle found 1st closest neighbor.
+Query  57 (Niche 1): Exact closest dist = 55.385, Spindle dist = 55.385 | Spindle found 1st closest neighbor.
+Query  58 (Niche 2): Exact closest dist = 81.997, Spindle dist = 81.997 | Spindle found 1st closest neighbor.
+Query  59 (Niche 1): Exact closest dist = 52.644, Spindle dist = 52.644 | Spindle found 1st closest neighbor.
+Query  60 (Niche 0): Exact closest dist = 69.168, Spindle dist = 69.168 | Spindle found 1st closest neighbor.
+Query  61 (Niche 0): Exact closest dist = 70.928, Spindle dist = 70.928 | Spindle found 1st closest neighbor.
+Query  62 (Niche 2): Exact closest dist = 81.841, Spindle dist = 81.841 | Spindle found 1st closest neighbor.
+Query  63 (Niche 0): Exact closest dist = 64.247, Spindle dist = 64.247 | Spindle found 1st closest neighbor.
+Query  64 (Niche 0): Exact closest dist = 66.142, Spindle dist = 66.142 | Spindle found 1st closest neighbor.
+Query  65 (Niche 2): Exact closest dist = 73.272, Spindle dist = 73.272 | Spindle found 1st closest neighbor.
+Query  66 (Niche 3): Exact closest dist = 101.391, Spindle dist = 101.391 | Spindle found 1st closest neighbor.
+Query  67 (Niche 0): Exact closest dist = 69.886, Spindle dist = 69.886 | Spindle found 1st closest neighbor.
+Query  68 (Niche 2): Exact closest dist = 78.943, Spindle dist = 78.943 | Spindle found 1st closest neighbor.
+Query  69 (Niche 1): Exact closest dist = 87.858, Spindle dist = 88.967 | Spindle found 2nd closest neighbor.
+Query  70 (Niche 0): Exact closest dist = 63.315, Spindle dist = 63.315 | Spindle found 1st closest neighbor.
+Query  71 (Niche 0): Exact closest dist = 101.608, Spindle dist = 101.608 | Spindle found 1st closest neighbor.
+Query  72 (Niche 3): Exact closest dist = 56.577, Spindle dist = 56.577 | Spindle found 1st closest neighbor.
+Query  73 (Niche 3): Exact closest dist = 107.903, Spindle dist = 107.903 | Spindle found 1st closest neighbor.
+Query  74 (Niche 1): Exact closest dist = 47.973, Spindle dist = 47.973 | Spindle found 1st closest neighbor.
+Query  75 (Niche 0): Exact closest dist = 49.133, Spindle dist = 49.133 | Spindle found 1st closest neighbor.
+Query  76 (Niche 0): Exact closest dist = 69.569, Spindle dist = 69.569 | Spindle found 1st closest neighbor.
+Query  77 (Niche 2): Exact closest dist = 79.437, Spindle dist = 79.437 | Spindle found 1st closest neighbor.
+Query  78 (Niche 2): Exact closest dist = 77.397, Spindle dist = 77.397 | Spindle found 1st closest neighbor.
+Query  79 (Niche 2): Exact closest dist = 77.065, Spindle dist = 77.065 | Spindle found 1st closest neighbor.
+Query  80 (Niche 0): Exact closest dist = 78.885, Spindle dist = 78.885 | Spindle found 1st closest neighbor.
+Query  81 (Niche 2): Exact closest dist = 103.207, Spindle dist = 103.207 | Spindle found 1st closest neighbor.
+Query  82 (Niche 1): Exact closest dist = 38.913, Spindle dist = 38.913 | Spindle found 1st closest neighbor.
+Query  83 (Niche 0): Exact closest dist = 66.866, Spindle dist = 66.866 | Spindle found 1st closest neighbor.
+Query  84 (Niche 0): Exact closest dist = 71.787, Spindle dist = 71.787 | Spindle found 1st closest neighbor.
+Query  85 (Niche 0): Exact closest dist = 72.903, Spindle dist = 72.903 | Spindle found 1st closest neighbor.
+Query  86 (Niche 1): Exact closest dist = 46.584, Spindle dist = 46.584 | Spindle found 1st closest neighbor.
+Query  87 (Niche 1): Exact closest dist = 46.466, Spindle dist = 46.466 | Spindle found 1st closest neighbor.
+Query  88 (Niche 0): Exact closest dist = 64.827, Spindle dist = 64.827 | Spindle found 1st closest neighbor.
+Query  89 (Niche 0): Exact closest dist = 73.564, Spindle dist = 73.564 | Spindle found 1st closest neighbor.
+Query  90 (Niche 0): Exact closest dist = 45.203, Spindle dist = 46.783 | Spindle found 2nd closest neighbor.
+Query  91 (Niche 0): Exact closest dist = 64.951, Spindle dist = 64.951 | Spindle found 1st closest neighbor.
+Query  92 (Niche 1): Exact closest dist = 57.714, Spindle dist = 57.714 | Spindle found 1st closest neighbor.
+Query  93 (Niche 1): Exact closest dist = 68.692, Spindle dist = 68.692 | Spindle found 1st closest neighbor.
+Query  94 (Niche 1): Exact closest dist = 68.794, Spindle dist = 68.794 | Spindle found 1st closest neighbor.
+
+Saved detailed query metrics to /home/NAShome/ghoss18/spindle_dev/results/holdout_validation/xenium_human_skin_melanoma/xenium_human_skin_melanoma_query_metrics.csv
+
+------------------------------------------------------------
+BENCHMARK SUMMARY FOR xenium_human_skin_melanoma:
+  num_queries            : 95
+  mean_spindle_time      : 0.060036
+  mean_brute_force_time  : 0.37527
+  mean_spindle_time_ms   : 60.0356
+  mean_brute_force_time_ms : 375.2702
+  mean_speedup           : 6.25
+  recall_at_1            : 0.9684
+  overlap_at_5           : 0.9789
+  overlap_at_10          : 0.9674
+  overlap_at_20          : 0.9689
+  overlap_at_30          : 0.9677
+  overlap_at_50          : 0.9653
+------------------------------------------------------------
+
+Completed evaluation for xenium_human_skin_melanoma.
+
+================================================================================
+OVERALL BENCHMARK SUMMARY ACROSS ALL DATASETS:
+                        Dataset  num_queries  mean_spindle_time  mean_brute_force_time  mean_spindle_time_ms  mean_brute_force_time_ms  mean_speedup  recall_at_1  overlap_at_5  overlap_at_10  overlap_at_20  overlap_at_30  overlap_at_50
+      xenium_human_brain_cancer         1086           0.312991               1.204768              312.9910                 1204.7676          3.85       0.6906        0.6858         0.6669         0.6493         0.6356         0.6218
+     xenium_human_breast_cancer          208           0.060998               0.514011               60.9977                  514.0106          8.43       0.9038        0.9058         0.9000         0.8909         0.8873         0.8811
+xenium_human_kidney_nondiseased           81           0.118671               0.934609              118.6706                  934.6091          7.88       0.6173        0.6173         0.6086         0.6136         0.6041         0.6027
+       xenium_human_lung_cancer          179           0.147544               0.798684              147.5440                  798.6843          5.41       0.5475        0.5385         0.5324         0.5182         0.5255         0.5286
+     xenium_human_lymph_node_5k          811           0.343372               2.436508              343.3716                 2436.5081          7.10       0.9112        0.8875         0.8710         0.8563         0.8488         0.8297
+        xenium_human_lymph_node          280           0.111719               0.698140              111.7195                  698.1404          6.25       0.7214        0.6993         0.6900         0.6774         0.6714         0.6578
+ xenium_human_pancreatic_cancer          235           0.264018               1.345362              264.0182                 1345.3622          5.10       0.6894        0.6357         0.6209         0.6062         0.6006         0.5937
+     xenium_human_skin_melanoma           95           0.060036               0.375270               60.0356                  375.2702          6.25       0.9684        0.9789         0.9674         0.9689         0.9677         0.9653
+================================================================================
+
+Saved overall benchmark summary CSV to /home/NAShome/ghoss18/spindle_dev/results/holdout_validation/benchmark_summary.csv
+
+Generating top-1 match rank distribution CSV...
+Saved rank distribution CSV to /home/NAShome/ghoss18/spindle_dev/results/holdout_validation/top1_rank_distribution.csv
+Phase 2 Complete.
+
+============================================================
+PHASE 3: PARTIAL PANEL SEARCH ON SINGLE DATASET
+============================================================
+Partial panel search for xenium_human_skin_melanoma...
+
+
+============================================================
+STARTING BENCHMARK FOR XENIUM_HUMAN_SKIN_MELANOMA
+============================================================
+Loading pre-indexed Spindle data from xenium_human_skin_melanoma_spindle_index.pkl and xenium_human_skin_melanoma_raw_covariances.pkl...
+Loading pre-built Dyadic Interval Index from xenium_human_skin_melanoma_interval_index.pkl...
+
+Extracting pristine test queries (unseen tiles)...
+-> Secured 5 valid test queries.
+
+[CONTIGUOUS RANDOM] Starting Interval Benchmark Suite...
+Benchmarking Contiguous Random:   0%|          | 0/5 [00:00<?, ?it/s]Benchmarking Contiguous Random:  20%|██        | 1/5 [00:00<00:00,  4.97it/s]Benchmarking Contiguous Random:  40%|████      | 2/5 [00:00<00:00,  5.02it/s]Benchmarking Contiguous Random:  60%|██████    | 3/5 [00:00<00:00,  4.81it/s]Benchmarking Contiguous Random:  80%|████████  | 4/5 [00:00<00:00,  4.70it/s]Benchmarking Contiguous Random: 100%|██████████| 5/5 [00:01<00:00,  4.74it/s]Benchmarking Contiguous Random: 100%|██████████| 5/5 [00:01<00:00,  4.78it/s]
+
+[NON-CONTIGUOUS RANDOM] Starting Interval Benchmark Suite...
+Benchmarking Non-Contiguous Random:   0%|          | 0/5 [00:00<?, ?it/s]Benchmarking Non-Contiguous Random:  20%|██        | 1/5 [00:00<00:00,  4.97it/s]Benchmarking Non-Contiguous Random:  40%|████      | 2/5 [00:00<00:00,  4.87it/s]Benchmarking Non-Contiguous Random:  60%|██████    | 3/5 [00:00<00:00,  4.65it/s]Benchmarking Non-Contiguous Random:  80%|████████  | 4/5 [00:00<00:00,  4.32it/s]Benchmarking Non-Contiguous Random: 100%|██████████| 5/5 [00:01<00:00,  4.55it/s]Benchmarking Non-Contiguous Random: 100%|██████████| 5/5 [00:01<00:00,  4.58it/s]
+
+
+# Interval Index Partial Search Performance Report
+
+This report details benchmark retrievals using independent dyadic intersections for contiguous and non-contiguous intervals decoupled by sequence query lengths.
+
+## Contiguous Random
+| Query Size | Count | Recall@1 (%) | Recall@5 (%) | Overlap@10 (%) | Overlap@20 (%) | Overlap@50 (%) | Avg Rank | Spindle (ms) | BF (ms) | Speedup (x) |
+|:----------:|:-----:|:------------:|:------------:|:--------------:|:--------------:|:--------------:|:--------:|:------------:|:-------:|:-----------:|
+| <=6 genes | 5 | 100.0 | 100.0 | 42.0 | 43.0 | 43.2 | 1.0 | 2.69 | 8.59 | 3.19 |
+| 7-12 genes | 9 | 100.0 | 100.0 | 85.6 | 85.6 | 69.8 | 1.0 | 4.18 | 10.84 | 2.59 |
+| 13-16 genes | 8 | 100.0 | 100.0 | 100.0 | 81.2 | 77.0 | 1.0 | 5.38 | 13.90 | 2.58 |
+| >16 genes | 3 | 100.0 | 100.0 | 63.3 | 56.7 | 78.7 | 1.0 | 6.91 | 17.62 | 2.55 |
+
+## Non-Contiguous Random
+| Query Size | Count | Recall@1 (%) | Recall@5 (%) | Overlap@10 (%) | Overlap@20 (%) | Overlap@50 (%) | Avg Rank | Spindle (ms) | BF (ms) | Speedup (x) |
+|:----------:|:-----:|:------------:|:------------:|:--------------:|:--------------:|:--------------:|:--------:|:------------:|:-------:|:-----------:|
+| <=6 genes | 3 | 100.0 | 100.0 | 96.7 | 100.0 | 88.7 | 1.0 | 3.41 | 9.06 | 2.65 |
+| 7-12 genes | 12 | 100.0 | 100.0 | 84.2 | 80.0 | 73.8 | 1.0 | 4.37 | 10.55 | 2.41 |
+| 13-16 genes | 8 | 100.0 | 100.0 | 58.8 | 52.5 | 70.0 | 1.0 | 5.67 | 14.01 | 2.47 |
+| >16 genes | 2 | 100.0 | 100.0 | 55.0 | 65.0 | 80.0 | 1.0 | 6.65 | 18.48 | 2.78 |
+
+
+-> Full report saved to /home/NAShome/ghoss18/spindle_dev/results/partial_panel_search/xenium_human_skin_melanoma/performance_report.md
+Phase 3 Complete.
+
+Single dataset processed successfully!

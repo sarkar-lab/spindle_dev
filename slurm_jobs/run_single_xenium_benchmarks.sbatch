@@ -33,13 +33,18 @@ if [ -z "$1" ]; then
 else
     DATASET_NAME=$1
 fi
+# Fraction of tiles held out as unseen test queries during PHASE 1 indexing
+# (the split happens once, at index-build time -- PHASE 2 only loads the
+# already-built index/covariance pickles, so this must be passed here, not
+# to holdout_validation.py).
+TRAIN_TEST_RATIO=${2:-0.05}
 echo "Selected dataset: $DATASET_NAME"
 echo "============================================================"
 echo "PHASE 1: INDEXING SINGLE DATASET"
 echo "============================================================"
 DATASET_PATH="$DATASET_DIR/$DATASET_NAME"
-echo "Indexing $(basename "$DATASET_PATH")..."
-python benchmarks/index_datasets.py --dataset-paths "$DATASET_PATH"
+echo "Indexing $(basename "$DATASET_PATH") with train-test-ratio=$TRAIN_TEST_RATIO..."
+python benchmarks/index_datasets.py --dataset-paths "$DATASET_PATH" --train-test-ratio "$TRAIN_TEST_RATIO"
 echo "Phase 1 Complete."
 echo ""
 
@@ -47,7 +52,7 @@ echo "============================================================"
 echo "PHASE 2: HOLDOUT VALIDATION ON SINGLE DATASET"
 echo "============================================================"
 echo "Holdout validation for $(basename "$DATASET_PATH")..."
-python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH" --train-test-ratio 0.05
+python benchmarks/holdout_validation.py --dataset-paths "$DATASET_PATH"
 echo "Phase 2 Complete."
 echo ""
 
