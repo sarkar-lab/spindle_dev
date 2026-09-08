@@ -138,7 +138,11 @@ class ProcessedData:
         random_state: int = 0,
         n_clusters: int = 2,
         resolution: float = 0.1,
-        block_diagonalize: bool = True
+        block_diagonalize: bool = True,
+        adaptive_resolution: bool = False,
+        max_niche_size: Optional[int] = 1000,
+        resolution_step: float = 0.1,
+        max_resolution_tries: int = 15,
     ) -> None:
         """Group SPD IDs by cluster labels.
 
@@ -185,12 +189,44 @@ class ProcessedData:
                 km = KMeans(n_clusters=n_clusters, n_init=20, random_state=random_state)
                 labels = km.fit_predict(latent_feat) 
             elif cluster_method == 'leiden':
-                logger.info("Clustering SPD matrices using Leiden clustering with resolution %.2f.", resolution)
-                labels, _, _ = leiden_clustering_latent(
-                    latent_feat, 
-                    k_neighbors=10, 
-                    resolution=resolution
-                )
+                if adaptive_resolution:
+                    n_total = latent_feat.shape[0]
+                    target_max = max_niche_size if max_niche_size is not None else max(200, round(0.15 * n_total))
+                    res = resolution
+                    labels = None
+                    sizes = None
+                    for attempt in range(max_resolution_tries):
+                        logger.info(
+                            "Clustering SPD matrices using Leiden clustering with resolution %.2f (attempt %d).",
+                            res, attempt + 1
+                        )
+                        labels_try, _, _ = leiden_clustering_latent(
+                            latent_feat,
+                            k_neighbors=10,
+                            resolution=res
+                        )
+                        sizes = np.bincount(labels_try)
+                        labels = labels_try
+                        if sizes.max() <= target_max:
+                            break
+                        res += resolution_step
+                    else:
+                        logger.warning(
+                            "Could not bring max niche size under %d after %d tries; "
+                            "using last result (max=%d, resolution=%.2f).",
+                            target_max, max_resolution_tries, sizes.max(), res
+                        )
+                    logger.info(
+                        "Adaptive Leiden: chose resolution=%.2f giving %d niches, sizes=%s",
+                        res, len(sizes), sorted(sizes.tolist(), reverse=True)
+                    )
+                else:
+                    logger.info("Clustering SPD matrices using Leiden clustering with resolution %.2f.", resolution)
+                    labels, _, _ = leiden_clustering_latent(
+                        latent_feat,
+                        k_neighbors=10,
+                        resolution=resolution
+                    )
             else:
                 raise ValueError(f"Unknown cluster_method: {cluster_method}")
             self.labels = labels
@@ -1136,7 +1172,24 @@ def _log_spd(A: np.ndarray, eps: float = 1e-8) -> np.ndarray:
     w = np.maximum(w, eps)  # clamp for numerical safety
     return (V * np.log(w)) @ V.T
 
-def choose_adaptive_epsilons(data: ProcessedData, cluster_id: int, k_target_per_block):
+def _effective_k_target(n: int, base: int, alpha: float = 0.05, k_min: int = 8, k_max: int = 256) -> int:
+    """Scale the farthest-first sample size with niche population.
+
+    ``base`` (the caller-supplied k_target) acts as a floor so small/medium
+    niches behave as before; ``alpha * n`` lets large niches get
+    proportionally denser coverage sampling instead of a fixed count.
+    """
+    return int(min(max(round(alpha * n), base, k_min), k_max))
+
+
+def choose_adaptive_epsilons(
+    data: ProcessedData,
+    cluster_id: int,
+    k_target_per_block,
+    alpha: float = 0.05,
+    k_min: int = 8,
+    k_max: int = 256,
+):
     """Choose adaptive epsilons for each block in the given cluster."""
     import numpy as np
     from collections import defaultdict
@@ -1159,11 +1212,16 @@ def choose_adaptive_epsilons(data: ProcessedData, cluster_id: int, k_target_per_
             block_log[block_idx].append(_log_spd(A_blk))
     eps_per_block = {}
     eps_elbow_per_block = {}
-    k_target_per_block = 16  # <-- put in config, or function of block size
 
     for block_idx, L_list in block_log.items():
         p_blk = block_p[block_idx]
-        eps_hat, deltas_max = farthest_first_eps_for_k(L_list, p_blk, k_target=k_target_per_block, seed=42)
+        n_blk = len(L_list)
+        effective_k = _effective_k_target(n_blk, base=k_target_per_block, alpha=alpha, k_min=k_min, k_max=k_max)
+        logger.info(
+            "Cluster %s block %d: niche population=%d, k_target=%d (base=%d)",
+            cluster_id, block_idx, n_blk, effective_k, k_target_per_block
+        )
+        eps_hat, deltas_max = farthest_first_eps_for_k(L_list, p_blk, k_target=effective_k, seed=42)
         eps_elbow = choose_eps_from_curve(deltas_max, mode="elbow")
         eps_per_block[block_idx] = eps_hat
         eps_elbow_per_block[block_idx] = eps_elbow

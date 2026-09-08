@@ -381,7 +381,16 @@ def search_index(
             p = child.metadata.mean.shape[0]
             L_block = query_blocks_log[next_layer_idx]
             diff = L_block - child.metadata.mean
-            dist = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
+            dist_to_mean = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
+            # Use a triangle-inequality lower bound (distance to the cluster's
+            # mean minus its radius) rather than the raw distance-to-mean for
+            # pruning/accumulation. The mean is only a representative point;
+            # the true member the query is closest to can be up to `radius`
+            # closer than the mean. Pruning on the raw distance-to-mean treats
+            # every cluster as a single point and incorrectly discards
+            # branches that actually contain the true nearest match whenever
+            # the cluster has non-trivial radius.
+            dist = max(0.0, dist_to_mean - child.metadata.radius)
             child_dists.append((child_idx, dist, new_valid_spds))
 
         # Explore children from closest to farthest.
@@ -447,7 +456,12 @@ def search_index(
         p = node.metadata.mean.shape[0]
         L_block = query_blocks_log[0]
         diff = L_block - node.metadata.mean
-        dist = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
+        dist_to_mean = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
+        # See the matching comment in dfs(): use the radius-adjusted lower
+        # bound, not the raw distance-to-mean, so a start cluster isn't
+        # incorrectly skipped when its true nearest member is closer to the
+        # query than its mean is.
+        dist = max(0.0, dist_to_mean - node.metadata.radius)
         start_candidates.append((node_idx, dist))
 
     # Explore starting nodes in order of increasing distance.

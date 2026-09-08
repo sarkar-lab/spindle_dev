@@ -38,7 +38,7 @@ def prepare_to_index(adata):
     return tiles, tile_covs, genes_work
 
 
-def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20):
+def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20, max_niche_size=1000):
     """
     Run indexing workflow.
     """
@@ -47,7 +47,10 @@ def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_siz
     if num_pca < 2:
         num_pca = 2
     data.reduce_dim(num_pca_components=num_pca, n_components=2, do_umap=True)
-    data.cluster_spds(cluster_distance="tree", cluster_method="leiden", resolution=resolution)
+    data.cluster_spds(
+        cluster_distance="tree", cluster_method="leiden", resolution=resolution,
+        adaptive_resolution=True, max_niche_size=max_niche_size
+    )
     data.assign_label_to_spots()
     data.get_corr_mean_by_cluster()
     out_dict = data.get_adaptive_runs(find_blocks=True, with_size_guard=True, min_final_size=min_final_size, max_final_size=100)
@@ -228,7 +231,7 @@ def run_indexing_for_datasets(datasets, is_test=False, train_test_ratio=0.05):
         # 2. Run index & measure time
         print("Running index...")
         t0 = time.perf_counter()
-        data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15)
+        data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15, max_niche_size=1000)
 
         # 3. Configure and build DAG
         dag_dict, config = configure_and_build_dag(data)

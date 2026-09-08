@@ -58,13 +58,16 @@ def load_and_split_data(adata_path, test_ratio=0.02, seed=42):
 
     return adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx
 
-def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20):
+def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20, max_niche_size=1000):
     """
     Run indexing workflow.
     """
     data = index.ProcessedData(tiles, tile_covs, genes_work, adata.n_obs)
     data.reduce_dim(num_pca_components=30, n_components=2, do_umap=True)
-    data.cluster_spds(cluster_distance="tree", cluster_method="leiden", resolution=resolution)
+    data.cluster_spds(
+        cluster_distance="tree", cluster_method="leiden", resolution=resolution,
+        adaptive_resolution=True, max_niche_size=max_niche_size
+    )
     data.assign_label_to_spots()
     data.get_corr_mean_by_cluster()
     out_dict = data.get_adaptive_runs(find_blocks=True, with_size_guard=True, min_final_size=min_final_size, max_final_size=100)
