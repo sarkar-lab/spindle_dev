@@ -74,21 +74,12 @@ def _niche_scale_factor(n_niche: int, typical: int = 500, min_factor: float = 1.
     return float(np.clip(np.sqrt(max(n_niche, 1) / typical), min_factor, max_factor))
 
 
-def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_multiplier: float = 2.0,
-                    effort_multiplier: float = 1.0):
-    """Query the Spindle DAG index to retrieve Stage 1 candidate pools.
-
-    ``effort_multiplier`` scales the search-effort caps (max_failed_starts /
-    max_failed_paths / total_paths_limit) independently of the distance
-    ``budget_multiplier``. It defaults to 1.0, which reproduces the exact
-    caps used before this parameter existed -- pass a value > 1.0 to widen
-    DFS traversal effort when accuracy has plateaued despite a large budget
-    (i.e. the effort caps, not the distance budget, are the bottleneck).
-    """
+def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_multiplier: float = 2.0):
+    """Query the Spindle DAG index to retrieve Stage 1 candidate pools."""
     niche_sizes = {int(c): int(np.sum(data.labels == c)) for c in set(data.labels)}
     niche_search_cfgs = {}
     for c, n_niche in niche_sizes.items():
-        f = _niche_scale_factor(n_niche) * effort_multiplier
+        f = _niche_scale_factor(n_niche)
         # Base effort caps (100 / 200 / 3000) are 10x the original constants
         # (10 / 20 / 300). The radius-aware pruning fix in search.py's dfs()
         # correctly widens which branches survive pruning (using a valid
