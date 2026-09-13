@@ -6,7 +6,7 @@ Curates the raw benchmark CSV outputs into clean, panel-specific CSVs stored in
 ``results/panel_data/``.
 
 Run this script once after running benchmarks to refresh the panel data.
-The figure-generation script (generate_figure_1.py) then reads exclusively from
+The figure-generation script (generate_result_figure.py) then reads exclusively from
 ``results/panel_data/``, so you can tweak or hand-edit any panel CSV without
 re-running expensive benchmarks.
 
@@ -19,15 +19,16 @@ Output
     results/panel_data/
         panel_A.csv
         panel_B.csv
-        panel_C.csv
-        panel_D.csv
-        panel_E_xenium_coords.csv
-        panel_E_visium_coords.csv
-        panel_E_tile_boxes.csv
-        panel_E_recall_metrics.csv
-        panel_F_spatial_cells.csv
-        panel_F_top_matches.csv
-        panel_F_pathway_scores.csv
+        panel_C.csv                    -- partial-query efficiency (dist_gap & speedup)
+        panel_D.csv                    -- Recall@1 by dataset
+        panel_E.csv                    -- partial-query robustness
+        panel_F_xenium_coords.csv      -- Xenium cells (x, y)
+        panel_G_visium_coords.csv      -- Visium spots (x, y)
+        panel_F_G_tile_boxes.csv
+        panel_H_recall_metrics.csv
+        panel_I_spatial_cells.csv
+        panel_I_top_matches.csv
+        panel_J_pathway_scores.csv
 """
 
 from pathlib import Path
@@ -54,6 +55,31 @@ def write_csv_with_header(df: pd.DataFrame, out_path: Path, header_lines: list):
     print(f'  OK  {out_path.relative_to(PROJECT_ROOT)}  ({len(df)} rows)')
 
 
+# -- Helper: canonical human-readable dataset names ---------------------------
+_SPECIAL_NAMES = {
+    'lymph_node_5k': 'Lymph Node (5k)',
+    'kidney_nondiseased': 'Kidney (Non-diseased)',
+}
+
+
+def clean_dataset_name(raw: str) -> str:
+    """
+    Convert an internal dataset key (e.g. "xenium_human_lymph_node_5k") into a
+    clean, human-readable label with no underscores and no "Xenium"/"Human"
+    wording (e.g. "Lymph Node (5k)").
+    """
+    key = raw.strip()
+    for prefix in ('xenium_human_', 'xenium_'):
+        if key.lower().startswith(prefix):
+            key = key[len(prefix):]
+            break
+
+    if key.lower() in _SPECIAL_NAMES:
+        return _SPECIAL_NAMES[key.lower()]
+
+    return key.replace('_', ' ').title()
+
+
 # -----------------------------------------------------------------------------
 # Panel A  -- Index scalability (build time & index size per dataset)
 # Source   : results/holdout_validation/index_scalability_summary.csv
@@ -61,40 +87,27 @@ def write_csv_with_header(df: pd.DataFrame, out_path: Path, header_lines: list):
 # -----------------------------------------------------------------------------
 def curate_panel_a():
     src = RAW_ROOT / 'holdout_validation' / 'index_scalability_summary.csv'
-
-    # Paper-reported fallback covering all 6 datasets (sorted by cell count)
-    FALLBACK_A = pd.DataFrame({
-        'dataset':      ['Skin', 'Kidney', 'Breast', 'Lung', 'Pancreas', 'Lymph Node'],
-        'num_cells':    [87499,  97560,  159226,  162254,  190965,  377985],
-        'build_time_s': [25.53,  18.62,   51.67,   45.86,   88.90,   71.51],
-        'index_size_mb':[19.41,  18.47,   14.69,   19.98,   30.86,   22.83],
-    })
-
     if not src.exists():
-        print(f'  INFO Panel A -- index_scalability_summary.csv not found; using paper fallback')
-        df = FALLBACK_A
-    else:
-        df = pd.read_csv(src)
-        rename = {}
-        for col in df.columns:
-            cl = col.lower()
-            if 'build' in cl and 'time' in cl:
-                rename[col] = 'build_time_s'
-            elif 'index' in cl and 'size' in cl:
-                rename[col] = 'index_size_mb'
-            elif 'cells' in cl:
-                rename[col] = 'num_cells'
-            elif 'dataset' in cl:
-                rename[col] = 'dataset'
-        df = df.rename(columns=rename)
-        # If the CSV only has 1 dataset (e.g. Xenium only from index_datasets.py),
-        # supplement with the paper-reported fallback for the full figure.
-        if len(df) < 4:
-            print(f'  INFO Panel A -- only {len(df)} row(s) in CSV; '
-                  'supplementing with paper fallback values for all datasets')
-            df = FALLBACK_A
-        elif 'num_cells' in df.columns:
-            df = df.sort_values('num_cells').reset_index(drop=True)
+        print(f'  SKIP Panel A -- source not found: {src}')
+        return
+
+    df = pd.read_csv(src)
+    rename = {}
+    for col in df.columns:
+        cl = col.lower()
+        if 'build' in cl and 'time' in cl:
+            rename[col] = 'build_time_s'
+        elif 'index' in cl and 'size' in cl:
+            rename[col] = 'index_size_mb'
+        elif 'cell' in cl:
+            rename[col] = 'num_cells'
+        elif 'dataset' in cl:
+            rename[col] = 'dataset_key'
+    df = df.rename(columns=rename)
+
+    df['dataset'] = df['dataset_key'].apply(clean_dataset_name)
+    df = df.sort_values('num_cells').reset_index(drop=True)
+    df = df[['dataset', 'dataset_key', 'num_cells', 'build_time_s', 'index_size_mb']]
 
     header = [
         'Panel A -- Index Scalability',
@@ -103,7 +116,8 @@ def curate_panel_a():
         'disk (right axis) for each dataset, sorted by ascending cell count.',
         '',
         'Columns:',
-        '  dataset        -- Human-readable dataset name (e.g. "Breast")',
+        '  dataset        -- Human-readable dataset name (e.g. "Breast Cancer")',
+        '  dataset_key    -- Internal dataset key (matches benchmark output)',
         '  num_cells      -- Number of cells in the dataset',
         '  build_time_s   -- Wall-clock time to build the SPINDLE index (seconds)',
         '  index_size_mb  -- Disk footprint of the saved SPINDLE index (megabytes)',
@@ -127,20 +141,12 @@ def curate_panel_b():
 
     df = pd.read_csv(src)
 
-    label_map = {
-        'breast_cancer':              'Breast',
-        'kidney_nondiseased':         'Kidney',
-        'lung_cancer':                'Lung',
-        'lymph_node':                 'Lymph Node',
-        'pancreatic_cancer':          'Pancreas',
-        'skin_melanoma':              'Skin',
-        'xenium_human_breast_cancer': 'Xenium (Breast)',
-    }
-
-    keep = ['Dataset', 'mean_speedup', 'recall_at_1', 'overlap_at_10']
+    keep = ['Dataset', 'mean_speedup', 'mean_spindle_time_ms', 'mean_brute_force_time_ms',
+            'recall_at_1', 'overlap_at_5', 'overlap_at_10', 'overlap_at_20']
     available = [c for c in keep if c in df.columns]
     out = df[available].copy()
-    out['label'] = out['Dataset'].map(label_map).fillna(out['Dataset'])
+    out = out.rename(columns={'Dataset': 'dataset_key'})
+    out['dataset'] = out['dataset_key'].apply(clean_dataset_name)
     if 'mean_speedup' in out.columns:
         out = out.sort_values('mean_speedup', ascending=True).reset_index(drop=True)
 
@@ -148,15 +154,19 @@ def curate_panel_b():
         'Panel B -- Query Acceleration (Speedup vs. Brute-Force Search)',
         '',
         'Horizontal bar chart: per-dataset speedup of SPINDLE ANN search over exact',
-        'brute-force cosine search (higher = faster). Sorted ascending so fastest',
-        'dataset appears at the top of the horizontal bar chart.',
+        'brute-force search (higher = faster). Sorted ascending so fastest dataset',
+        'appears at the top of the horizontal bar chart.',
         '',
         'Columns:',
-        '  Dataset       -- Internal dataset key (matches benchmark output)',
-        '  label         -- Human-readable label used as the y-axis tick',
-        '  mean_speedup  -- Mean wall-clock speedup across all holdout queries (x)',
-        '  recall_at_1   -- Fraction of queries where top-1 result is exact match (0-1)',
-        '  overlap_at_10 -- Mean Jaccard overlap of top-10 results with brute-force (0-1)',
+        '  dataset_key             -- Internal dataset key (matches benchmark output)',
+        '  dataset                 -- Human-readable label used as the axis tick',
+        '  mean_speedup            -- Mean wall-clock speedup across holdout queries (x)',
+        '  mean_spindle_time_ms    -- Mean SPINDLE query wall-clock time (ms)',
+        '  mean_brute_force_time_ms-- Mean exact brute-force query wall-clock time (ms)',
+        '  recall_at_1             -- Fraction of queries where top-1 result is exact (0-1)',
+        '  overlap_at_5            -- Mean Jaccard overlap of top-5 with brute-force (0-1)',
+        '  overlap_at_10           -- Mean Jaccard overlap of top-10 with brute-force (0-1)',
+        '  overlap_at_20           -- Mean Jaccard overlap of top-20 with brute-force (0-1)',
         '',
         'Source CSV : results/holdout_validation/benchmark_summary.csv',
         'Generated by: benchmarks/holdout_validation.py',
@@ -165,88 +175,139 @@ def curate_panel_b():
 
 
 # -----------------------------------------------------------------------------
-# Panel C  -- Holdout validation rank distribution
-# Source   : results/holdout_validation/top1_rank_distribution.csv
-# Generated: benchmarks/holdout_validation.py
+# Panel C  -- Partial-query efficiency: distance gap & speedup by gene-count bin
+# Source   : results/partial_panel_search/overall_benchmark_metrics.csv
+# Generated: benchmarks/partial_panel_search.py
 # -----------------------------------------------------------------------------
 def curate_panel_c():
-    src = RAW_ROOT / 'holdout_validation' / 'top1_rank_distribution.csv'
+    src = RAW_ROOT / 'partial_panel_search' / 'overall_benchmark_metrics.csv'
     if not src.exists():
         print(f'  SKIP Panel C -- source not found: {src}')
         return
 
     df = pd.read_csv(src)
+    if 'Length_Bin' not in df.columns:
+        print(f'  WARNING Panel C: "Length_Bin" column not found in {list(df.columns)}')
+        return
 
-    order = ['1st', '2nd', '3rd', '4-5th', '6-10th', '>10th']
-    if 'Rank_Category' in df.columns:
-        df['sort_key'] = df['Rank_Category'].map(
-            {v: i for i, v in enumerate(order)}
-        ).fillna(99)
-        df = df.sort_values('sort_key').drop(columns='sort_key').reset_index(drop=True)
+    bin_order = ['<=6 genes', '7-12 genes', '13-16 genes', '>16 genes']
+    grp = df.groupby('Length_Bin').agg(
+        mean_dist_gap=('dist_gap', 'mean'),
+        mean_speedup=('speedup', 'mean'),
+        mean_spindle_time_ms=('spindle_time_ms', 'mean'),
+        mean_brute_force_time_ms=('brute_force_time_ms', 'mean'),
+        n_queries=('speedup', 'size'),
+    ).reset_index()
+    grp = grp.rename(columns={'Length_Bin': 'length_bin'})
+    grp['sort_key'] = grp['length_bin'].map({v: i for i, v in enumerate(bin_order)}).fillna(99)
+    out = grp.sort_values('sort_key').drop(columns='sort_key').reset_index(drop=True)
 
     header = [
-        'Panel C -- Holdout Validation Accuracy (Rank Distribution)',
+        'Panel C -- Partial-Query Efficiency: Distance Gap & Speedup vs. Gene Panel Length',
         '',
-        'Bar chart: what percentage of holdout queries returned the true match in',
-        'the 1st, 2nd, 3rd, 4-5th, 6-10th, or >10th position.',
+        'Dual-axis chart: mean distance gap from the true exact-match (lower = more',
+        'accurate) and mean speedup over brute-force search, as a function of how many',
+        'genes the query panel contains. Companion to Panel E (which shows Recall@1 /',
+        'Overlap@10 for the same gene-count bins) -- this panel shows two different,',
+        'previously-unplotted metrics (dist_gap, speedup) rather than repeating Panel E.',
         '',
         'Columns:',
-        '  Rank_Category -- Ordinal rank bucket (1st / 2nd / ... / >10th)',
-        '  Count         -- Number of queries falling in this rank bucket',
-        '  Percentage    -- Percentage of all queries in this bucket (sums to 100)',
+        '  length_bin                -- Gene-count bin (<=6 / 7-12 / 13-16 / >16 genes)',
+        '  mean_dist_gap              -- Mean distance from SPINDLE top-1 to the true',
+        '                                 exact-match distance (lower is better)',
+        '  mean_speedup               -- Mean wall-clock speedup vs. brute-force (x)',
+        '  mean_spindle_time_ms       -- Mean SPINDLE query time (ms)',
+        '  mean_brute_force_time_ms   -- Mean brute-force query time (ms)',
+        '  n_queries                  -- Number of query instances averaged in this bin',
         '',
-        'Source CSV : results/holdout_validation/top1_rank_distribution.csv',
-        'Generated by: benchmarks/holdout_validation.py',
+        'Source CSV : results/partial_panel_search/overall_benchmark_metrics.csv',
+        'Generated by: benchmarks/partial_panel_search.py',
     ]
-    write_csv_with_header(df, OUT_DIR / 'panel_C.csv', header)
+    write_csv_with_header(out, OUT_DIR / 'panel_C.csv', header)
 
 
 # -----------------------------------------------------------------------------
-# Panel D  -- Partial-panel search: metrics binned by query gene-count
+# Panel D  -- Recall@1 by dataset (bar chart)
+# Source   : results/holdout_validation/benchmark_summary.csv
+# Generated: benchmarks/holdout_validation.py
+# -----------------------------------------------------------------------------
+def curate_panel_d():
+    src = RAW_ROOT / 'holdout_validation' / 'benchmark_summary.csv'
+    if not src.exists():
+        print(f'  SKIP Panel D -- source not found: {src}')
+        return
+
+    df = pd.read_csv(src)
+    keep = ['Dataset', 'recall_at_1', 'overlap_at_5', 'overlap_at_10', 'overlap_at_20',
+            'overlap_at_30', 'overlap_at_50', 'mean_speedup', 'mean_spindle_time_ms',
+            'mean_brute_force_time_ms']
+    available = [c for c in keep if c in df.columns]
+    out = df[available].copy()
+    out = out.rename(columns={'Dataset': 'dataset_key'})
+    out['dataset'] = out['dataset_key'].apply(clean_dataset_name)
+    out = out.sort_values('recall_at_1', ascending=True).reset_index(drop=True)
+
+    header = [
+        'Panel D -- Retrieval Accuracy by Dataset (Recall@1)',
+        '',
+        'Bar chart: fraction of holdout queries where the SPINDLE top-1 result is',
+        'exactly the true nearest neighbour, shown per dataset. Companion to Panel C',
+        '(aggregate cumulative curve) -- shows consistency across tissue types.',
+        '',
+        'Columns:',
+        '  dataset_key              -- Internal dataset key',
+        '  dataset                  -- Human-readable label used on the chart axis',
+        '  recall_at_1              -- Fraction of queries with exact top-1 match (0-1)',
+        '  overlap_at_5/10/20/30/50 -- Mean Jaccard overlap with brute-force at K (0-1)',
+        '  mean_speedup             -- Mean wall-clock speedup vs. brute-force (x)',
+        '  mean_spindle_time_ms     -- Mean SPINDLE query time (ms)',
+        '  mean_brute_force_time_ms -- Mean brute-force query time (ms)',
+        '',
+        'Source CSV : results/holdout_validation/benchmark_summary.csv',
+        'Generated by: benchmarks/holdout_validation.py',
+    ]
+    write_csv_with_header(out, OUT_DIR / 'panel_D.csv', header)
+
+
+# -----------------------------------------------------------------------------
+# Panel E  -- Partial-panel search: metrics binned by query gene-count
 # Source   : results/partial_panel_search/overall_benchmark_metrics.csv
 # Generated: benchmarks/partial_panel_search.py
 # -----------------------------------------------------------------------------
-def curate_panel_d():
+def curate_panel_e():
     src = RAW_ROOT / 'partial_panel_search' / 'overall_benchmark_metrics.csv'
     if not src.exists():
-        print(f'  SKIP Panel D -- source not found: {src}')
+        print(f'  SKIP Panel E -- source not found: {src}')
         return
 
     df = pd.read_csv(src)
 
     bin_order = ['<=6 genes', '7-12 genes', '13-16 genes', '>16 genes']
 
-    if 'Length_Bin' in df.columns:
-        # Column names in overall_benchmark_metrics.csv
-        possible_recall  = ['recall_at_1', 'hit_top_1', 'recall@1']
-        possible_overlap = ['overlap_at_10', 'overlap_10', 'overlap@10']
-        col_r = next((c for c in possible_recall  if c in df.columns), None)
-        col_o = next((c for c in possible_overlap if c in df.columns), None)
+    if 'Length_Bin' not in df.columns:
+        print(f'  WARNING Panel E: "Length_Bin" column not found in {list(df.columns)}')
+        return
 
-        if col_r is None or col_o is None:
-            print(f'  WARNING Panel D: could not find recall/overlap columns in '
-                  f'{list(df.columns)}')
-            out = df
-        else:
-            grp = df.groupby('Length_Bin')[[col_r, col_o]].mean().reset_index()
-            grp = grp.rename(columns={
-                'Length_Bin': 'length_bin',
-                col_r:        'recall_at_1_pct',
-                col_o:        'overlap_at_10_pct',
-            })
-            # Scale 0-1 fractions to percentages
-            for col in ['recall_at_1_pct', 'overlap_at_10_pct']:
-                if grp[col].max() <= 1.0:
-                    grp[col] *= 100
-            grp['sort_key'] = grp['length_bin'].map(
-                {v: i for i, v in enumerate(bin_order)}
-            ).fillna(99)
-            out = grp.sort_values('sort_key').drop(columns='sort_key').reset_index(drop=True)
-    else:
-        out = df
+    col_r = next((c for c in ['recall_at_1', 'hit_top_1', 'recall@1'] if c in df.columns), None)
+    col_o = next((c for c in ['overlap_at_10', 'overlap_10', 'overlap@10'] if c in df.columns), None)
+    if col_r is None or col_o is None:
+        print(f'  WARNING Panel E: could not find recall/overlap columns in {list(df.columns)}')
+        return
+
+    grp = df.groupby('Length_Bin').agg(
+        recall_at_1_pct=(col_r, 'mean'),
+        overlap_at_10_pct=(col_o, 'mean'),
+        n_queries=(col_r, 'size'),
+    ).reset_index()
+    grp = grp.rename(columns={'Length_Bin': 'length_bin'})
+    for col in ['recall_at_1_pct', 'overlap_at_10_pct']:
+        if grp[col].max() <= 1.0:
+            grp[col] *= 100
+    grp['sort_key'] = grp['length_bin'].map({v: i for i, v in enumerate(bin_order)}).fillna(99)
+    out = grp.sort_values('sort_key').drop(columns='sort_key').reset_index(drop=True)
 
     header = [
-        'Panel D -- Partial-Query Robustness (Metrics by Gene-Count Bin)',
+        'Panel E -- Partial-Query Robustness (Metrics by Gene-Count Bin)',
         '',
         'Line chart: Recall@1 and Overlap@10 as a function of how many genes the',
         'query panel contains (partial coverage of the full spatial transcriptomics',
@@ -256,36 +317,38 @@ def curate_panel_d():
         '  length_bin         -- Gene-count bin (<=6 / 7-12 / 13-16 / >16 genes)',
         '  recall_at_1_pct    -- Mean Recall@1 (%) -- exact match in top-1 result',
         '  overlap_at_10_pct  -- Mean Overlap@10 (%) -- Jaccard overlap with top-10',
+        '  n_queries          -- Number of query instances averaged in this bin',
         '',
         'Source CSV : results/partial_panel_search/overall_benchmark_metrics.csv',
         'Generated by: benchmarks/partial_panel_search.py',
     ]
-    write_csv_with_header(out, OUT_DIR / 'panel_D.csv', header)
+    write_csv_with_header(out, OUT_DIR / 'panel_E.csv', header)
 
 
 # -----------------------------------------------------------------------------
-# Panel E  -- Cross-modal search: Xenium coords, Visium coords, tile boxes,
-#             and retrieval metrics (recall@1, overlap@10)
+# Panel F/G  -- Cross-modal search: Xenium & Visium coords (density-gradient
+#               scatter), tile boxes, and Panel H recall metrics
 # Source   : results/cross_modal_search/spatial_coords_sample.csv
 #            results/cross_modal_search/tile_overlay_boxes.csv
 #            results/cross_modal_search/benchmark_summary.csv
 # Generated: benchmarks/cross_modal_search.py
 # -----------------------------------------------------------------------------
-def curate_panel_e():
+def curate_panel_f_g():
     coords_src  = RAW_ROOT / 'cross_modal_search' / 'spatial_coords_sample.csv'
     boxes_src   = RAW_ROOT / 'cross_modal_search' / 'tile_overlay_boxes.csv'
     metrics_src = RAW_ROOT / 'cross_modal_search' / 'benchmark_summary.csv'
 
-    # -- Xenium / Visium coordinates ------------------------------------------
+    # -- Xenium / Visium coordinates (plotted as a density gradient) -----------
     if coords_src.exists():
         df_coords = pd.read_csv(coords_src)
 
         xe = df_coords[df_coords['modality'] == 'Xenium'][['x', 'y']].reset_index(drop=True)
         xe_header = [
-            'Panel E -- Xenium Cell Coordinates',
+            'Panel F -- Xenium Cell Coordinates',
             '',
-            'Scatter-plot background layer: spatial (x, y) coordinates of a representative',
-            'sample of Xenium single cells from the human breast-cancer dataset.',
+            'Scatter-plot layer: spatial (x, y) coordinates of a representative sample of',
+            'Xenium single cells from the human breast-cancer dataset. Rendered as a',
+            'density gradient (hexbin) in the figure, not colored by cell type.',
             '',
             'Columns:',
             '  x -- Spatial x-coordinate of the cell centroid (microns)',
@@ -294,14 +357,15 @@ def curate_panel_e():
             'Source CSV : results/cross_modal_search/spatial_coords_sample.csv (Xenium rows)',
             'Generated by: benchmarks/cross_modal_search.py',
         ]
-        write_csv_with_header(xe, OUT_DIR / 'panel_E_xenium_coords.csv', xe_header)
+        write_csv_with_header(xe, OUT_DIR / 'panel_F_xenium_coords.csv', xe_header)
 
         vi = df_coords[df_coords['modality'] == 'Visium'][['x', 'y']].reset_index(drop=True)
         vi_header = [
-            'Panel E -- Visium Spot Coordinates',
+            'Panel G -- Visium Spot Coordinates',
             '',
-            'Scatter-plot background layer: spatial (x, y) coordinates of Visium spots from',
-            'the matched human breast-cancer tissue section.',
+            'Scatter-plot layer: spatial (x, y) coordinates of Visium spots from the',
+            'matched human breast-cancer tissue section. Rendered as a density gradient',
+            '(hexbin) in the figure, not colored by cell type.',
             '',
             'Columns:',
             '  x -- Spatial x-coordinate of the Visium spot centroid',
@@ -310,15 +374,15 @@ def curate_panel_e():
             'Source CSV : results/cross_modal_search/spatial_coords_sample.csv (Visium rows)',
             'Generated by: benchmarks/cross_modal_search.py',
         ]
-        write_csv_with_header(vi, OUT_DIR / 'panel_E_visium_coords.csv', vi_header)
+        write_csv_with_header(vi, OUT_DIR / 'panel_G_visium_coords.csv', vi_header)
     else:
-        print(f'  SKIP Panel E coords -- source not found: {coords_src}')
+        print(f'  SKIP Panel F/G coords -- source not found: {coords_src}')
 
     # -- Tile overlay boxes ---------------------------------------------------
     if boxes_src.exists():
         df_boxes = pd.read_csv(boxes_src)
         boxes_header = [
-            'Panel E -- Tile Overlay Bounding Boxes',
+            'Panel F/G -- Tile Overlay Bounding Boxes',
             '',
             'Rectangle patches drawn over the cell-coordinate scatter plots to visualise',
             'the spatial tiles used for cross-modal retrieval.',
@@ -332,14 +396,14 @@ def curate_panel_e():
             'Source CSV : results/cross_modal_search/tile_overlay_boxes.csv',
             'Generated by: benchmarks/cross_modal_search.py',
         ]
-        write_csv_with_header(df_boxes, OUT_DIR / 'panel_E_tile_boxes.csv', boxes_header)
+        write_csv_with_header(df_boxes, OUT_DIR / 'panel_F_G_tile_boxes.csv', boxes_header)
     else:
-        print(f'  SKIP Panel E boxes -- source not found: {boxes_src}')
+        print(f'  SKIP Panel F/G boxes -- source not found: {boxes_src}')
 
-    # -- Recall / overlap metrics ---------------------------------------------
+    # -- Panel H: recall / overlap metrics -------------------------------------
     if metrics_src.exists():
         df_m = pd.read_csv(metrics_src)
-        dir_map = {'x2v': 'Xenium -> Visium', 'v2x': 'Visium -> Xenium'}
+        dir_map = {'x2v': 'Xenium to Visium', 'v2x': 'Visium to Xenium'}
         if 'direction' in df_m.columns:
             df_m['direction_label'] = df_m['direction'].map(dir_map).fillna(df_m['direction'])
 
@@ -355,7 +419,7 @@ def curate_panel_e():
         })
 
         metrics_header = [
-            'Panel E -- Cross-Modal Retrieval Metrics',
+            'Panel H -- Cross-Modal Retrieval Metrics',
             '',
             'Bar chart showing Recall@1 and Overlap@10 per query direction in the',
             'Xenium <-> Visium cross-modal search experiment (human breast-cancer dataset).',
@@ -371,18 +435,19 @@ def curate_panel_e():
             'Source CSV : results/cross_modal_search/benchmark_summary.csv',
             'Generated by: benchmarks/cross_modal_search.py',
         ]
-        write_csv_with_header(df_m, OUT_DIR / 'panel_E_recall_metrics.csv', metrics_header)
+        write_csv_with_header(df_m, OUT_DIR / 'panel_H_recall_metrics.csv', metrics_header)
     else:
-        print(f'  SKIP Panel E metrics -- source not found: {metrics_src}')
+        print(f'  SKIP Panel H metrics -- source not found: {metrics_src}')
 
 
 # -----------------------------------------------------------------------------
-# Panel F  -- Gene signature spatial map + pathway score bar chart
+# Panel I  -- Gene signature spatial map
+# Panel J  -- Pathway score bar chart
 # Source   : results/gene_signature_search/breast_cancer/Luminal_Tumor_Core_*.csv
 #            results/gene_signature_search/benchmark_metrics.csv
 # Generated: benchmarks/gene_signature_search.py  (run on breast_cancer dataset)
 # -----------------------------------------------------------------------------
-def curate_panel_f():
+def curate_panel_i_j():
     cells_src   = (RAW_ROOT / 'gene_signature_search' / 'breast_cancer'
                    / 'Luminal_Tumor_Core_spatial_cells.csv')
     matches_src = (RAW_ROOT / 'gene_signature_search' / 'breast_cancer'
@@ -393,15 +458,15 @@ def curate_panel_f():
     if cells_src.exists():
         df_cells = pd.read_csv(cells_src)
         cells_header = [
-            'Panel F -- Luminal Tumour Core: All Spatial Cells',
+            'Panel I -- Luminal Tumour Core: All Spatial Cells',
             '',
             'Full scatter-plot background for the gene-signature spatial discovery map.',
-            'Each row is one cell from the Xenium human breast-cancer dataset coloured by',
-            'its Scanpy sc.score_genes() Pathway Score for the Luminal Tumor Core signature.',
+            'Each row is one cell from the Xenium breast-cancer dataset coloured by its',
+            'Scanpy sc.score_genes() Pathway Score for the Luminal Tumor Core signature.',
             '',
-            'LEFT sub-panel : all cells coloured by continuous pathway score (viridis).',
-            'RIGHT sub-panel: cells inside SPINDLE top-match tiles highlighted over',
-            '                 greyscale background (similar to fig_gene_sig_luminal.png).',
+            'LEFT sub-panel : all cells coloured by continuous pathway score (magma).',
+            'RIGHT sub-panel: cells inside SPINDLE top-match tiles highlighted (no tile',
+            '                 boundary boxes -- colour alone marks the matched region).',
             '',
             'Columns:',
             '  x             -- Spatial x-coordinate of the cell centroid (microns)',
@@ -412,18 +477,19 @@ def curate_panel_f():
             '             Luminal_Tumor_Core_spatial_cells.csv',
             'Generated by: benchmarks/gene_signature_search.py  (dataset: breast_cancer)',
         ]
-        write_csv_with_header(df_cells, OUT_DIR / 'panel_F_spatial_cells.csv', cells_header)
+        write_csv_with_header(df_cells, OUT_DIR / 'panel_I_spatial_cells.csv', cells_header)
     else:
-        print(f'  SKIP Panel F spatial cells -- source not found: {cells_src}')
+        print(f'  SKIP Panel I spatial cells -- source not found: {cells_src}')
 
-    # -- Top-match tiles ------------------------------------------------------
+    # -- Top-match tiles (kept for provenance; no longer drawn as boxes) ------
     if matches_src.exists():
         df_matches = pd.read_csv(matches_src)
         matches_header = [
-            'Panel F -- Luminal Tumour Core: SPINDLE Top-Match Tile Bounding Boxes',
+            'Panel I -- Luminal Tumour Core: SPINDLE Top-Match Tile Locations',
             '',
-            'Rectangle patches drawn over the spatial map to highlight tiles returned by',
-            'SPINDLE for the Luminal Tumor Core gene-list query. Rank 1 = best match.',
+            'Tiles returned by SPINDLE for the Luminal Tumor Core gene-list query.',
+            'Rank 1 = best match. Retained here for provenance/reproducibility even',
+            'though the figure no longer draws bounding-box rectangles for these tiles.',
             '',
             'Columns:',
             '  rank    -- Retrieval rank (1 = top match)',
@@ -435,11 +501,11 @@ def curate_panel_f():
             '             Luminal_Tumor_Core_top_matches.csv',
             'Generated by: benchmarks/gene_signature_search.py  (dataset: breast_cancer)',
         ]
-        write_csv_with_header(df_matches, OUT_DIR / 'panel_F_top_matches.csv', matches_header)
+        write_csv_with_header(df_matches, OUT_DIR / 'panel_I_top_matches.csv', matches_header)
     else:
-        print(f'  SKIP Panel F top matches -- source not found: {matches_src}')
+        print(f'  SKIP Panel I top matches -- source not found: {matches_src}')
 
-    # -- Pathway scores -------------------------------------------------------
+    # -- Pathway scores (Panel J) ----------------------------------------------
     ROW_TO_LABEL = {
         'Luminal_Tumor_Core':      'Invasive Tumour\n& DCIS Core',
         'Basal_Myoepithelial':     'Myoepithelial\n& Basal Layer',
@@ -447,13 +513,12 @@ def curate_panel_f():
         'Endothelial_Vascular':    'Vasculature &\nEndothelial',
         'Macrophage_Myeloid':      'Macrophage &\nDendritic Cell',
     }
-    FALLBACK = {
-        'Invasive Tumour\n& DCIS Core':  {'background_score': 2.231,  'enrichment_score_at_10': 5.579},
-        'Myoepithelial\n& Basal Layer':  {'background_score': -0.017, 'enrichment_score_at_10': 0.994},
-        'Proliferating\nTumour Cells':   {'background_score': 0.029,  'enrichment_score_at_10': 0.287},
-        'Vasculature &\nEndothelial':    {'background_score': 0.011,  'enrichment_score_at_10': 0.191},
-        'Macrophage &\nDendritic Cell':  {'background_score': 0.007,  'enrichment_score_at_10': -0.067},
-    }
+    SCORE_COLS = ['background_score',
+                  'enrichment_score_at_5', 'enrichment_score_at_10',
+                  'enrichment_score_at_20', 'enrichment_score_at_50',
+                  'enrichment_score_at_200',
+                  'enrichment_lift_at_5', 'enrichment_lift_at_10',
+                  'enrichment_lift_at_20', 'enrichment_lift_at_50']
 
     rows = []
     if metrics_src.exists():
@@ -461,50 +526,42 @@ def curate_panel_f():
             df_m = pd.read_csv(metrics_src, index_col=0)
             for row_key, label in ROW_TO_LABEL.items():
                 if row_key in df_m.index:
-                    rows.append({
-                        'niche_key':              row_key,
-                        'niche_label':            label,
-                        'background_score':       float(df_m.loc[row_key, 'background_score']),
-                        'enrichment_score_at_10': float(df_m.loc[row_key, 'enrichment_score_at_10']),
-                    })
-            if not rows or max(abs(r['background_score']) for r in rows) < 0.1:
-                print('  WARNING Panel F: scores implausible -- using paper fallback')
+                    row = {'niche_key': row_key, 'niche_label': label}
+                    for col in SCORE_COLS:
+                        if col in df_m.columns:
+                            row[col] = float(df_m.loc[row_key, col])
+                    rows.append(row)
+            if not rows or max(abs(r.get('background_score', 0.0)) for r in rows) < 0.1:
+                print('  WARNING Panel J: scores implausible -- skipping')
                 rows = []
         except Exception as e:
-            print(f'  WARNING Panel F: could not read benchmark_metrics.csv ({e}) -- using fallback')
+            print(f'  WARNING Panel J: could not read benchmark_metrics.csv ({e})')
             rows = []
 
     if not rows:
-        for label, vals in FALLBACK.items():
-            key = next((k for k, v in ROW_TO_LABEL.items() if v == label), label)
-            rows.append({
-                'niche_key':              key,
-                'niche_label':            label,
-                'background_score':       vals['background_score'],
-                'enrichment_score_at_10': vals['enrichment_score_at_10'],
-            })
+        print('  SKIP Panel J pathway scores -- no usable data')
+        return
 
     df_pw = pd.DataFrame(rows)
     scores_header = [
-        'Panel F -- Pathway Score Comparison (All Five Gene-List Niches)',
+        'Panel J -- Pathway Score Comparison (All Five Gene-List Niches)',
         '',
         'Horizontal grouped bar chart: Tissue Background score vs. SPINDLE Top-10',
         'enrichment score for each of the five gene-signature queries on breast-cancer.',
-        'Scores are Scanpy sc.score_genes() values.',
+        'Scores are Scanpy sc.score_genes() values; enrichment_lift_at_K is the percent',
+        'lift of the Top-K enrichment score over the tissue background.',
         '',
         'Columns:',
-        '  niche_key              -- Internal key matching the benchmark CSV index',
-        '  niche_label            -- Multi-line label used on the chart y-axis',
-        '  background_score       -- Mean sc.score_genes() over all tissue cells',
-        '  enrichment_score_at_10 -- Mean sc.score_genes() inside top-10 SPINDLE tiles',
+        '  niche_key                -- Internal key matching the benchmark CSV index',
+        '  niche_label               -- Multi-line label used on the chart y-axis',
+        '  background_score          -- Mean sc.score_genes() over all tissue cells',
+        '  enrichment_score_at_{K}   -- Mean sc.score_genes() inside top-K SPINDLE tiles',
+        '  enrichment_lift_at_{K}    -- % lift of top-K enrichment over background',
         '',
         'Source CSV : results/gene_signature_search/benchmark_metrics.csv',
         'Generated by: benchmarks/gene_signature_search.py  (dataset: breast_cancer)',
-        '',
-        'NOTE: If benchmark_metrics.csv is missing or all |background_score| < 0.1,',
-        'paper-reported fallback values are used instead.',
     ]
-    write_csv_with_header(df_pw, OUT_DIR / 'panel_F_pathway_scores.csv', scores_header)
+    write_csv_with_header(df_pw, OUT_DIR / 'panel_J_pathway_scores.csv', scores_header)
 
 
 # -- Entry point --------------------------------------------------------------
@@ -517,11 +574,12 @@ def main():
     curate_panel_c()
     curate_panel_d()
     curate_panel_e()
-    curate_panel_f()
+    curate_panel_f_g()
+    curate_panel_i_j()
 
     print(f'\n{"="*60}')
     print('Done.  Panel CSVs are in results/panel_data/')
-    print('Run scripts/generate_figure_1.py to regenerate figures.')
+    print('Run scripts/generate_result_figure.py to regenerate figures.')
     print(f'{"="*60}')
 
 
