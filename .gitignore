@@ -70,3 +70,5 @@ paper/
 
 # HPC-specific job scripts (not part of paper code)
 hpc/
+
+/results/gene_signature_search/

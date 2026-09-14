@@ -20,26 +20,26 @@ import spindle_dev.preprocessing as preprocessing
 import spindle_dev.typing as typing
 import spindle_dev.interval_index as interval_index
 
-def prepare_to_index(adata):
+def prepare_to_index(adata, max_pts=200, top_genes=800):
     """
     Prepare standard data object for indexing.
     """
     coords = adata.obsm["spatial"]
-    tiles = preprocessing.build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=40)
+    tiles = preprocessing.build_quadtree_tiles(coords, max_pts=max_pts, min_side=0.0, max_depth=40)
     num_genes = adata.n_vars
-    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=min(800, num_genes))
+    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=min(top_genes, num_genes))
     tile_covs = spindle_dev.preprocessing.build_tile_covs_full(adata, tiles, gene_idx, n_jobs=8, eps=1e-6)
 
     return tiles, tile_covs, genes_work
 
-def load_and_split_data(adata_path, test_ratio=0.02, seed=42):
+def load_and_split_data(adata_path, test_ratio=0.02, seed=42, max_pts=200, top_genes=800):
     print(f"Reading data from {adata_path}...")
     adata = sc.read_h5ad(adata_path)
     if 'Cluster' in adata.obs.columns:
         adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
 
-    print("Preparing data for indexing...")
-    tiles, tile_covs, genes_work = prepare_to_index(adata)
+    print(f"Preparing data for indexing (max_pts={max_pts}, top_genes={top_genes})...")
+    tiles, tile_covs, genes_work = prepare_to_index(adata, max_pts=max_pts, top_genes=top_genes)
 
     np.random.seed(seed) 
     num_total_tiles = len(tiles)
