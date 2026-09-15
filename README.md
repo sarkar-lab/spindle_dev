@@ -126,6 +126,22 @@ All benchmark CSVs use a **standardized set of metric column names**. The `@` no
 | Enrichment Score@K | `enrichment_score_at_{K}` | Mean pathway score of cells in the top-K retrieved tiles |
 | Background Score | `background_score` | Dataset-wide mean pathway score (baseline) |
 | Enrichment Lift@K | `enrichment_lift_at_{K}` | `enrichment_score_at_K / background_score` |
+| Recall@ε | `recall_at_eps_{frac}` | Fraction of queries where Spindle's top-1 result is within `frac × niche_epsilon` of the true nearest-neighbor distance (niche-relative distance tolerance, not an exact/tied match like `recall_at_1`) |
+| Overlap@ε | `overlap_at_eps_{frac}` | `|spindle_near ∩ true_near| / |true_near|`, where `true_near`/`spindle_near` are the sets of tiles within `frac × niche_epsilon` of the true best distance — a distance-window analogue of `overlap_at_K` |
+| Niche-coverage diagnostic | `true_near_frac_of_niche_{frac}` | Fraction of the query's true-best-match niche that falls within the `frac × niche_epsilon` band — if this approaches 1.0, the search budget is effectively covering the whole niche rather than a meaningful neighborhood |
+| Dataset-coverage diagnostic | `true_near_frac_of_dataset_{frac}` | Fraction of the *entire indexed dataset* (all niches) that falls within the band — if this approaches 1.0, the tolerance band itself is essentially meaningless |
+
+`frac` ranges over `EPSILON_TOLERANCE_FRACTIONS = [0.1, 0.25, 0.5, 1.0]` (see `benchmarks/holdout_validation.py`). `niche_epsilon` is `config.epsilon_dict[true_best_niche]` — the query's true-best-match niche's own per-niche distance scale, the same one already used to size that niche's search budget (`budget = epsilon * num_blocks * budget_multiplier * niche_scale_factor`), so the tolerance is comparable across datasets/niches with different absolute distance scales. (There is no single "predicted niche" per query anymore — see below.)
+
+### Search design: every niche is searched, not just a predicted one
+
+Earlier versions of this benchmark routed each query to a single niche via `search.assign_clusters_to_new_spds()` (a KNN-vote in a latent PCA/ultrametric embedding) and searched only that niche's DAG. Diagnosis found this embedding disagrees substantially with the actual search/distance metric on datasets with many niches — e.g. 60% of `lymph_node` queries and 86% of `brain_cancer` queries had their true nearest neighbor in a *different* niche than the one routed to, an unrecoverable recall failure under single-niche search. Neither widening top-K niche-probing nor increasing PCA embedding dimensionality fixed this (more PCA dims made separability *worse* — a curse-of-dimensionality effect), and coarsening the clustering enough to fix it would have gutted per-niche search efficiency.
+
+Since niches exist to group SPD matrices that share a block-diagonal permutation (a compression/indexing property), not to reduce the search space, `benchmarks/holdout_validation.py`'s `perform_search()` now searches **every niche's DAG for every query** (each with its own permutation/budget) and merges Stage-1 candidates before Stage-2 re-ranking, which is niche-aware per candidate. This removes the misrouting failure mode entirely (`recall_at_1` on a 5-query breast_cancer smoke test went from 0.4 to 1.0) while still being far cheaper than true brute force, since each niche's DFS is still budget-pruned. The brute-force baseline itself was also corrected to scan the *entire* indexed dataset (previously it was restricted to the same predicted niche, which handed it an unearned shortcut and understated Spindle's real speedup — by 4-16× depending on how many niches a dataset has).
+
+### Budget multiplier
+
+All benchmark runs use a single, shared `budget_multiplier = 0.015` for every dataset, passed via `--budget-mult`/`--budget-mults` to `benchmarks/holdout_validation.py` / `benchmarks/budget_sweep_holdout.py`. This was chosen from a recall/overlap-vs-speedup sweep (`benchmarks/budget_sweep_holdout.py`, log-spaced `budget_multiplier` grid, `DEFAULT_BUDGET_MULTS`, at a fixed `top_c=400` Stage-2 re-rank cap per niche) across all 8 datasets; see `results/budget_sweep_holdout/sweep_summary.csv` and `figures/fig_budget_sweep.{pdf,png}` / `figures/fig_budget_sweep_candidate_counts.{pdf,png}` (`scripts/generate_budget_sweep_figure.py`) for the full tradeoff curves.
 
 ---
 
