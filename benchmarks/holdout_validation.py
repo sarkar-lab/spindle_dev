@@ -74,12 +74,29 @@ def _niche_scale_factor(n_niche: int, typical: int = 500, min_factor: float = 1.
     return float(np.clip(np.sqrt(max(n_niche, 1) / typical), min_factor, max_factor))
 
 
-def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_multiplier: float = 2.0):
-    """Query the Spindle DAG index to retrieve Stage 1 candidate pools."""
-    niche_sizes = {int(c): int(np.sum(data.labels == c)) for c in set(data.labels)}
+def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_multiplier: float = 2.0,
+                    effort_multiplier: float = 1.0):
+    """Query the Spindle DAG index, searching EVERY niche for every query.
+
+    Niches exist to group covariance matrices that share a permutation/
+    block-diagonal structure (compression/indexing units), not as a
+    search-space-reduction routing mechanism. Routing each query to a
+    single predicted niche (via cluster assignment in a latent embedding
+    space) was found to misroute a large fraction of queries on datasets
+    with many niches -- the embedding used for routing doesn't reliably
+    agree with the actual search/distance metric -- making that niche's
+    true nearest neighbor permanently unreachable. Searching every niche's
+    DAG (each with its own permutation/budget) removes that failure mode
+    entirely; niches still provide their compression/block-diagonalization
+    benefit, and each niche's budget-pruned DFS is still far cheaper than a
+    brute-force scan of that niche, so the aggregate search is still much
+    cheaper than a true brute-force scan of the whole dataset.
+    """
+    unique_niches = sorted(set(int(c) for c in data.labels))
+    niche_sizes = {c: int(np.sum(data.labels == c)) for c in unique_niches}
     niche_search_cfgs = {}
     for c, n_niche in niche_sizes.items():
-        f = _niche_scale_factor(n_niche)
+        f = _niche_scale_factor(n_niche) * effort_multiplier
         # Base effort caps (100 / 200 / 3000) are 10x the original constants
         # (10 / 20 / 300). The radius-aware pruning fix in search.py's dfs()
         # correctly widens which branches survive pruning (using a valid
@@ -89,7 +106,10 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
         # incorrectly-narrow pruning and were too tight once that was fixed.
         # 10x was empirically calibrated to match unlimited-budget Stage-1
         # candidate coverage (checked against exact brute-force ground truth)
-        # across both tight-radius and large-radius datasets.
+        # across both tight-radius and large-radius datasets. effort_multiplier
+        # is an additional knob (used by the budget sweep) to widen these caps
+        # further when a stop metric plateaus below 1.0 for reasons unrelated
+        # to the distance budget itself.
         niche_search_cfgs[c] = search.SearchConfig(
             max_results=None,
             debug=False,
@@ -99,84 +119,74 @@ def perform_search(query_matrices: list, data, dag_dict: dict, config, budget_mu
         )
 
     print(f"Starting blind holdout validation for {len(query_matrices)} unseen queries...")
+    print(f"Searching all {len(unique_niches)} niches per query (no niche-routing step).")
     print("-" * 65)
 
-    print("Step 1/2: Assigning queries to Covariance-Niches using latent space...")
-    if query_matrices:
-        # Warmup call: runs one assignment to trigger any JIT / lazy-init paths so
-        # the subsequent timed batch is not penalised by first-call overhead.
-        _ = search.assign_clusters_to_new_spds(query_matrices[:1], data)
-
-    assign_start = time.perf_counter()
-    predicted_clusters = search.assign_clusters_to_new_spds(query_matrices, data)
-    assign_total_time = time.perf_counter() - assign_start
-    assign_time_ms_per_query = (assign_total_time / max(1, len(query_matrices))) * 1000
-    print(f"Assignment complete in {assign_total_time:.3f}s ({assign_time_ms_per_query:.2f}ms per query)\n")
-
-    print("Step 2/2: Performing distance-budgeted search across DAG...")
     search_start = time.perf_counter()  # use perf_counter throughout for consistent precision
     all_matched_train_ids = []
     spindle_search_times = []
 
-    for j, cluster_id in enumerate(tqdm(predicted_clusters, desc="Querying Index", leave=True)):
-        cluster_id = int(cluster_id)
-        index_handle = dag_dict[cluster_id]
-        epsilon = config.epsilon_dict[cluster_id]
-        num_blocks = len(index_handle.sorted_blocks)
-        f = _niche_scale_factor(niche_sizes[cluster_id])
-
-        budget = float(epsilon) * float(num_blocks) * float(budget_multiplier) * f
-
-        q_spd = query_matrices[j]
-        perm = data.perm_list[cluster_id]
-        q_spd_perm = q_spd[np.ix_(perm, perm)]
-        query_block_runs = data.block_dict[cluster_id]
-
-        t0 = time.perf_counter()
-        results = search.search_index(
-            index_handle,
-            q_spd_perm,
-            [],
-            query_block_runs,
-            budget,
-            config=niche_search_cfgs[cluster_id],
-        )
-        spindle_search_times.append(time.perf_counter() - t0)
-
+    for q_spd in tqdm(query_matrices, desc="Querying Index", leave=True):
         matched_ids_for_query = []
         seen_matched = set()
-        if results.paths:
-            for path in results.paths:
-                member_sets = []
-                for node_id in path.node_path:
-                    node = index_handle.nodes[node_id]
-                    members = getattr(getattr(node, "metadata", None), "members", [])
-                    spd_ids = {int(spd_id) for spd_id, _ in members}
-                    member_sets.append(spd_ids)
+        query_search_time = 0.0
 
-                intersect_ids = set.intersection(*member_sets) if member_sets else set()
-                for spd_id in sorted(intersect_ids):
-                    if spd_id not in seen_matched:
-                        seen_matched.add(spd_id)
-                        matched_ids_for_query.append(spd_id)
+        for cluster_id in unique_niches:
+            index_handle = dag_dict[cluster_id]
+            epsilon = config.epsilon_dict[cluster_id]
+            num_blocks = len(index_handle.sorted_blocks)
+            f = _niche_scale_factor(niche_sizes[cluster_id])
+            budget = float(epsilon) * float(num_blocks) * float(budget_multiplier) * f
+
+            perm = data.perm_list[cluster_id]
+            q_spd_perm = q_spd[np.ix_(perm, perm)]
+            query_block_runs = data.block_dict[cluster_id]
+
+            t0 = time.perf_counter()
+            results = search.search_index(
+                index_handle,
+                q_spd_perm,
+                [],
+                query_block_runs,
+                budget,
+                config=niche_search_cfgs[cluster_id],
+            )
+            query_search_time += time.perf_counter() - t0
+
+            if results.paths:
+                for path in results.paths:
+                    member_sets = []
+                    for node_id in path.node_path:
+                        node = index_handle.nodes[node_id]
+                        members = getattr(getattr(node, "metadata", None), "members", [])
+                        spd_ids = {int(spd_id) for spd_id, _ in members}
+                        member_sets.append(spd_ids)
+
+                    intersect_ids = set.intersection(*member_sets) if member_sets else set()
+                    for spd_id in sorted(intersect_ids):
+                        if spd_id not in seen_matched:
+                            seen_matched.add(spd_id)
+                            matched_ids_for_query.append(spd_id)
 
         all_matched_train_ids.append(matched_ids_for_query)
+        spindle_search_times.append(query_search_time)
 
     search_time = time.perf_counter() - search_start
     print("-" * 65)
-    print(f"Index Querying Complete! Total time: {search_time:.3f}s ({search_time/len(predicted_clusters):.4f}s per query)")
+    print(f"Index Querying Complete! Total time: {search_time:.3f}s "
+          f"({search_time / max(1, len(query_matrices)):.4f}s per query, "
+          f"{len(unique_niches)} niches searched per query)")
 
-    return predicted_clusters, all_matched_train_ids, spindle_search_times, assign_time_ms_per_query
+    return all_matched_train_ids, spindle_search_times
 
 
-def summarize_hits(all_matched_train_ids: list, predicted_clusters: list):
+def summarize_hits(all_matched_train_ids: list):
     """Print summary statistics of retrieved Stage 1 candidate counts."""
     print("\n" + "=" * 40)
     print("           QUERY HITS SUMMARY")
     print("=" * 40)
     for j, hits in enumerate(all_matched_train_ids):
-        target_niche = int(predicted_clusters[j])
-        print(f"Query {j:3d} [Niche {target_niche:2d}]: {len(hits):4d} matches found")
+        print(f"Query {j:3d}: {len(hits):4d} matches found (across all niches)")
     print("=" * 40 + "\n")
 
 
@@ -184,21 +194,48 @@ def summarize_hits(all_matched_train_ids: list, predicted_clusters: list):
 # Stage 2: Fine Re-ranking & Performance Benchmark
 # =====================================================================
 
+# Recall@epsilon / Overlap@epsilon tolerance bands, each expressed as a fraction of
+# the query's true-best-niche epsilon (config.epsilon_dict[true_best_niche]) -- the
+# same per-cluster distance scale already used to size the search budget
+# (budget = epsilon * num_blocks * budget_multiplier * f). Using a niche-relative
+# band keeps the tolerance comparable across datasets/niches with different
+# absolute distance scales, unlike a single global epsilon.
+EPSILON_TOLERANCE_FRACTIONS = [0.1, 0.25, 0.5, 1.0]
+
+
 def evaluate_brute_force_approximation(
-    test_tile_covs, train_tile_covs, train_idx, predicted_clusters,
-    all_matched_train_ids, spindle_search_times, assign_time_ms_per_query, data, dataset_out_dir, dataset_name,
-    top_c_candidates: int = 100
+    test_tile_covs, train_tile_covs, train_idx,
+    all_matched_train_ids, spindle_search_times, data, dataset_out_dir, dataset_name,
+    config, top_c_candidates: int = 100
 ):
-    """Evaluate Spindle search against exact ground-truth nearest neighbors."""
+    """Evaluate Spindle search against exact ground-truth nearest neighbors.
+
+    The brute-force baseline scans the ENTIRE indexed training set -- every
+    niche, not just one. Each niche's tiles are compared using that niche's
+    own permutation/block-decomposition (a property of how the data was
+    pre-organized at index-build time), and results are combined into one
+    global ranking across all niches for both the ground truth and the
+    timed brute-force scan.
+
+    Spindle's own search (``perform_search``) also now searches every
+    niche's DAG per query (no niche-routing step -- see its docstring), so
+    Stage-1 candidates can come from any niche. Stage-2 re-ranking looks up
+    each candidate's own niche to use the matching cached logs/block
+    structure -- there is no single "target niche" for a query anymore.
+    ``top_c_candidates`` caps how many Stage-1 candidates are re-ranked
+    *per niche* (not globally), since each niche contributes its own
+    independent candidate pool.
+    """
     print("\n" + "=" * 60)
-    print(f"TASK 2: Two-Stage ANN Search Benchmark (Top-{top_c_candidates} Candidates)")
+    print(f"TASK 2: Two-Stage ANN Search Benchmark (Top-{top_c_candidates} Candidates, full-dataset brute force)")
     print("=" * 60)
 
     global_to_local_train_map = {global_id: local_idx for local_idx, global_id in enumerate(train_idx)}
+    tile_niche = {idx: int(lab) for idx, lab in enumerate(data.labels)}
 
     print("Pre-computing matrix logarithms for training tiles...")
     niche_train_cache = {}
-    unique_niches = set(int(lab) for lab in data.labels)
+    unique_niches = sorted(set(int(lab) for lab in data.labels))
     for niche in unique_niches:
         perm = data.perm_list[niche]
         block_runs = data.block_dict[niche]
@@ -219,65 +256,81 @@ def evaluate_brute_force_approximation(
     query_metrics_list = []
 
     for i, q_dict in enumerate(test_tile_covs):
-        target_niche = int(predicted_clusters[i])
-        perm = data.perm_list[target_niche]
-        block_runs = data.block_dict[target_niche]
-        niche_train_indices, cached_logs = niche_train_cache[target_niche]
-
         q_spd = q_dict if not isinstance(q_dict, dict) else q_dict.get('cov', q_dict.get('matrix', q_dict))
-        q_perm = q_spd[np.ix_(perm, perm)]
-        q_blocks_log = [log_spd(q_perm[s:e, s:e]) for s, e in block_runs]
 
-        # Measure true exact brute-force search time (including log_spd on raw candidate tiles).
-        # We time a sample of up to 100 tiles from the *same niche* and extrapolate to the full
-        # niche size.  Using the total train-set size (across all niches) would over-inflate the
-        # BF baseline because a real brute-force search would also be restricted to the predicted
-        # niche after cluster assignment.
-        bf_start = time.perf_counter()
-        raw_dists = []
-        sample_indices = niche_train_indices[:min(100, len(niche_train_indices))]
-        for t_idx in sample_indices:
-            t_raw = train_tile_covs[t_idx] if not isinstance(train_tile_covs[t_idx], dict) else train_tile_covs[t_idx].get('cov', train_tile_covs[t_idx])
-            t_perm = t_raw[np.ix_(perm, perm)]
-            d_val = sum(
-                np.linalg.norm(q_blocks_log[b] - log_spd(t_perm[s:e, s:e]), ord='fro') / np.sqrt(e - s)
-                for b, (s, e) in enumerate(block_runs)
-            )
-            raw_dists.append(d_val)
-        bf_time_sample_ms = (time.perf_counter() - bf_start) * 1000
+        # Full-dataset ground truth + brute-force timing: for every niche
+        # (not just the predicted one), project the query into that niche's
+        # own permutation/block layout, time a from-scratch sample (raw
+        # covariance -> log_spd, exactly what a real brute-force scan would
+        # have to do, since it has no precomputed logs) extrapolated to that
+        # niche's full size, and compute exact distances to every tile in
+        # that niche using the pre-cached logs (cheap -- no eigendecomposition,
+        # just norm computation). Distances from every niche are pooled into
+        # one global ranking.
+        global_distances = []
+        bf_time_ms = 0.0
+        query_blocks_log_by_niche = {}
+        for niche in unique_niches:
+            perm = data.perm_list[niche]
+            block_runs = data.block_dict[niche]
+            niche_indices, cached_logs = niche_train_cache[niche]
 
-        # Scale sample time to full niche size (not full train set — see comment above).
-        bf_time_ms = bf_time_sample_ms * (len(niche_train_indices) / max(1, len(raw_dists)))
+            q_perm = q_spd[np.ix_(perm, perm)]
+            q_blocks_log = [log_spd(q_perm[s:e, s:e]) for s, e in block_runs]
+            query_blocks_log_by_niche[niche] = q_blocks_log
 
-        # For fast ranking evaluation, use pre-cached logs within target niche
-        distances = []
-        for t_idx in niche_train_indices:
-            t_logs = cached_logs[t_idx]
-            total_block_dist = sum(
-                np.linalg.norm(q_blocks_log[b_idx] - t_logs[b_idx], ord='fro') / np.sqrt(end - start)
-                for b_idx, (start, end) in enumerate(block_runs)
-            )
-            distances.append((total_block_dist, t_idx))
-        distances.sort(key=lambda x: x[0])
-        true_order = [idx for d, idx in distances]
-        dist_dict = {idx: d for d, idx in distances}
+            bf_start = time.perf_counter()
+            raw_dists = []
+            sample_indices = niche_indices[:min(100, len(niche_indices))]
+            for t_idx in sample_indices:
+                t_raw = train_tile_covs[t_idx] if not isinstance(train_tile_covs[t_idx], dict) else train_tile_covs[t_idx].get('cov', train_tile_covs[t_idx])
+                t_perm = t_raw[np.ix_(perm, perm)]
+                d_val = sum(
+                    np.linalg.norm(q_blocks_log[b] - log_spd(t_perm[s:e, s:e]), ord='fro') / np.sqrt(e - s)
+                    for b, (s, e) in enumerate(block_runs)
+                )
+                raw_dists.append(d_val)
+            bf_time_sample_ms = (time.perf_counter() - bf_start) * 1000
+            bf_time_ms += bf_time_sample_ms * (len(niche_indices) / max(1, len(raw_dists)))
 
-        spindle_candidates_local = []
+            for t_idx in niche_indices:
+                t_logs = cached_logs[t_idx]
+                total_block_dist = sum(
+                    np.linalg.norm(q_blocks_log[b_idx] - t_logs[b_idx], ord='fro') / np.sqrt(end - start)
+                    for b_idx, (start, end) in enumerate(block_runs)
+                )
+                global_distances.append((total_block_dist, t_idx))
+
+        global_distances.sort(key=lambda x: x[0])
+        true_order = [idx for d, idx in global_distances]
+        dist_dict = {idx: d for d, idx in global_distances}
+
+        # Spindle's Stage-1 candidates can now come from ANY niche (every
+        # niche's DAG was searched). Group candidates by their own niche and
+        # cap each niche's contribution at top_c_candidates independently,
+        # since each niche's Stage-1 search is an independent candidate pool.
+        spindle_candidates_by_niche: dict = {}
         for match_global_idx in all_matched_train_ids[i]:
             local_match_idx = global_to_local_train_map.get(match_global_idx)
             if local_match_idx is not None and local_match_idx in dist_dict:
-                spindle_candidates_local.append(local_match_idx)
+                cand_niche = tile_niche[local_match_idx]
+                spindle_candidates_by_niche.setdefault(cand_niche, []).append(local_match_idx)
 
-        stage1_pool = spindle_candidates_local[:top_c_candidates]
+        stage1_pool = []
+        for cand_niche, cands in spindle_candidates_by_niche.items():
+            stage1_pool.extend(cands[:top_c_candidates])
 
         # Time Stage 2 fine re-ranking computation on retrieved Stage 1 candidates
         rerank_start = time.perf_counter()
         spindle_rerank_dists = []
         for cand_local_idx in stage1_pool:
-            c_logs = cached_logs[cand_local_idx]
+            cand_niche = tile_niche[cand_local_idx]
+            c_logs = niche_train_cache[cand_niche][1][cand_local_idx]
+            c_block_runs = data.block_dict[cand_niche]
+            c_q_blocks_log = query_blocks_log_by_niche[cand_niche]
             c_dist = sum(
-                np.linalg.norm(q_blocks_log[b_idx] - c_logs[b_idx], ord='fro') / np.sqrt(end - start)
-                for b_idx, (start, end) in enumerate(block_runs)
+                np.linalg.norm(c_q_blocks_log[b_idx] - c_logs[b_idx], ord='fro') / np.sqrt(end - start)
+                for b_idx, (start, end) in enumerate(c_block_runs)
             )
             spindle_rerank_dists.append((c_dist, cand_local_idx))
         spindle_rerank_dists.sort(key=lambda x: x[0])
@@ -285,10 +338,11 @@ def evaluate_brute_force_approximation(
 
         stage2_reranked = [idx for _, idx in spindle_rerank_dists]
 
-        closest_dist = distances[0][0] if distances else float('inf')
+        closest_dist = global_distances[0][0] if global_distances else float('inf')
+        true_best_niche = tile_niche[true_order[0]] if true_order else None
 
         if not stage2_reranked:
-            print(f"Query {i:3d} (Niche {target_niche}): Exact closest dist = {closest_dist:.3f} | Spindle found NOTHING.")
+            print(f"Query {i:3d}: Exact closest dist = {closest_dist:.3f} | Spindle found NOTHING.")
             exact_dists.append(closest_dist)
             spindle_dists.append(float('inf'))
             spindle_ranks.append(-1)
@@ -298,7 +352,7 @@ def evaluate_brute_force_approximation(
             best_match_idx = stage2_reranked[0]
             spindle_best_dist = dist_dict[best_match_idx]
             spindle_best_rank = true_order.index(best_match_idx) + 1
-            print(f"Query {i:3d} (Niche {target_niche}): Exact closest dist = {closest_dist:.3f}, Spindle dist = {spindle_best_dist:.3f} | Spindle found {get_ordinal(spindle_best_rank)} closest neighbor.")
+            print(f"Query {i:3d}: Exact closest dist = {closest_dist:.3f}, Spindle dist = {spindle_best_dist:.3f} | Spindle found {get_ordinal(spindle_best_rank)} closest neighbor.")
             exact_dists.append(closest_dist)
             spindle_dists.append(spindle_best_dist)
             spindle_ranks.append(spindle_best_rank)
@@ -311,12 +365,14 @@ def evaluate_brute_force_approximation(
         recall_1 = 1 if (stage2_reranked and
             abs(dist_dict[stage2_reranked[0]] - closest_dist) < 1e-5) else 0
         dag_time_ms = spindle_search_times[i] * 1000 if i < len(spindle_search_times) else 0.0
-        spindle_total_ms = assign_time_ms_per_query + dag_time_ms + rerank_time_ms
+        # No niche-routing/assignment step exists anymore (every niche is
+        # searched), so Spindle's total cost is just DAG search + re-rank.
+        spindle_total_ms = dag_time_ms + rerank_time_ms
 
         metric_record = {
             'query_idx': i,
             'Dataset': dataset_name,
-            'target_niche': target_niche,
+            'true_best_niche': true_best_niche,
             'spindle_search_time': round(spindle_total_ms / 1000.0, 6),
             'brute_force_time': round(bf_time_ms / 1000.0, 6),
             'spindle_time_ms': round(spindle_total_ms, 4),
@@ -325,18 +381,52 @@ def evaluate_brute_force_approximation(
             'exact_best_dist': round(closest_dist, 4),
             'spindle_best_dist': round(spindle_best_dist, 4) if spindle_best_rank != -1 else np.nan,
             'spindle_best_rank': spindle_best_rank,
-            'recall_at_1': recall_1
+            'recall_at_1': recall_1,
         }
 
-        # overlap@K: fraction of the true top-K (within the predicted niche) that appear in
-        # Spindle's re-ranked top-K candidates.  Both numerator and denominator are intra-niche;
-        # tiles assigned to other niches by the cluster step are not evaluated here.
+        # overlap@K: fraction of the true (global) top-K that appear in Spindle's
+        # re-ranked top-K candidates, pooled across every niche it searched.
         for K in [5, 10, 20, 30, 50]:
             true_top_k = set(true_order[:K])
             stage2_top_k = set(stage2_reranked[:K])
             denom = max(1, len(true_top_k))
             ov = len(true_top_k.intersection(stage2_top_k)) / float(denom)
             metric_record[f'overlap_at_{K}'] = round(ov, 4)
+
+        # Recall@epsilon / Overlap@epsilon: distance-tolerance-based analogues of
+        # recall_at_1/overlap_at_k, tolerant of near-misses instead of requiring an
+        # exact (tied) distance match. The tolerance band is a fraction of the
+        # TRUE best niche's own epsilon (there's no single "predicted niche"
+        # anymore since every niche is searched), so it's comparable across
+        # datasets/niches with different distance scales.
+        niche_epsilon = float(config.epsilon_dict[true_best_niche]) if true_best_niche is not None else float('nan')
+        niche_train_indices = niche_train_cache[true_best_niche][0] if true_best_niche is not None else []
+        n_niche = max(1, len(niche_train_indices))
+        n_total = max(1, len(true_order))
+        for frac in EPSILON_TOLERANCE_FRACTIONS:
+            band = frac * niche_epsilon
+            recall_eps = 1 if (spindle_best_rank != -1 and
+                (spindle_best_dist - closest_dist) <= band) else 0
+            true_near_global = {idx for idx, d in dist_dict.items() if (d - closest_dist) <= band}
+            spindle_near = {idx for idx in stage2_reranked if (dist_dict[idx] - closest_dist) <= band}
+            denom_eps = max(1, len(true_near_global))
+            overlap_eps = len(true_near_global.intersection(spindle_near)) / float(denom_eps)
+
+            metric_record[f'recall_at_eps_{frac}'] = recall_eps
+            metric_record[f'overlap_at_eps_{frac}'] = round(overlap_eps, 4)
+            # Dataset-wide diagnostic: what fraction of the ENTIRE indexed
+            # training set (all niches) falls within this tolerance band of
+            # the true best -- if this approaches 1.0, the band is
+            # essentially meaningless (almost everything qualifies).
+            metric_record[f'true_near_frac_of_dataset_{frac}'] = round(len(true_near_global) / n_total, 4)
+            # Niche-scoped diagnostic (same definition as before this change):
+            # what fraction of the niche Spindle actually searched falls
+            # within this band -- if this approaches 1.0, the search budget
+            # is effectively retrieving the whole niche rather than a
+            # meaningful neighborhood. This is what budget_sweep_holdout.py's
+            # over-retrieval flag is based on.
+            niche_near = {idx for idx in niche_train_indices if (dist_dict[idx] - closest_dist) <= band}
+            metric_record[f'true_near_frac_of_niche_{frac}'] = round(len(niche_near) / n_niche, 4)
 
         query_metrics_list.append(metric_record)
 
@@ -364,6 +454,11 @@ def evaluate_brute_force_approximation(
         'overlap_at_30': round(df_query_metrics['overlap_at_30'].mean(), 4),
         'overlap_at_50': round(df_query_metrics['overlap_at_50'].mean(), 4),
     }
+    for frac in EPSILON_TOLERANCE_FRACTIONS:
+        summary_record[f'recall_at_eps_{frac}'] = round(df_query_metrics[f'recall_at_eps_{frac}'].mean(), 4)
+        summary_record[f'overlap_at_eps_{frac}'] = round(df_query_metrics[f'overlap_at_eps_{frac}'].mean(), 4)
+        summary_record[f'true_near_frac_of_niche_{frac}'] = round(df_query_metrics[f'true_near_frac_of_niche_{frac}'].mean(), 4)
+        summary_record[f'true_near_frac_of_dataset_{frac}'] = round(df_query_metrics[f'true_near_frac_of_dataset_{frac}'].mean(), 4)
 
     print("\n" + "-" * 60)
     print(f"BENCHMARK SUMMARY FOR {dataset_name}:")
@@ -413,6 +508,9 @@ def main():
     parser.add_argument('--top-c', type=int, default=400, help='Stage 1 candidate pool retrieval cap for Stage 2 re-ranking')
     parser.add_argument('--budget-mult', type=float, default=1.0, help='Distance budget multiplier for DAG search')
     parser.add_argument('--dataset-paths', nargs='*', default=None, help='Paths to the datasets')
+    parser.add_argument('--max-queries', type=int, default=None,
+                         help='Cap the number of held-out test queries evaluated per dataset '
+                              '(randomly subsampled with a fixed seed). Default: no cap.')
     args = parser.parse_args()
 
     current_dir = Path(__file__).resolve().parent
@@ -484,20 +582,26 @@ def main():
         if args.test:
             print("[--test flag] Truncating test queries to 5 for quick run...")
             test_tile_covs = test_tile_covs[:5]
+        elif args.max_queries is not None and len(test_tile_covs) > args.max_queries:
+            rng = np.random.default_rng(42)
+            keep = np.sort(rng.choice(len(test_tile_covs), size=args.max_queries, replace=False))
+            print(f"[--max-queries {args.max_queries}] Subsampling {len(test_tile_covs)} "
+                  f"test queries down to {args.max_queries}...")
+            test_tile_covs = [test_tile_covs[i] for i in keep]
 
         dataset_out_dir = base_results_dir / dataset_name
         dataset_out_dir.mkdir(exist_ok=True, parents=True)
 
         query_matrices = extract_query_matrices(test_tile_covs)
-        predicted_clusters, all_matched_train_ids, spindle_search_times, assign_time_ms_per_query = perform_search(
+        all_matched_train_ids, spindle_search_times = perform_search(
             query_matrices, data, dag_dict, config, budget_multiplier=args.budget_mult
         )
-        summarize_hits(all_matched_train_ids, predicted_clusters)
+        summarize_hits(all_matched_train_ids)
 
         df_query_metrics, summary_record = evaluate_brute_force_approximation(
-            test_tile_covs, train_tile_covs, train_idx, predicted_clusters,
-            all_matched_train_ids, spindle_search_times, assign_time_ms_per_query, data, dataset_out_dir, dataset_name,
-            top_c_candidates=args.top_c
+            test_tile_covs, train_tile_covs, train_idx,
+            all_matched_train_ids, spindle_search_times, data, dataset_out_dir, dataset_name,
+            config, top_c_candidates=args.top_c
         )
 
         if df_query_metrics is not None and not df_query_metrics.empty:

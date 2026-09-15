@@ -6,7 +6,7 @@ Generates publication-quality main-result figure panels for SPINDLE.
 
 Reads from ``results/panel_data/`` (produced by ``organize_panel_data.py``).
 All panels are exported as individual high-resolution standalone files, and a
-composite main-figure is saved to ``results/fig_main_result.pdf/.png``.
+composite main-figure is saved to ``figures/fig_main_result.pdf/.png``.
 
 Individual exports
 ------------------
@@ -746,7 +746,7 @@ def main():
 
     print('\n-- Building composite main figure ------------------------------------')
     fig = build_composite_figure(project_root)
-    out_stem = project_root / 'results' / 'fig_main_result'
+    out_stem = project_root / 'figures' / 'fig_main_result'
     for fmt in ('pdf', 'png'):
         p = out_stem.with_suffix(f'.{fmt}')
         fig.savefig(str(p), format=fmt, bbox_inches='tight', dpi=300)
@@ -756,7 +756,7 @@ def main():
     print(f'\n{"="*70}')
     print('SUCCESS: Main figure generation complete.')
     print(f'  Panels    -> {project_root / "figures" / "panels"}/')
-    print(f'  Composite -> results/fig_main_result.pdf / .png')
+    print(f'  Composite -> figures/fig_main_result.pdf / .png')
     print(f'{"="*70}')
 
 

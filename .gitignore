@@ -59,6 +59,7 @@ docs/_build/
 *.log
 *.tmp
 *.bak
+logs/
 
 # Large data files (store externally, not in the repo)
 dataset/
