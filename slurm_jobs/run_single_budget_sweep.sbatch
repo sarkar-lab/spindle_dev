@@ -12,12 +12,17 @@
 
 # Runs the recall-vs-budget sweep (benchmarks/budget_sweep_holdout.py) for one
 # dataset, reusing the already-built index/covariance pickles under
-# results/holdout_validation_indexed/ -- no re-indexing (Phase 1 is skipped
-# on purpose: all 8 datasets already have current indexed pickles, and
-# re-indexing here would be redundant, multi-GB, multi-hour work for no
-# benefit to this experiment).
+# results/holdout_validation_indexed/ (built with a fixed seed=1/n_holdout=100
+# split by run_single_index_build.sbatch) -- no re-indexing here.
 #
-# Usage: sbatch run_single_budget_sweep.sbatch <dataset.h5ad> [stop_metric] [max_queries]
+# Evaluates every swept budget_multiplier against BOTH the block-diagonalized
+# and whole-matrix ground truths (computed/cached once per dataset), using
+# the fixed budget_mults grid baked into budget_sweep_holdout.DEFAULT_BUDGET_MULTS.
+# The plateau early-stop never fires before budget_multiplier=1.0 and is keyed
+# off the whole-matrix ground truth's recall_at_eps_0.25 (see
+# EARLY_STOP_GROUND_TRUTH_KIND/EARLY_STOP_METRIC in budget_sweep_holdout.py).
+#
+# Usage: sbatch run_single_budget_sweep.sbatch <dataset.h5ad>
 # Resource overrides for large datasets (lymph_node_5k, brain_cancer) are
 # passed via `sbatch --mem=... --time=... --partition=...` at submit time
 # (see submit_all_budget_sweep.sh), not hardcoded here.
@@ -45,23 +50,16 @@ if [ -z "$1" ]; then
 else
     DATASET_NAME=$1
 fi
-# Metric checked for perfect (==1.0) recovery to stop the sweep early.
-STOP_METRIC=${2:-recall_at_eps_0.1}
-# Cap on the number of held-out test queries evaluated (randomly subsampled,
-# fixed seed) -- keeps runtime bounded across ~16-30 budget multipliers per
-# dataset. This sweep is for finding the accuracy/speed sweet spot, not the
-# final reported numbers (those come later, over the full query set). Empty
-# string = no cap.
-MAX_QUERIES=${3:-100}
+# Informational only (recorded in the ground-truth cache and run log) -- the
+# holdout tile set is already fixed by the index build, so there is nothing
+# left to subsample here.
+SEED=${2:-1}
+N_HOLDOUT=${3:-100}
 
 DATASET_PATH="$DATASET_DIR/$DATASET_NAME"
 echo "============================================================"
-echo "Budget sweep: $(basename "$DATASET_PATH") (stop-metric=$STOP_METRIC, max-queries=$MAX_QUERIES)"
+echo "Budget sweep: $(basename "$DATASET_PATH") (seed=$SEED, n_holdout=$N_HOLDOUT)"
 echo "============================================================"
 
-MAX_QUERIES_ARGS=()
-if [ -n "$MAX_QUERIES" ]; then
-    MAX_QUERIES_ARGS=(--max-queries "$MAX_QUERIES")
-fi
-python benchmarks/budget_sweep_holdout.py --dataset-paths "$DATASET_PATH" --stop-metric "$STOP_METRIC" "${MAX_QUERIES_ARGS[@]}"
+python benchmarks/budget_sweep_holdout.py --dataset-paths "$DATASET_PATH" --seed "$SEED" --n-holdout "$N_HOLDOUT"
 echo "Done."

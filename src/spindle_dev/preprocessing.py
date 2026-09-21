@@ -82,11 +82,48 @@ def reindex_tiles(tiles, sort=True):
     return tiles
 
 
-def build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=12):
+def _low_density_tile_mask(tiles, mad_multiplier=6.0):
+    """Boolean mask marking tiles whose point density (cells / tile area)
+    is far below typical -- the low-density tiles a count-only quadtree
+    stop rule leaves oversized in background/debris regions (few cells
+    spread over a much larger area than a normal tile), which then
+    collapse toward near-identical, near-empty covariances during
+    indexing.
+
+    Density spans orders of magnitude across a normal dataset (a tiny
+    tile at a busy boundary vs. a huge tile in sparse tissue), so the
+    robust (median + MAD) threshold is computed in log-density space
+    rather than on the raw density scale.
+    """
+    n = len(tiles)
+    if n == 0:
+        return np.zeros(0, dtype=bool)
+
+    areas = np.array([max((t.bbox[2] - t.bbox[0]) * (t.bbox[3] - t.bbox[1]), 1e-9) for t in tiles])
+    counts = np.array([t.idx.size for t in tiles], dtype=float)
+    log_density = np.log(np.maximum(counts / areas, 1e-12))
+
+    median = np.median(log_density)
+    mad = np.median(np.abs(log_density - median))
+    if mad == 0:
+        return np.zeros(n, dtype=bool)
+
+    threshold = median - mad_multiplier * 1.4826 * mad  # 1.4826 * MAD ~= std for a normal distribution
+    return log_density < threshold
+
+
+def build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=12,
+                          filter_low_density=True, density_mad_multiplier=6.0):
     """
     coords: (n,2) array, typically adata.obsm['spatial'] (x,y in same units)
     Returns: list[QuadTile] with spot membership per tile.
     Guarantees: each tile has at most `max_pts` points.
+
+    If `filter_low_density` is True (default), tiles whose point density
+    is far below typical (see `_low_density_tile_mask`) are dropped after
+    tiling -- their member spots are excluded from every downstream tile,
+    so they can't seed the near-empty covariances a count-only quadtree
+    stop rule otherwise leaves behind in background/debris regions.
     """
     coords = np.asarray(coords, float)
     n = coords.shape[0]
@@ -139,6 +176,15 @@ def build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=12):
         # Normal case: push children for further processing
         for child_bbox, child_idx in child_nodes:
             stack.append((child_bbox, child_idx, depth + 1))
+
+    if filter_low_density and tiles:
+        degenerate_mask = _low_density_tile_mask(tiles, mad_multiplier=density_mad_multiplier)
+        if degenerate_mask.any():
+            n_spots_dropped = sum(t.idx.size for t, drop in zip(tiles, degenerate_mask) if drop)
+            LOGGER.info(f"build_quadtree_tiles: dropping {int(degenerate_mask.sum())} low-density "
+                        f"tile(s) ({n_spots_dropped} spot(s) total) whose density is far below typical.")
+            tiles = [t for t, drop in zip(tiles, degenerate_mask) if not drop]
+            tiles = reindex_tiles(tiles, sort=False)
 
     return tiles
 
