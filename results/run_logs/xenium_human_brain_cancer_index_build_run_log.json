@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_brain_cancer",
+  "stage": "index_build",
+  "start_time_utc": "2026-09-18T19:45:05.248599+00:00",
+  "end_time_utc": "2026-09-18T19:51:14.338740+00:00",
+  "wall_time_s": 369.09,
+  "peak_rss_gb": 55.402,
+  "hostname": "ROSALIND-CPU2.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 73,
+  "n_holdout": 100
+}

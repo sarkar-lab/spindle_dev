@@ -23,6 +23,7 @@ import spindle_dev.plotting as plotting
 import spindle_dev.typing as typing
 import spindle_dev.test as test
 import spindle_dev.search as search
+from run_logging import RunLogger
 
 
 def prepare_to_index(adata):
@@ -57,7 +58,7 @@ def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_siz
     return data, out_dict
 
 
-def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_subsample=None):
+def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_subsample=None, n_holdout=None):
     print(f"Reading data from {adata_path}...")
     adata = sc.read_h5ad(adata_path)
     if 'Cluster' in adata.obs.columns:
@@ -70,9 +71,21 @@ def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_subsample=None):
     print("Preparing data for indexing...")
     tiles, tile_covs, genes_work = prepare_to_index(adata)
 
-    np.random.seed(seed) 
+    np.random.seed(seed)
     num_total_tiles = len(tiles)
-    num_test = int(num_total_tiles * test_ratio)
+    if n_holdout is not None:
+        # Fixed-count holdout takes priority over test_ratio -- e.g. "hold out
+        # exactly 100 tiles" rather than a percentage of a dataset-dependent
+        # tile count. Capped so tiny datasets always keep at least one training tile.
+        num_test = min(n_holdout, max(0, num_total_tiles - 1))
+        if num_test < n_holdout:
+            print(f"Warning: requested n_holdout={n_holdout} exceeds available tiles "
+                  f"({num_total_tiles}); capping holdout at {num_test}.")
+        elif num_test > 0.3 * num_total_tiles:
+            print(f"Warning: n_holdout={n_holdout} is {num_test / num_total_tiles:.1%} of "
+                  f"this dataset's {num_total_tiles} tiles -- unusually large a holdout fraction.")
+    else:
+        num_test = int(num_total_tiles * test_ratio)
 
     all_indices = np.arange(num_total_tiles)
     test_idx = np.random.choice(all_indices, size=num_test, replace=False)
@@ -83,7 +96,8 @@ def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_subsample=None):
     test_tiles = [tiles[i] for i in test_idx]
     test_tile_covs = [tile_covs[i] for i in test_idx]
 
-    print(f"Total tiles: {num_total_tiles} | Training/Indexed: {len(train_tiles)} | Held out/Testing: {len(test_tiles)}")
+    print(f"Total tiles: {num_total_tiles} | Training/Indexed: {len(train_tiles)} | Held out/Testing: {len(test_tiles)} "
+          f"(seed={seed}, n_holdout={n_holdout})")
 
     return adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx
 
@@ -94,8 +108,30 @@ def configure_and_build_dag(data):
     epsilon_dict = {}
     for cluster_id in set(data.labels):
         eps_per_block, eps_elbow_per_block, eps = index.choose_adaptive_epsilons(data, cluster_id, k_target_per_block=64)
-        epsilon_block_wise_dict[int(cluster_id)] = eps_elbow_per_block
+        epsilon_block_wise_dict[int(cluster_id)] = eps_per_block
         epsilon_dict[int(cluster_id)] = eps
+
+    # Floor each niche's budget-sizing epsilon (config.epsilon_dict, used for
+    # `budget = epsilon * num_blocks * budget_multiplier * f` in
+    # holdout_validation.py, and for the Recall@eps/Overlap@eps tolerance
+    # bands) at the dataset-wide median across niches. epsilon_dict reflects
+    # how tightly a niche's OWN members cluster together -- for a small,
+    # homogeneous niche that can be far smaller than the typical distance a
+    # query actually has to travel (in log-Euclidean space) to reach that
+    # niche's cluster region, which has nothing to do with intra-niche
+    # spread. Left unfloored, such a niche's search budget collapses to
+    # near-zero regardless of budget_multiplier, and search_index() returns
+    # literally zero candidates for it -- confirmed directly on
+    # lung_cancer's 22-tile niche (epsilon=0.94 vs ~7-8 for its other
+    # niches) and lymph_node's 15-tile niche (epsilon=2.33 vs ~6-8), where
+    # every query whose true nearest neighbor fell in that niche failed
+    # unrecoverably at every swept budget. The median (not max) is used so
+    # well-calibrated niches aren't dragged up by one unusually loose
+    # outlier niche, while still guaranteeing no niche is starved below the
+    # dataset's typical scale.
+    if epsilon_dict:
+        median_eps = float(np.median(list(epsilon_dict.values())))
+        epsilon_dict = {k: max(v, median_eps) for k, v in epsilon_dict.items()}
 
     config = typing.IndexConfig()
     config.epsilon_dict = epsilon_dict
@@ -109,7 +145,7 @@ def configure_and_build_dag(data):
     return dag_dict, config
 
 
-def run_indexing_for_datasets(datasets, is_test=False, train_test_ratio=0.05):
+def run_indexing_for_datasets(datasets, is_test=False, train_test_ratio=0.05, seed=42, n_holdout=None):
     current_dir = Path(__file__).resolve().parent
     project_root = current_dir.parent
 
@@ -224,60 +260,65 @@ def run_indexing_for_datasets(datasets, is_test=False, train_test_ratio=0.05):
             continue
 
         n_subsample = 10000 if is_test else None
-        # 1. Load and split data
-        adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(adata_path, test_ratio=train_test_ratio, n_subsample=n_subsample)
-        num_cells = adata.n_obs
+        run_log_dir = project_root / "results" / "run_logs"
+        with RunLogger(dataset_name=dataset_name, stage="index_build", out_dir=run_log_dir,
+                       seed=seed, n_holdout=n_holdout):
+            # 1. Load and split data
+            adata, genes_work, train_tiles, train_tile_covs, test_tiles, test_tile_covs, train_idx, test_idx = load_and_split_data(
+                adata_path, test_ratio=train_test_ratio, seed=seed, n_subsample=n_subsample, n_holdout=n_holdout
+            )
+            num_cells = adata.n_obs
 
-        # 2. Run index & measure time
-        print("Running index...")
-        t0 = time.perf_counter()
-        data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15, max_niche_size=1000)
+            # 2. Run index & measure time
+            print("Running index...")
+            t0 = time.perf_counter()
+            data, out_dict = run_index(train_tiles, train_tile_covs, genes_work, adata, resolution=0.2, min_final_size=15, max_niche_size=1000)
 
-        # 3. Configure and build DAG
-        dag_dict, config = configure_and_build_dag(data)
-        build_time_s = time.perf_counter() - t0
+            # 3. Configure and build DAG
+            dag_dict, config = configure_and_build_dag(data)
+            build_time_s = time.perf_counter() - t0
 
-        # Calculate true Spindle index size (DatasetIndex bundle without raw covariance matrices)
-        index_bundle = typing.DatasetIndex(
-            dag_dict=dag_dict,
-            metadata=data.metadata,
-            latent=data.latent,
-            labels=data.labels,
-            pca_model=getattr(data, "pca_model", None),
-        )
-        size_mb = round(len(pickle.dumps(index_bundle, protocol=pickle.HIGHEST_PROTOCOL)) / (1024 * 1024), 2)
+            # Calculate true Spindle index size (DatasetIndex bundle without raw covariance matrices)
+            index_bundle = typing.DatasetIndex(
+                dag_dict=dag_dict,
+                metadata=data.metadata,
+                latent=data.latent,
+                labels=data.labels,
+                pca_model=getattr(data, "pca_model", None),
+            )
+            size_mb = round(len(pickle.dumps(index_bundle, protocol=pickle.HIGHEST_PROTOCOL)) / (1024 * 1024), 2)
 
-        # Save to separate disk files
-        print(f"Saving lightweight Spindle index to {index_save_path}...")
-        data.spd_matrices = []  # Clear duplicate raw covariance matrices
-        data.U_list = None      # Clear redundant 1.5 GB intermediate ultrametric matrices
-        index_save_data = {
-            'data': data,
-            'dag_dict': dag_dict,
-            'config': config,
-            'dataset_name': dataset_name,
-            'build_time_s': build_time_s,
-            'index_size_mb': size_mb
-        }
-        with open(index_save_path, 'wb') as f:
-            pickle.dump(index_save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+            # Save to separate disk files
+            print(f"Saving lightweight Spindle index to {index_save_path}...")
+            data.spd_matrices = []  # Clear duplicate raw covariance matrices
+            data.U_list = None      # Clear redundant 1.5 GB intermediate ultrametric matrices
+            index_save_data = {
+                'data': data,
+                'dag_dict': dag_dict,
+                'config': config,
+                'dataset_name': dataset_name,
+                'build_time_s': build_time_s,
+                'index_size_mb': size_mb
+            }
+            with open(index_save_path, 'wb') as f:
+                pickle.dump(index_save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        print(f"Saving benchmark raw covariance matrices to {covs_save_path}...")
-        covs_save_data = {
-            'test_tile_covs': test_tile_covs,
-            'train_tile_covs': train_tile_covs,
-            'train_idx': train_idx,
-            'test_idx': test_idx,
-            'dataset_name': dataset_name
-        }
-        with open(covs_save_path, 'wb') as f:
-            pickle.dump(covs_save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+            print(f"Saving benchmark raw covariance matrices to {covs_save_path}...")
+            covs_save_data = {
+                'test_tile_covs': test_tile_covs,
+                'train_tile_covs': train_tile_covs,
+                'train_idx': train_idx,
+                'test_idx': test_idx,
+                'dataset_name': dataset_name
+            }
+            with open(covs_save_path, 'wb') as f:
+                pickle.dump(covs_save_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        import gc
-        del adata, train_tiles, test_tiles, genes_work, index_bundle
-        gc.collect()
-        
-        print(f"Save complete. True Spindle Index Size: {size_mb} MB, Build Time: {build_time_s:.2f} s")
+            import gc
+            del adata, train_tiles, test_tiles, genes_work, index_bundle
+            gc.collect()
+
+            print(f"Save complete. True Spindle Index Size: {size_mb} MB, Build Time: {build_time_s:.2f} s")
 
         scalability_records.append({
             'Dataset': disp_name,
@@ -325,6 +366,10 @@ def main():
     parser.add_argument('--test', action='store_true', help='Run a quick test on a subset of data (10k spots)')
     parser.add_argument('--dataset-paths', nargs='*', default=None, help='Paths to the datasets')
     parser.add_argument('--train-test-ratio', type=float, default=0.05, help='Train test ratio')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for the train/test tile split')
+    parser.add_argument('--n-holdout', type=int, default=None,
+                         help='Fixed number of tiles to hold out per dataset. Takes priority '
+                              'over --train-test-ratio when set.')
     args = parser.parse_args()
 
     current_dir = Path(__file__).resolve().parent
@@ -342,7 +387,8 @@ def main():
             "pancreatic_cancer": project_root / "dataset" / "xenium_human_pancreatic_cancer.h5ad"
         }
 
-    run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio)
+    run_indexing_for_datasets(datasets, is_test=args.test, train_test_ratio=args.train_test_ratio,
+                               seed=args.seed, n_holdout=args.n_holdout)
 
 if __name__ == "__main__":
     main()

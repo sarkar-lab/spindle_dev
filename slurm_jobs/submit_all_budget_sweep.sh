@@ -5,7 +5,7 @@
 # calls `sbatch` per dataset and exits -- it is not itself a SLURM job).
 #
 # Usage:
-#   ./slurm_jobs/submit_all_budget_sweep.sh [stop_metric] [max_queries]
+#   ./slurm_jobs/submit_all_budget_sweep.sh [seed] [n_holdout]
 #
 # Two datasets (lymph_node_5k, brain_cancer) have far larger raw-covariance
 # pickles (~20GB / ~10GB) than the rest (<2GB) -- they get bumped-up
@@ -17,8 +17,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
-STOP_METRIC=${1:-recall_at_eps_0.1}
-MAX_QUERIES=${2:-100}
+SEED=${1:-1}
+N_HOLDOUT=${2:-100}
 
 mkdir -p logs
 
@@ -35,17 +35,17 @@ LARGE_DATASETS=(
     xenium_human_brain_cancer.h5ad
 )
 
-echo "Submitting standard-size jobs (stop-metric=$STOP_METRIC, max-queries=$MAX_QUERIES)..."
+echo "Submitting standard-size jobs (seed=$SEED, n_holdout=$N_HOLDOUT)..."
 for DATASET_NAME in "${DATASETS[@]}"; do
     echo "  Submitting $DATASET_NAME..."
-    sbatch slurm_jobs/run_single_budget_sweep.sbatch "$DATASET_NAME" "$STOP_METRIC" "$MAX_QUERIES"
+    sbatch slurm_jobs/run_single_budget_sweep.sbatch "$DATASET_NAME" "$SEED" "$N_HOLDOUT"
 done
 
 echo "Submitting large-dataset jobs with bumped resources (mem=256G, time=24:00:00, partition=batch)..."
 for DATASET_NAME in "${LARGE_DATASETS[@]}"; do
     echo "  Submitting $DATASET_NAME..."
     sbatch --mem=256G --time=24:00:00 --partition=batch \
-        slurm_jobs/run_single_budget_sweep.sbatch "$DATASET_NAME" "$STOP_METRIC" "$MAX_QUERIES"
+        slurm_jobs/run_single_budget_sweep.sbatch "$DATASET_NAME" "$SEED" "$N_HOLDOUT"
 done
 
 echo "All jobs submitted. Track with: squeue -u $USER"

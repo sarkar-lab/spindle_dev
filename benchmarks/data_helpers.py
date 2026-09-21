@@ -79,8 +79,17 @@ def configure_and_build_dag(data):
     epsilon_dict = {}
     for cluster_id in set(data.labels):
         eps_per_block, eps_elbow_per_block, eps = index.choose_adaptive_epsilons(data, cluster_id, k_target_per_block=64)
-        epsilon_block_wise_dict[int(cluster_id)] = eps_elbow_per_block
+        epsilon_block_wise_dict[int(cluster_id)] = eps_per_block
         epsilon_dict[int(cluster_id)] = eps
+
+    # Floor each niche's budget-sizing epsilon at the dataset-wide median
+    # across niches -- prevents small/homogeneous niches from being starved
+    # of search budget regardless of budget_multiplier (see
+    # benchmarks/index_datasets.py's configure_and_build_dag for the full
+    # rationale and the confirmed failure case this fixes).
+    if epsilon_dict:
+        median_eps = float(np.median(list(epsilon_dict.values())))
+        epsilon_dict = {k: max(v, median_eps) for k, v in epsilon_dict.items()}
 
     config = typing.IndexConfig()
     config.epsilon_dict = epsilon_dict

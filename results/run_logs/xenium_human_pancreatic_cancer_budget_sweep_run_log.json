@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_pancreatic_cancer",
+  "stage": "budget_sweep",
+  "start_time_utc": "2026-09-18T19:46:48.825825+00:00",
+  "end_time_utc": "2026-09-18T20:38:48.455183+00:00",
+  "wall_time_s": 3119.629,
+  "peak_rss_gb": 4.506,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 73,
+  "n_holdout": 100
+}

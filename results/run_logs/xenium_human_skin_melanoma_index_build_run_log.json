@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_skin_melanoma",
+  "stage": "index_build",
+  "start_time_utc": "2026-09-18T19:45:10.146884+00:00",
+  "end_time_utc": "2026-09-18T19:45:41.982338+00:00",
+  "wall_time_s": 31.835,
+  "peak_rss_gb": 2.863,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 73,
+  "n_holdout": 100
+}

@@ -1190,7 +1190,16 @@ def choose_adaptive_epsilons(
     k_min: int = 8,
     k_max: int = 256,
 ):
-    """Choose adaptive epsilons for each block in the given cluster."""
+    """Choose adaptive epsilons for each block in the given cluster.
+
+    Returns ``(eps_per_block, eps_elbow_per_block, eps)``: ``eps_per_block``
+    is the tight, k_target_per_block-calibrated coverage radius and is what
+    should drive per-block clustering (``config.epsilon_block_wise_dict``);
+    ``eps_elbow_per_block`` is a looser curvature-based heuristic and
+    ``eps`` is its RMS aggregate across blocks, used for the search budget
+    scale and the Recall@eps/Overlap@eps tolerance bands
+    (``config.epsilon_dict``) -- not for clustering.
+    """
     import numpy as np
     from collections import defaultdict
 
