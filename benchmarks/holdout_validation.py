@@ -27,6 +27,7 @@ if str(src_path) not in sys.path:
 import spindle_dev.search as search
 import spindle_dev.metrics as metrics
 import index_datasets   # type: ignore
+from run_logging import RunLogger  # type: ignore
 
 
 # =====================================================================
@@ -639,35 +640,6 @@ def evaluate_against_ground_truth(
     return df_query_metrics, summary_record
 
 
-def evaluate_brute_force_approximation(
-    test_tile_covs, train_tile_covs, train_idx,
-    all_matched_train_ids, spindle_search_times, data, dataset_out_dir, dataset_name,
-    config, top_c_candidates: int = 100, num_workers: int = 1,
-):
-    """Single-shot convenience wrapper: compute (block) ground truth, evaluate, and save.
-
-    Equivalent to calling ``compute_ground_truth`` followed by
-    ``evaluate_against_ground_truth`` (block kind only) and writing the
-    result to ``{dataset_out_dir}/{dataset_name}_query_metrics.csv``. Kept
-    for callers (e.g. this module's own ``main()``) that only ever evaluate
-    one budget point per dataset against the block-diagonalized ground truth
-    and have no reason to hold the ground truth across multiple calls or
-    compute the whole-matrix ground truth -- a budget sweep calls
-    ``compute_ground_truth``/``compute_ground_truth_whole_matrix`` and
-    ``evaluate_against_ground_truth`` separately instead.
-    """
-    ground_truth_block = compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers=num_workers)
-    df_query_metrics, summary_record = evaluate_against_ground_truth(
-        ground_truth_block, ground_truth_block, train_idx, all_matched_train_ids, spindle_search_times,
-        data, dataset_name, config, ground_truth_kind="block",
-        top_c_candidates=top_c_candidates, num_workers=num_workers,
-    )
-    csv_path = dataset_out_dir / f"{dataset_name}_query_metrics.csv"
-    df_query_metrics.to_csv(csv_path, index=False)
-    print(f"\nSaved detailed query metrics to {csv_path}")
-    return df_query_metrics, summary_record
-
-
 # =====================================================================
 # Summary & Visualization
 # =====================================================================
@@ -709,6 +681,18 @@ def main():
     parser.add_argument('--max-queries', type=int, default=None,
                          help='Cap the number of held-out test queries evaluated per dataset '
                               '(randomly subsampled with a fixed seed). Default: no cap.')
+    parser.add_argument('--seed', type=int, default=None,
+                         help='Seed used for this dataset\'s train/test holdout split '
+                              '(informational -- recorded in the ground-truth cache and run log; '
+                              'the actual split is already baked into the loaded index/covariance '
+                              'pickles).')
+    parser.add_argument('--n-holdout', type=int, default=None,
+                         help='Fixed holdout tile count used for this dataset\'s split '
+                              '(informational, see --seed).')
+    parser.add_argument('--train-test-ratio', type=float, default=None,
+                         help='Holdout fraction used for this dataset\'s split, if a fraction '
+                              '(rather than a fixed --n-holdout count) was used to build it '
+                              '(informational, see --seed).')
     args = parser.parse_args()
 
     current_dir = Path(__file__).resolve().parent
@@ -716,6 +700,8 @@ def main():
     base_indexed_dir = project_root / "results" / "holdout_validation_indexed"
     base_results_dir = project_root / "results" / "holdout_validation"
     base_results_dir.mkdir(exist_ok=True, parents=True)
+    run_log_dir = project_root / "results" / "run_logs"
+    cache_dir = project_root / "results" / "ground_truth_cache"
 
     if args.dataset_paths:
         datasets = {Path(p).stem: Path(p) for p in args.dataset_paths}
@@ -766,6 +752,7 @@ def main():
             test_tile_covs = saved_data['test_tile_covs']
             train_tile_covs = saved_data['train_tile_covs']
             train_idx = saved_data['train_idx']
+            test_idx = saved_data.get('test_idx')
         else:
             covs_file = base_indexed_dir / f"{dataset_name}_raw_covariances.pkl"
             if not covs_file.exists():
@@ -776,31 +763,55 @@ def main():
             test_tile_covs = covs_data['test_tile_covs']
             train_tile_covs = covs_data['train_tile_covs']
             train_idx = covs_data['train_idx']
+            test_idx = covs_data.get('test_idx')
 
         if args.test:
             print("[--test flag] Truncating test queries to 5 for quick run...")
             test_tile_covs = test_tile_covs[:5]
+            if test_idx is not None:
+                test_idx = np.asarray(test_idx)[:5]
         elif args.max_queries is not None and len(test_tile_covs) > args.max_queries:
             rng = np.random.default_rng(42)
             keep = np.sort(rng.choice(len(test_tile_covs), size=args.max_queries, replace=False))
             print(f"[--max-queries {args.max_queries}] Subsampling {len(test_tile_covs)} "
                   f"test queries down to {args.max_queries}...")
             test_tile_covs = [test_tile_covs[i] for i in keep]
+            if test_idx is not None:
+                test_idx = np.asarray(test_idx)[keep]
 
         dataset_out_dir = base_results_dir / dataset_name
         dataset_out_dir.mkdir(exist_ok=True, parents=True)
 
-        query_matrices = extract_query_matrices(test_tile_covs)
-        all_matched_train_ids, spindle_search_times = perform_search(
-            query_matrices, data, dag_dict, config, budget_multiplier=args.budget_mult
-        )
-        summarize_hits(all_matched_train_ids)
+        with RunLogger(dataset_name=dataset_name, stage="holdout_validation", out_dir=run_log_dir,
+                       seed=args.seed, n_holdout=args.n_holdout, train_test_ratio=args.train_test_ratio):
+            query_matrices = extract_query_matrices(test_tile_covs)
+            all_matched_train_ids, spindle_search_times = perform_search(
+                query_matrices, data, dag_dict, config, budget_multiplier=args.budget_mult
+            )
+            summarize_hits(all_matched_train_ids)
 
-        df_query_metrics, summary_record = evaluate_brute_force_approximation(
-            test_tile_covs, train_tile_covs, train_idx,
-            all_matched_train_ids, spindle_search_times, data, dataset_out_dir, dataset_name,
-            config, top_c_candidates=args.top_c
-        )
+            ground_truth_block = load_or_compute_ground_truth(
+                "block", dataset_name, test_tile_covs, train_tile_covs, train_idx, test_idx,
+                data=data, cache_dir=cache_dir, seed=args.seed, n_holdout=args.n_holdout,
+            )
+            # bf_time_ms/speedup are always measured against the WHOLE-matrix brute-force
+            # cost, never the block-diagonalized one -- block structure is itself something
+            # you only have after building the index, so it isn't a fair stand-in for "no
+            # index at all" (same invariant budget_sweep_holdout.py enforces; see
+            # evaluate_against_ground_truth's docstring).
+            ground_truth_whole = load_or_compute_ground_truth(
+                "whole", dataset_name, test_tile_covs, train_tile_covs, train_idx, test_idx,
+                cache_dir=cache_dir, seed=args.seed, n_holdout=args.n_holdout,
+            )
+            df_query_metrics, summary_record = evaluate_against_ground_truth(
+                ground_truth_block, ground_truth_block, train_idx,
+                all_matched_train_ids, spindle_search_times, data, dataset_name,
+                config, ground_truth_kind="block", top_c_candidates=args.top_c,
+                ground_truth_whole=ground_truth_whole,
+            )
+            csv_path = dataset_out_dir / f"{dataset_name}_query_metrics.csv"
+            df_query_metrics.to_csv(csv_path, index=False)
+            print(f"\nSaved detailed query metrics to {csv_path}")
 
         if df_query_metrics is not None and not df_query_metrics.empty:
             all_query_metrics_dfs.append(df_query_metrics)
