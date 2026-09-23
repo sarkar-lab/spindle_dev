@@ -1,0 +1,15 @@
+{
+  "dataset_name": "xenium_human_breast_cancer_seed4",
+  "stage": "patch_whole_matrix_speedup",
+  "start_time_utc": "2026-09-21T15:57:51.693198+00:00",
+  "end_time_utc": "2026-09-21T16:01:24.702376+00:00",
+  "wall_time_s": 213.009,
+  "peak_rss_gb": 1.948,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 4
+}

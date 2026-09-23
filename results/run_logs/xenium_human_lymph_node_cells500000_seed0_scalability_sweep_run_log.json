@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_lymph_node_cells500000_seed0",
+  "stage": "scalability_sweep",
+  "start_time_utc": "2026-09-21T21:21:46.257824+00:00",
+  "end_time_utc": "2026-09-21T21:24:37.605127+00:00",
+  "wall_time_s": 171.347,
+  "peak_rss_gb": 23.61,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 0,
+  "target_cells": 500000
+}

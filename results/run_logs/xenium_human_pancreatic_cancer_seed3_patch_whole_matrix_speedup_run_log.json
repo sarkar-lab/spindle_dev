@@ -1,0 +1,15 @@
+{
+  "dataset_name": "xenium_human_pancreatic_cancer_seed3",
+  "stage": "patch_whole_matrix_speedup",
+  "start_time_utc": "2026-09-21T16:05:09.434769+00:00",
+  "end_time_utc": "2026-09-21T16:15:04.014373+00:00",
+  "wall_time_s": 594.58,
+  "peak_rss_gb": 4.422,
+  "hostname": "ROSALIND-CPU2.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 3
+}

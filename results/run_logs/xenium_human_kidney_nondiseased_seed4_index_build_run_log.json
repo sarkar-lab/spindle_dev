@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_kidney_nondiseased_seed4",
+  "stage": "index_build",
+  "start_time_utc": "2026-09-21T05:46:58.555178+00:00",
+  "end_time_utc": "2026-09-21T05:47:22.051712+00:00",
+  "wall_time_s": 23.497,
+  "peak_rss_gb": 2.506,
+  "hostname": "ROSALIND-CPU2.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 4,
+  "n_holdout": null
+}

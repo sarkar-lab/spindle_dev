@@ -1,6 +1,0 @@
-query_idx,Dataset,true_best_niche,spindle_search_time,brute_force_time,spindle_time_ms,bf_time_ms,speedup,exact_best_dist,spindle_best_dist,spindle_best_rank,recall_at_1,overlap_at_5,overlap_at_10,overlap_at_20,overlap_at_30,overlap_at_50,recall_at_eps_0.1,overlap_at_eps_0.1,recall_at_eps_0.25,overlap_at_eps_0.25,recall_at_eps_0.5,overlap_at_eps_0.5,recall_at_eps_1.0,overlap_at_eps_1.0,true_near_frac_of_dataset_1.0,true_near_frac_of_niche_1.0
-0,xenium_human_kidney_nondiseased,0,0.097646,1.216703,97.6456,1216.7028,12.46,94.0977,95.1326,2,0,0.2,0.2,0.1,0.0667,0.04,0,0.0,1,0.3333,1,0.1429,1,0.0189,0.1377,0.1429
-1,xenium_human_kidney_nondiseased,0,0.326786,1.228871,326.7864,1228.8705,3.76,84.2114,84.2114,1,1,1.0,1.0,1.0,1.0,1.0,1,1.0,1,1.0,1,1.0,1,0.8779,0.2766,0.2871
-2,xenium_human_kidney_nondiseased,0,0.331256,1.197227,331.2564,1197.2271,3.61,66.9713,66.9713,1,1,1.0,1.0,1.0,1.0,1.0,1,1.0,1,1.0,1,1.0,1,1.0,0.0636,0.066
-3,xenium_human_kidney_nondiseased,0,0.334346,1.199702,334.3465,1199.7021,3.59,67.1316,67.1316,1,1,1.0,1.0,1.0,1.0,0.98,1,1.0,1,1.0,1,1.0,1,0.9859,0.0922,0.0957
-4,xenium_human_kidney_nondiseased,0,0.333951,1.310016,333.951,1310.0156,3.92,73.6729,73.6729,1,1,1.0,1.0,1.0,1.0,0.98,1,1.0,1,1.0,1,0.9808,1,0.9009,0.2753,0.2857

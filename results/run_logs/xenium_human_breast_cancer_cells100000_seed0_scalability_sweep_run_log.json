@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_breast_cancer_cells100000_seed0",
+  "stage": "scalability_sweep",
+  "start_time_utc": "2026-09-21T21:21:21.147055+00:00",
+  "end_time_utc": "2026-09-21T21:21:43.063835+00:00",
+  "wall_time_s": 21.917,
+  "peak_rss_gb": 2.296,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 0,
+  "target_cells": 100000
+}

@@ -1,17 +1,30 @@
 Dataset,Cells,Build Time (s),Index Size (MB)
-Breast,159226,38.39,29.04
-Kidney,97560,23.69,22.33
-Lung,162254,42.81,33.0
-Lymph Node,377985,63.08,45.65
-Lymph Node 5k,708983,605.31,213.19
-Pancreas,190965,73.8,48.69
-Skin,87499,23.76,34.38
-Brain,816769,416.96,126.55
-xenium_human_kidney_nondiseased,97560,26.56,22.5
-xenium_human_skin_melanoma,87499,28.05,37.13
-xenium_human_breast_cancer,159226,42.11,29.99
-xenium_human_lung_cancer,162254,45.71,35.56
-xenium_human_lymph_node,377985,66.16,47.74
-xenium_human_pancreatic_cancer,190965,75.19,50.8
-xenium_human_brain_cancer,816769,338.29,130.8
-xenium_human_lymph_node_5k,708983,546.5,199.7
+xenium_human_breast_cancer_seed3,159226,34.19,28.63
+xenium_human_lung_cancer_seed3,162254,35.64,34.22
+xenium_human_lung_cancer_seed0,162254,36.25,34.67
+xenium_human_lung_cancer_seed4,162254,36.35,34.66
+xenium_human_lymph_node_seed0,377985,53.91,42.81
+xenium_human_lymph_node_seed1,377985,53.25,48.47
+xenium_human_lymph_node_seed2,377985,54.74,42.9
+xenium_human_lymph_node_seed3,377985,53.75,44.5
+xenium_human_skin_melanoma_seed2,87499,22.1,34.8
+xenium_human_skin_melanoma_seed1,87499,25.29,32.58
+xenium_human_skin_melanoma_seed0,87499,24.89,34.06
+xenium_human_lymph_node_seed4,377985,53.59,49.32
+xenium_human_pancreatic_cancer_seed0,190965,63.88,48.89
+xenium_human_pancreatic_cancer_seed1,190965,62.86,49.45
+xenium_human_pancreatic_cancer_seed3,190965,67.09,49.32
+xenium_human_pancreatic_cancer_seed4,190965,66.42,43.93
+xenium_human_pancreatic_cancer_seed2,190965,69.66,49.05
+xenium_human_skin_melanoma_seed3,87499,23.01,37.12
+xenium_human_skin_melanoma_seed4,87499,22.57,36.44
+xenium_human_lymph_node_5k_seed0,708983,549.05,179.14
+xenium_human_lymph_node_5k_seed1,708983,537.74,193.34
+xenium_human_lymph_node_5k_seed2,708983,534.86,190.09
+xenium_human_lymph_node_5k_seed3,708983,516.52,182.01
+xenium_human_lymph_node_5k_seed4,708983,505.26,176.2
+xenium_human_brain_cancer_seed0,816769,304.49,130.1
+xenium_human_brain_cancer_seed1,816769,294.11,139.94
+xenium_human_brain_cancer_seed2,816769,303.62,130.11
+xenium_human_brain_cancer_seed3,816769,302.22,140.78
+xenium_human_brain_cancer_seed4,816769,303.46,133.8

@@ -1,0 +1,8 @@
+dataset,target_cells,actual_cells,real_base_cells,synthesis_method,seed,num_tiles,build_time_s,index_size_mb
+xenium_human_breast_cancer,1000,1000,159226,subsample,0,13,6.56,5.62
+xenium_human_breast_cancer,5000,5000,159226,subsample,0,55,7.35,14.62
+xenium_human_breast_cancer,20000,20000,159226,subsample,0,194,9.57,19.45
+xenium_human_breast_cancer,50000,50000,159226,subsample,0,615,15.61,23.47
+xenium_human_breast_cancer,100000,100000,159226,subsample,0,963,20.68,24.53
+xenium_human_breast_cancer,500000,500000,159226,bootstrap_replicate_jitter,0,5929,105.59,61.06
+xenium_human_breast_cancer,1000000,1000000,159226,bootstrap_replicate_jitter,0,9896,185.9,97.58

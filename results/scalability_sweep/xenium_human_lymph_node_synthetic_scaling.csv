@@ -1,0 +1,8 @@
+dataset,target_cells,actual_cells,real_base_cells,synthesis_method,seed,num_tiles,build_time_s,index_size_mb
+xenium_human_lymph_node,1000,1000,377985,subsample,0,13,6.63,8.05
+xenium_human_lymph_node,5000,5000,377985,subsample,0,46,7.48,20.29
+xenium_human_lymph_node,20000,20000,377985,subsample,0,165,9.83,20.97
+xenium_human_lymph_node,50000,50000,377985,subsample,0,597,17.35,22.25
+xenium_human_lymph_node,100000,100000,377985,subsample,0,758,20.7,26.08
+xenium_human_lymph_node,500000,500000,377985,bootstrap_replicate_jitter,0,7197,166.27,93.23
+xenium_human_lymph_node,1000000,1000000,377985,bootstrap_replicate_jitter,0,8638,209.89,110.21

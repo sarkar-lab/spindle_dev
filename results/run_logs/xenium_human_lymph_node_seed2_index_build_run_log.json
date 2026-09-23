@@ -1,0 +1,16 @@
+{
+  "dataset_name": "xenium_human_lymph_node_seed2",
+  "stage": "index_build",
+  "start_time_utc": "2026-09-21T05:49:04.768672+00:00",
+  "end_time_utc": "2026-09-21T05:50:09.639365+00:00",
+  "wall_time_s": 64.871,
+  "peak_rss_gb": 7.007,
+  "hostname": "ROSALIND-CPU2.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 2,
+  "n_holdout": null
+}

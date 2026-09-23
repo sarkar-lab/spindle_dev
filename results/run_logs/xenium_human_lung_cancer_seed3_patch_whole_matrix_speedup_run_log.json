@@ -1,0 +1,15 @@
+{
+  "dataset_name": "xenium_human_lung_cancer_seed3",
+  "stage": "patch_whole_matrix_speedup",
+  "start_time_utc": "2026-09-21T16:00:06.002788+00:00",
+  "end_time_utc": "2026-09-21T16:04:27.949346+00:00",
+  "wall_time_s": 261.947,
+  "peak_rss_gb": 2.366,
+  "hostname": "ROSALIND-CPU2.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 3
+}

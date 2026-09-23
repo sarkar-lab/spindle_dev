@@ -1,0 +1,2 @@
+dataset,target_cells,actual_cells,real_base_cells,synthesis_method,seed,num_tiles,build_time_s,index_size_mb
+xenium_human_lymph_node,500000,500000,377985,bootstrap_replicate_jitter,0,7197,166.27,93.23

@@ -1,0 +1,17 @@
+{
+  "dataset_name": "xenium_human_pancreatic_cancer_seed4",
+  "stage": "holdout_validation",
+  "start_time_utc": "2026-09-21T05:54:32.200008+00:00",
+  "end_time_utc": "2026-09-21T06:05:19.041657+00:00",
+  "wall_time_s": 646.842,
+  "peak_rss_gb": 2.753,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 4,
+  "n_holdout": null,
+  "train_test_ratio": 0.1
+}
