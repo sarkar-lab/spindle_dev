@@ -190,173 +190,154 @@ def search_all_clusters_spindle(interval_index_obj, data, perm_ivl, q_spd, top_k
     all_cluster_ranked = sorted(all_cluster_ranked, key=lambda x: x[0])
     return [(dist, [tid]) for dist, tid in all_cluster_ranked[:top_k]]
 
-def run_benchmark_suite(queries, data, ivl_idx, search_budget, test_cases, test_iterations_per_query=5):
+def run_benchmark_suite(queries, data, ivl_idx, search_budget, config):
+    """Run brute-force + Spindle interval search + metrics for a list of
+    fully pre-built query specs (see partial_panel_search.py::build_binned_queries).
+
+    Unlike the original version of this function, gene-range construction
+    (choosing a target length, picking a qualifying block, drawing the
+    contiguous/non-contiguous sub-range) happens entirely upstream, in the
+    caller -- each ``queries`` entry already carries a concrete ``perm_ivl``.
+    This lets the caller *guarantee* coverage of specific query-length bins
+    (including rare long-query bins that pure round-robin block sampling
+    would leave empty) rather than discovering whatever length distribution
+    falls out of round-robin niche/block sampling after the fact.
+    """
     benchmark_results_log = []
-    
+
     all_spd_matrices = np.asarray(data.spd_matrices)
     all_spd_ids = np.asarray(data.spd_ids)
     sid_to_idx = {int(all_spd_ids[k]): k for k in range(len(all_spd_ids))}
-    
-    for case_name, case_type in test_cases:
-        print(f"\n[{case_name.upper()}] Starting Interval Benchmark Suite...")
-        
-        for q_info in tqdm(queries, desc=f"Benchmarking {case_name}"):
-            cluster_id = q_info['cluster_id']
-            q_spd = q_info['q_spd']
-            
-            block_index = 0
-            block_start, block_end = data.block_dict[cluster_id][block_index]
-            block_size = block_end - block_start
-            
-            if block_size < 8:
-                continue
-                
-            perm = data.perm_list[cluster_id]
-            block_perm = perm[block_start:block_end]
-            q_block = q_spd[np.ix_(block_perm, block_perm)]
-            
-            labels = np.asarray(data.labels)
-            mask = (labels == cluster_id)
-            spd_matrices_cluster = np.asarray(data.spd_matrices)[mask]
-            spd_ids_cluster = np.asarray(data.spd_ids)[mask]
-            
-            for test_idx in range(test_iterations_per_query):
-                if case_type == 'contiguous':
-                    length = random.randint(max(4, block_size // 4), block_size)
-                    a = random.randint(0, block_size - length)
-                    b = a + length
-                    ranges = [(a, b)]
-                else:
-                    split_point = random.randint(3, block_size - 4)
-                    len1 = random.randint(2, split_point)
-                    a1 = random.randint(0, split_point - len1)
-                    b1 = a1 + len1
-                    
-                    len2 = random.randint(2, block_size - split_point)
-                    a2 = random.randint(split_point, block_size - len2)
-                    b2 = a2 + len2
-                    ranges = [(a1, b1), (a2, b2)]
-                
-                valid_len = sum(b - a for a, b in ranges)
-                if valid_len < 2:
-                    continue
-                
-                perm_ivl = []
-                for a, b in ranges:
-                    perm_ivl.extend(block_perm[a:b])
-                
-                # =========================================================
-                # VECTORIZED BRUTE FORCE
-                # =========================================================
-                bf_start_time = time.perf_counter()
-                q_sub = q_spd[np.ix_(perm_ivl, perm_ivl)]
-                q_log = interval_index._log_spd(q_sub)
-                scale = np.sqrt(valid_len) if valid_len > 1 else 1.0
-                
-                t_subs = all_spd_matrices[:, perm_ivl, :][:, :, perm_ivl]
-                t_logs = np.array([interval_index._log_spd(t_sub) for t_sub in t_subs])
-                
-                diffs = t_logs - q_log
-                dists = np.linalg.norm(diffs, axis=(1, 2)) / scale
-                true_min_dist = np.min(dists)
-                
-                rounded_dists = np.round(dists, 5)
-                unique_dists = np.sort(np.unique(rounded_dists))
-                exact_partial_map = {int(all_spd_ids[i]): rounded_dists[i] for i in range(len(dists))}
-                bf_time_ms = (time.perf_counter() - bf_start_time) * 1000
-                
-                top100_indices = np.argsort(dists)[:100]
-                true_top100_ids = set([int(all_spd_ids[i]) for i in top100_indices])
-                true_top50_ids = set([int(all_spd_ids[i]) for i in top100_indices[:50]])
-                true_top20_ids = set([int(all_spd_ids[i]) for i in top100_indices[:20]])
-                true_top10_ids = set([int(all_spd_ids[i]) for i in top100_indices[:10]])
-                true_top5_ids = set([int(all_spd_ids[i]) for i in top100_indices[:5]])
-                # =========================================================
-                # SPINDLE INTERVAL SEARCH
-                # =========================================================
-                spindle_start = time.perf_counter()
-                results = search_all_clusters_spindle(
-                    ivl_idx, data, perm_ivl, q_spd, top_k=search_budget
-                )
-                dag_time_ms = (time.perf_counter() - spindle_start) * 1000
-                
-                flat_results = []
-                for err, ids in results:
-                    for i in ids:
-                        flat_results.append((err, i))
-                        
-                retrieved_sids = [sid for _, sid in flat_results]
-                
-                # Real exact re-ranking computation on retrieved candidate spots
-                rerank_start = time.perf_counter()
-                rerank_scores = []
-                for sid in retrieved_sids:
-                    idx_k = sid_to_idx.get(int(sid))
-                    if idx_k is not None:
-                        t_sub = all_spd_matrices[idx_k][np.ix_(perm_ivl, perm_ivl)]
-                        t_log = interval_index._log_spd(t_sub)
-                        diff = t_log - q_log
-                        dist = np.linalg.norm(diff, ord='fro') / scale
-                        rerank_scores.append((dist, sid))
-                        
-                rerank_scores.sort(key=lambda x: x[0])
-                rerank_time_ms = (time.perf_counter() - rerank_start) * 1000
-                spindle_time_ms = dag_time_ms + rerank_time_ms
-                
-                spindle_retrieved_ids_all = [sid for _, sid in rerank_scores]
-                
-                spindle_best_rank = -1
-                spindle_best_partial_dist = float('inf')
-                
-                if spindle_retrieved_ids_all:
-                    spindle_top1_id = spindle_retrieved_ids_all[0]
-                    spindle_best_partial_dist = exact_partial_map.get(spindle_top1_id, float('inf'))
-                    if spindle_best_partial_dist != float('inf'):
-                        spindle_best_rank = np.searchsorted(unique_dists, np.round(spindle_best_partial_dist, 5)) + 1
-                        
-                spindle_top100_ids = set(spindle_retrieved_ids_all[:100])
-                overlap_100 = len(true_top100_ids.intersection(spindle_top100_ids)) / 100.0
-                
-                spindle_top50_ids = set(spindle_retrieved_ids_all[:50])
-                overlap_50 = len(true_top50_ids.intersection(spindle_top50_ids)) / 50.0
-                
-                spindle_top20_ids = set(spindle_retrieved_ids_all[:20])
-                overlap_20 = len(true_top20_ids.intersection(spindle_top20_ids)) / 20.0
-                
-                spindle_top10_ids = set(spindle_retrieved_ids_all[:10])
-                overlap_10 = len(true_top10_ids.intersection(spindle_top10_ids)) / 10.0
-                
-                spindle_top5_ids = set(spindle_retrieved_ids_all[:5])
-                overlap_5 = len(true_top5_ids.intersection(spindle_top5_ids)) / 5.0
-                
-                def hit_in_k(k):
-                    k_ids = spindle_retrieved_ids_all[:k]
-                    for sid in k_ids:
-                        if sid in exact_partial_map and abs(exact_partial_map[sid] - true_min_dist) < 1e-5:
-                            return 1
-                    return 0
-                    
-                benchmark_results_log.append({
-                    'Case': case_name,
-                    'Tile': q_info['id'],
-                    'Iter': test_idx,
-                    'Query_Length': valid_len,
-                    'recall_at_1': hit_in_k(1),
-                    'recall_at_5': hit_in_k(5),
-                    'recall_at_10': hit_in_k(10),
-                    'recall_at_20': hit_in_k(20),
-                    'overlap_at_5': overlap_5,
-                    'overlap_at_10': overlap_10,
-                    'overlap_at_20': overlap_20,
-                    'overlap_at_50': overlap_50,
-                    'overlap_at_100': overlap_100,
-                    'rank': spindle_best_rank,
-                    'dist_gap': (spindle_best_partial_dist - true_min_dist) if spindle_best_rank != -1 else float('inf'),
-                    'spindle_time_ms': round(spindle_time_ms, 4),
-                    'brute_force_time_ms': round(bf_time_ms, 4),
-                    'speedup': round(bf_time_ms / spindle_time_ms, 2) if spindle_time_ms > 0 else np.nan,
-                    'retrieved': len(flat_results)
-                })
+    median_block_epsilon = (
+        float(np.median(list(config.epsilon_dict.values()))) if config.epsilon_dict else float('nan')
+    )
+    # Partial-gene-interval distances are far less discriminative than the
+    # full-block/whole-matrix distances holdout_validation.py's
+    # recall_at_eps_{0.1,0.5}/overlap_at_eps_{0.5,1.0} convention was tuned
+    # for -- a fixed absolute radius on a handful of genes sweeps in a huge
+    # fraction of the dataset (verified: at frac=0.5 the true-near set already
+    # covers 7-40% of all training tiles, vs. Spindle's fixed top_k-sized
+    # retrieval pool), so overlap collapses on band size alone rather than
+    # search quality. Use smaller fractions here so the near-set stays in a
+    # range a bounded retrieval pool can meaningfully cover.
+    eps_fracs = [0.05, 0.1, 0.25]
+
+    for q_info in tqdm(queries, desc="Benchmarking"):
+        q_spd = q_info['q_spd']
+        perm_ivl = q_info['perm_ivl']
+        valid_len = len(perm_ivl)
+        block_size = q_info['block_size']
+
+        # The block-level epsilon was calibrated (choose_adaptive_epsilons)
+        # against full-block distances (fixed size = block_size, both
+        # normalized by sqrt(block_size)). Interval queries here are a
+        # sub-range of that block (valid_len <= block_size), and their
+        # distance is normalized by sqrt(valid_len) instead -- so the raw
+        # block epsilon must be rescaled by sqrt(valid_len / block_size)
+        # to stay on the same distance scale as what's actually compared,
+        # otherwise short intervals get an artificially loose band and
+        # long intervals an artificially tight one.
+        query_band_epsilon = median_block_epsilon * np.sqrt(valid_len / block_size)
+
+        # =========================================================
+        # VECTORIZED BRUTE FORCE
+        # =========================================================
+        bf_start_time = time.perf_counter()
+        q_sub = q_spd[np.ix_(perm_ivl, perm_ivl)]
+        q_log = interval_index._log_spd(q_sub)
+        scale = np.sqrt(valid_len) if valid_len > 1 else 1.0
+
+        t_subs = all_spd_matrices[:, perm_ivl, :][:, :, perm_ivl]
+        t_logs = np.array([interval_index._log_spd(t_sub) for t_sub in t_subs])
+
+        diffs = t_logs - q_log
+        dists = np.linalg.norm(diffs, axis=(1, 2)) / scale
+        true_min_dist = np.min(dists)
+
+        rounded_dists = np.round(dists, 5)
+        unique_dists = np.sort(np.unique(rounded_dists))
+        exact_partial_map = {int(all_spd_ids[i]): rounded_dists[i] for i in range(len(dists))}
+        bf_time_ms = (time.perf_counter() - bf_start_time) * 1000
+        # =========================================================
+        # SPINDLE INTERVAL SEARCH
+        # =========================================================
+        spindle_start = time.perf_counter()
+        results = search_all_clusters_spindle(
+            ivl_idx, data, perm_ivl, q_spd, top_k=search_budget
+        )
+        dag_time_ms = (time.perf_counter() - spindle_start) * 1000
+
+        flat_results = []
+        for err, ids in results:
+            for i in ids:
+                flat_results.append((err, i))
+
+        retrieved_sids = [sid for _, sid in flat_results]
+
+        # Real exact re-ranking computation on retrieved candidate spots
+        rerank_start = time.perf_counter()
+        rerank_scores = []
+        for sid in retrieved_sids:
+            idx_k = sid_to_idx.get(int(sid))
+            if idx_k is not None:
+                t_sub = all_spd_matrices[idx_k][np.ix_(perm_ivl, perm_ivl)]
+                t_log = interval_index._log_spd(t_sub)
+                diff = t_log - q_log
+                dist = np.linalg.norm(diff, ord='fro') / scale
+                rerank_scores.append((dist, sid))
+
+        rerank_scores.sort(key=lambda x: x[0])
+        rerank_time_ms = (time.perf_counter() - rerank_start) * 1000
+        spindle_time_ms = dag_time_ms + rerank_time_ms
+
+        spindle_retrieved_ids_all = [sid for _, sid in rerank_scores]
+
+        spindle_best_rank = -1
+        spindle_best_partial_dist = float('inf')
+
+        if spindle_retrieved_ids_all:
+            spindle_top1_id = spindle_retrieved_ids_all[0]
+            spindle_best_partial_dist = exact_partial_map.get(spindle_top1_id, float('inf'))
+            if spindle_best_partial_dist != float('inf'):
+                spindle_best_rank = np.searchsorted(unique_dists, np.round(spindle_best_partial_dist, 5)) + 1
+
+        record = {
+            'Case': q_info['case_name'],
+            'Tile': q_info['tile_id'],
+            'Niche': q_info['cluster_id'],
+            'Block_Index': q_info['block_index'],
+            'Length_Bin': q_info['length_bin'],
+            'Query_Length': valid_len,
+            'rank': spindle_best_rank,
+            'dist_gap': (spindle_best_partial_dist - true_min_dist) if spindle_best_rank != -1 else float('inf'),
+            'spindle_time_ms': round(spindle_time_ms, 4),
+            'brute_force_time_ms': round(bf_time_ms, 4),
+            'speedup': round(bf_time_ms / spindle_time_ms, 2) if spindle_time_ms > 0 else np.nan,
+            'retrieved': len(flat_results),
+        }
+
+        # Recall@epsilon / Overlap@epsilon: distance-tolerance-based hit
+        # metrics, matching holdout_validation.py's convention. There is
+        # no single "true niche" for these queries (they're sampled across
+        # every niche/block), so the tolerance band is anchored on the
+        # dataset-wide median epsilon, rescaled per query to this interval's
+        # length (see query_band_epsilon above).
+        for frac in eps_fracs:
+            band = frac * query_band_epsilon
+            recall_eps = 1 if (spindle_best_rank != -1 and
+                (spindle_best_partial_dist - true_min_dist) <= band) else 0
+            true_near_ids = {sid for sid, d in exact_partial_map.items() if (d - true_min_dist) <= band}
+            spindle_near_ids = {
+                sid for sid in spindle_retrieved_ids_all
+                if (exact_partial_map.get(sid, float('inf')) - true_min_dist) <= band
+            }
+            denom_eps = max(1, len(true_near_ids))
+            overlap_eps = len(true_near_ids.intersection(spindle_near_ids)) / float(denom_eps)
+
+            record[f'recall_at_eps_{frac}'] = recall_eps
+            record[f'overlap_at_eps_{frac}'] = round(overlap_eps, 4)
+
+        benchmark_results_log.append(record)
 
     return benchmark_results_log
 
@@ -371,22 +352,21 @@ def generate_performance_report(df, results_dir, labels):
             f.write(f"## {case_name}\n")
             case_df = df[df['Case'] == case_name]
             
-            f.write(f"| Query Size | Count | Recall@1 (%) | Recall@5 (%) | Overlap@10 (%) | Overlap@20 (%) | Overlap@50 (%) | Avg Rank | Spindle (ms) | BF (ms) | Speedup (x) |\n")
-            f.write(f"|:----------:|:-----:|:------------:|:------------:|:--------------:|:--------------:|:--------------:|:--------:|:------------:|:-------:|:-----------:|\n")
-            
+            f.write(f"| Query Size | Count | Recall@eps=0.05 (%) | Recall@eps=0.1 (%) | Overlap@eps=0.1 (%) | Overlap@eps=0.25 (%) | Avg Rank | Spindle (ms) | BF (ms) | Speedup (x) |\n")
+            f.write(f"|:----------:|:-----:|:-------------------:|:------------------:|:-------------------:|:--------------------:|:--------:|:------------:|:-------:|:-----------:|\n")
+
             for bin_label in labels:
                 sub_df = case_df[(case_df['Length_Bin'] == bin_label) & (case_df['rank'] != -1)]
                 if not sub_df.empty:
-                    r1 = sub_df['recall_at_1'].mean() * 100
-                    r5 = sub_df['recall_at_5'].mean() * 100
-                    olap10 = sub_df['overlap_at_10'].mean() * 100
-                    olap20 = sub_df['overlap_at_20'].mean() * 100
-                    olap50 = sub_df['overlap_at_50'].mean() * 100
+                    r005 = sub_df['recall_at_eps_0.05'].mean() * 100
+                    r01 = sub_df['recall_at_eps_0.1'].mean() * 100
+                    olap01 = sub_df['overlap_at_eps_0.1'].mean() * 100
+                    olap025 = sub_df['overlap_at_eps_0.25'].mean() * 100
                     rank = sub_df['rank'].mean()
                     sp_tms = sub_df['spindle_time_ms'].mean()
                     bf_tms = sub_df['brute_force_time_ms'].mean()
                     speedup = bf_tms / sp_tms if sp_tms > 0 else np.nan
-                    f.write(f"| {bin_label} | {len(sub_df)} | {r1:.1f} | {r5:.1f} | {olap10:.1f} | {olap20:.1f} | {olap50:.1f} | {rank:.1f} | {sp_tms:.2f} | {bf_tms:.2f} | {speedup:.2f} |\n")
+                    f.write(f"| {bin_label} | {len(sub_df)} | {r005:.1f} | {r01:.1f} | {olap01:.1f} | {olap025:.1f} | {rank:.1f} | {sp_tms:.2f} | {bf_tms:.2f} | {speedup:.2f} |\n")
             
             f.write("\n")
             

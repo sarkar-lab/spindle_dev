@@ -1,0 +1,17 @@
+{
+  "dataset_name": "xenium_human_lung_cancer_seed4",
+  "stage": "partial_panel_search",
+  "start_time_utc": "2026-09-23T21:31:44.745300+00:00",
+  "end_time_utc": "2026-09-23T21:32:17.121824+00:00",
+  "wall_time_s": 32.377,
+  "peak_rss_gb": 2.766,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 4,
+  "n_holdout": null,
+  "train_test_ratio": 0.1
+}
