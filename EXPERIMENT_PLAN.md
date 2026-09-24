@@ -50,6 +50,15 @@ This plan fixes those and adds the ablations/baselines/robustness checks the rev
   `/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium/xenium_human_{breast_cancer,
   kidney_nondiseased,lung_cancer,lymph_node,lymph_node_5k,pancreatic_cancer,brain_cancer,
   skin_melanoma}.h5ad`.
+- **Cross-modal search (E12)** runs on a separate, matched Xenium/Visium breast-cancer pair
+  (`dataset/cross_modal/{xenium,visium}_rotated.h5ad`, gitignored, copied from the original
+  machine; 307 shared genes, 165 Xenium / 156 Visium tiles). It follows the same conventions as
+  above (all-niche search, block-diagonalized ground truth, eps metrics, `budget_multiplier=1.0`)
+  plus one **global** modality bias correction: a single whole-matrix tangent-space shift
+  (`L_corr = (L_q − mean_q)·min(1, sd_t/sd_q) + mean_t`) applied before any niche layout. The
+  correction is batch-level: the query-side statistics come from a set of query-platform tiles,
+  so cross-modal search requires a **reference dataset representative of the query tile's
+  distribution** (documented as a Discussion/limitation point in `paper/results_tracking.md`).
 
 ## Decisions confirmed with user
 
@@ -61,6 +70,11 @@ This plan fixes those and adds the ablations/baselines/robustness checks the rev
 - Local vs. server: assign each experiment to *one* venue as a whole — no splitting a single
   experiment's datasets across local/server. Default to server for anything long/heavy.
 - Report mean±sd across seeds wherever error bars are shown (E5), not point estimates.
+- E12 cross-modal bias correction: **global** whole-matrix shift (not per-niche). The
+  per-(niche, block) all-query variant collapsed the true nearest neighbour onto one niche
+  (v2x recall@eps0.1 0.24 vs 0.98 on seed 0) — see `results/cross_modal_search/correction_ablation_seed0/`.
+- E12 `--seed` controls both the random query subsample (50 per direction) and the index build's
+  PCA/UMAP/Leiden `random_state`.
 
 ## Tracking-as-we-go and results hygiene
 
@@ -78,10 +92,16 @@ This plan fixes those and adds the ablations/baselines/robustness checks the rev
   them alone during per-stage cleanup. **Done for E5** (2026-09-23): its 40 seed-suffixed
   index/covariance pickles (116G) and ground-truth caches (162G) were dropped post-lock-in,
   reproducible from `--seed`/`--train-test-ratio` alone; the 8 original unsuffixed pairs (24G/34G)
-  were kept — still needed by not-yet-run E11/E12. Also dropped in the same pass:
+  were kept — still needed by not-yet-run E7 (E12 builds its own Visium/Xenium indices and never used them). Also dropped in the same pass:
   `results/holdout_validation/` (stale pre-rewrite data, see `paper/results_tracking.md`'s
   "Session cleanup" note — kept only `index_scalability_summary.csv`),
-  `results/multiseed_holdout/_dataset_symlinks/`, and `logs/*.out`.
+  `results/multiseed_holdout/_dataset_symlinks/`, and `logs/*.out`. **Done for E12**
+  (2026-09-24): deleted the pre-fix `results/cross_modal_search/{benchmark_summary,x2v_query_metrics,
+  v2x_query_metrics}.csv` + `tile_overlay.png`, the smoke-test output, and this stage's
+  `logs/*cross_modal*.out`/`logs/cm_diag_*.out`. Kept the per-seed dirs, `summary*.csv`,
+  the figure-input CSVs, and `correction_ablation_seed0/`. The ~200 `logs/spindle_multiseed_partial_panel_*.out`
+  files left over from E11 (2026-09-23) are still there, superseded by `results/run_logs/*.json`,
+  and can be deleted.
 - Every new/updated benchmark script (E5, E11, E12, E2–E4, E6, E7, E9, E10) wraps its per-dataset/
   per-run body in `benchmarks/run_logging.py::RunLogger` — E8 isn't a separate step, it's a
   requirement baked into every task prompt below.
@@ -107,14 +127,21 @@ This plan fixes those and adds the ablations/baselines/robustness checks the rev
   (distribution of within-niche pairwise distances vs. ε — supports the block-only argument).
 - `benchmarks/partial_panel_search.py` — **fixed under E11** (query construction rewritten around
   `build_binned_queries`, `RunLogger`/`--seed` added, all 8 datasets; see `paper/results_tracking.md`).
-  `benchmarks/cross_modal_search.py` (line 268), `benchmarks/gene_signature_search.py` —
-  cross-modal and pathway-enrichment benchmarks, still call `search.assign_clusters_to_new_spds(...)`
-  (single-niche routing, the pattern already replaced in `holdout_validation.py` and now also in
-  `partial_panel_search.py`) — confirmed still present, not yet fixed. Neither wraps with
-  `RunLogger`; neither supports `--seed` (hardcode `np.random.seed(42)`). `cross_modal_search.py`
-  additionally hardcodes dataset paths under `/home/asus/spindle_dev/dataset/opt_brca/brca/` — a
-  different machine, doesn't resolve on this checkout. Fixing `cross_modal_search.py` is E12 below;
-  `gene_signature_search.py`'s fix is scoped inside E9.
+  `benchmarks/cross_modal_search.py` — **fixed under E12** (all-niche search, holdout GT/metrics,
+  global bias correction, `RunLogger`/`--seed`, data at `dataset/cross_modal/`; see
+  `paper/results_tracking.md`). `benchmarks/gene_signature_search.py` (pathway enrichment) still
+  calls `search.assign_clusters_to_new_spds(...)` (single-niche routing), has no `RunLogger`, and
+  hardcodes `np.random.seed(42)` -- its fix is scoped inside E9.
+- E12 infrastructure: `benchmarks/multiseed_cross_modal_search.py` (aggregate-only; `--variant
+  single_niche_baseline` for the routing diagnostic), `slurm_jobs/run_cross_modal_search.sbatch`
+  (`<seed> [extra args]`) + `submit_cross_modal_search.sh` (seeds 0–4; seed 0 also runs
+  `--single-niche-baseline --write-overlay`). ~2.5 min/job, ~1.2 GB peak RSS.
+- Shared-code changes made during E12 (additive, defaults unchanged):
+  `holdout_validation.compute_ground_truth(..., query_blocks_log_override=None)`;
+  `index_datasets.run_index(..., random_state=0)`; and `ProcessedData.cluster_spds` now actually
+  forwards `random_state` to `leiden_clustering_latent`. Before, Leiden always ran with seed 0
+  whatever was passed, so any future seed-varying clustering (e.g. E3) gets real seed variation
+  only from this change onward. Earlier results are unaffected (all used 0).
 - `scripts/organize_panel_data.py` → `scripts/generate_result_figure.py` — curates benchmark
   CSVs into `results/panel_data/panel_{A-J}.csv` and renders `figures/fig_main_result.pdf`.
 - `src/spindle_dev/metrics.py::add_spd_noise()` — noise-injection primitive, used by E7.
@@ -135,7 +162,7 @@ This plan fixes those and adds the ablations/baselines/robustness checks the rev
 | E1 | Recall-vs-budget tradeoff curve | Server | **Done** | `figures/fig_budget_sweep_block.{pdf,png}` (main text), `fig_budget_sweep_whole.{pdf,png}` + `fig_epsilon_scale.{pdf,png}` (Discussion/supplementary) |
 | E5 | Multi-seed holdout-validation reruns for error bars (5 seeds × 8 datasets, `budget_multiplier=1.0` locked) | Server | **Done** | `results/multiseed_holdout/summary.csv`; mean±s.d. error bars on every headline number |
 | E11 | Fix `partial_panel_search.py`'s query construction (drop `assign_clusters_to_new_spds`, length-targeted binned draws), add `RunLogger`/`--seed`, multi-seed rerun | Server | **Done** | `results/multiseed_partial_panel_search/summary.csv`, `figures/fig_partial_panel_search_by_length.{pdf,png}`, `figures/fig_partial_panel_search_by_case.{pdf,png}` |
-| E12 | Fix `cross_modal_search.py` to search all niches, fix hardcoded `/home/asus/...` paths, add `RunLogger`/`--seed`, multi-seed rerun | Server | Not started | `results/cross_modal_search/summary.csv` |
+| E12 | Fix `cross_modal_search.py` to search all niches, fix hardcoded `/home/asus/...` paths, add `RunLogger`/`--seed`, multi-seed rerun | Server | **Done** | `results/cross_modal_search/summary.csv`, `figures/fig_cross_modal.{pdf,png}`, main-figure panel H |
 | E2 | Ablation: block-diagonalization on/off (breast, lung, pancreas) | Local/Server | Not started | New ablation table/figure |
 | E3 | Ablation: Leiden resolution sweep — niche granularity's effect on Stage-1 cost/compression (recall should be roughly flat now that every niche is searched — confirm, don't assume) | Server | Not started | New ablation figure: speedup/niche-count/index-size vs. resolution |
 | E4 | Baseline: FAISS/HNSW over flattened covariance features, all 8 datasets | Server | Not started | New comparison table/figure: Spindle vs. generic ANN |
@@ -153,12 +180,12 @@ Not in this plan (per user decision): directly benchmarking SOAR/STomicsDB/geneS
 Each stage's numbers must be locked in (sanity-checked, final CSV committed under `results/`,
 `paper/results_tracking.md` updated) before starting the next stage's code changes.
 
-1. **Stage A — E5**: `budget_multiplier=1.0` is already the confirmed production value (see
+1. **Stage A — E5** (done): `budget_multiplier=1.0` is already the confirmed production value (see
    "Current state of the method" above) — no new decision needed. Write
    `benchmarks/multiseed_holdout.py`, seeds 0–4, all 8 datasets, `RunLogger`-wrapped.
-2. **Stage B — E11**: fix `partial_panel_search.py`'s single-niche routing, add
+2. **Stage B — E11** (done): fix `partial_panel_search.py`'s single-niche routing, add
    `RunLogger`/`--seed`, rerun it for all 8 datasets across seeds.
-3. **Stage C — E12**: same treatment for `cross_modal_search.py`, plus fixing its hardcoded
+3. **Stage C — E12** (done): same treatment for `cross_modal_search.py`, plus fixing its hardcoded
    dataset paths.
 4. **Stage D — E2, E3, E4, E6, in parallel**: none of these depend on Stages B/C's code, only
    on the finalized `budget_multiplier=1.0` convention from Stage A.
@@ -178,9 +205,12 @@ Each stage's numbers must be locked in (sanity-checked, final CSV committed unde
   (search was already all-niches; no single-niche-routing bug existed at that level). Actual
   verification: `rank` ≈ 1 across niches/bins (confirms search correctness independent of the
   overlap metric's near-set-size sensitivity); every length bin populated with exactly
-  `--num-queries` draws (confirms the query-construction fix). E12: apply the same
-  all-niche-search recall-should-not-decrease check once implemented (that fix mirrors
-  `holdout_validation.py`'s pattern directly, unlike E11's).
+  `--num-queries` draws (confirms the query-construction fix).
+- E12: done. The all-niche search is at least as good as kNN-routed single-niche search, scored
+  against the same ground truth on seed 0 (x2v 1.00 vs 0.00, v2x 0.98 vs 0.68;
+  `results/cross_modal_search/summary_single_niche_baseline.csv`). Recall is monotone in eps for
+  every seed and direction, there are no empty candidate sets, and `spindle_best_rank == 1` for
+  92–100% of queries.
 - E2/E4: new comparison tables reproduce Spindle's already-known numbers as the baseline row
   before trusting new rows.
 - E3/E6/E7: new figure PDFs render and are correctly referenced in the manuscript; underlying
@@ -344,26 +374,25 @@ fix, 8-bin trial, final 4-bin n=50 push) were deleted per the plan's hygiene
 rule -- only the final configuration's per-seed CSVs were kept.
 ```
 
-### E12 — Fix cross-modal search to search all niches, then multi-seed
+### E12 — Fix cross-modal search to search all niches, then multi-seed (done — for reference only)
 
 ```
-Repo: /home/NAShome/ghoss18/spindle_dev (server). Run this after E11.
-benchmarks/cross_modal_search.py imports assign_clusters_to_new_spds
-(line 20) and calls it (line 268, strategy="knn_majority") to route each
-query to one target_niche only (explicit comment at line 45: "predicted
-niche only, not a global brute-force") -- replace with the same
-search-all-niches approach used in holdout_validation.py /
-E11's partial_panel_search.py fix. It also hardcodes dataset paths under
-/home/asus/spindle_dev/dataset/opt_brca/brca/ (lines 451-452) -- a different
-machine, doesn't resolve on this checkout -- fix to paths that exist here
-(check for a local BRCA Visium+Xenium pair under this repo's own dataset
-locations, or add a --dataset-paths override like partial_panel_search.py
-has). No RunLogger; no --seed (hardcoded np.random.seed(42), line 504) --
-add both. Writes to results/cross_modal_search/. After the fix, rerun
-across seeds 0-4 and aggregate to results/cross_modal_search/summary.csv
-(mean±s.d.). Same recall-should-not-decrease sanity check as E11. Delete
-superseded pre-fix CSVs. Append a section to paper/results_tracking.md. Run
-big steps via SLURM.
+Done. benchmarks/cross_modal_search.py rewritten around holdout_validation.py:
+every niche's DAG searched per query (single-niche kNN routing removed),
+hv.compute_ground_truth (block-diagonalized, all niches) + hv.evaluate_against_
+ground_truth (recall/overlap_at_eps, whole-matrix-bf speedup, top_c=400),
+production index pipeline (index_datasets.run_index + configure_and_build_dag),
+budget_mult 1.0, RunLogger, --seed (query subsample + PCA/UMAP/Leiden
+random_state), --visium-path/--xenium-path (default dataset/cross_modal/).
+Modality bias correction is now one GLOBAL whole-matrix tangent-space shift
+(--correction global); the per-(niche,block) all-query variant was tried first
+and collapsed the true NN onto one niche (v2x recall_at_eps_0.1 0.24 vs 0.98 on
+seed 0) -- ablation kept in results/cross_modal_search/correction_ablation_seed0/.
+Seeds 0-4 via slurm_jobs/submit_cross_modal_search.sh, aggregated by
+benchmarks/multiseed_cross_modal_search.py -> results/cross_modal_search/
+summary.csv. --single-niche-baseline (seed 0) confirms all-niche >= routed.
+Figures: fig_cross_modal.{pdf,png} + main-figure panel H. Numbers and caveats
+in paper/results_tracking.md.
 ```
 
 ### E2 — Ablation: block-diagonalization on/off
@@ -574,6 +603,14 @@ In main_genome_biology.tex:
    support (whole-matrix recall plateaus far below 1.0 for a comparison the
    method never claims to satisfy).
 9. Add the "Computational environment" paragraph (E8).
+9b. Cross-modal subsection (Results ~L296-320, Fig 1E caption, fig:cross_modal caption):
+    166/157 tiles -> 165/156; replace Recall@1 100.0%/84.0% and top-5 overlap
+    100.0%/80.4% with results/cross_modal_search/summary.csv (recall_at_eps_{0.1,0.5},
+    overlap_at_eps_{0.5,1.0}, mean±s.d., 5 seeds); drop the Recall@K/Overlap@K framing;
+    delete the commented-out tab:cross_modal. Methods: describe the global
+    tangent-space bias correction. Discussion/Limitations: cross-modal search needs a
+    reference sample of the query platform to estimate the correction (batch-level,
+    not per-query) -- see paper/results_tracking.md E12.
 10. Fix any figure caption that describes the wrong tissue/dataset (check
     each \includegraphics caption against what the figure actually shows).
 
@@ -588,7 +625,7 @@ CSV/JSON and column for each.
 | E1 | Done | `figures/fig_budget_sweep_block.{pdf,png}` for the manuscript; `fig_budget_sweep_whole.{pdf,png}` + `fig_epsilon_scale.{pdf,png}` for the Discussion argument. |
 | E5 | Done | `results/multiseed_holdout/summary.csv`; mean±s.d. across seeds 0-4, `--train-test-ratio 0.10`, `budget_multiplier=1.0`. See `paper/results_tracking.md`. |
 | E11 | Done | Stage B — search was already all-niches; real fixes were query-construction (drop `assign_clusters_to_new_spds`, length-targeted binned draws via `build_binned_queries`), epsilon-band rescaling, and metrics. Pushed from `--num-queries 5` to `50` (user request) — revealed recall is not uniformly 1.0 and overlap-vs-length is an inverted U, not monotonic; n=5 numbers superseded. Final: 4 length bins (`<=6/7-12/13-16/>16`), `recall_at_eps_{0.05,0.1}`/`overlap_at_eps_{0.1,0.25}` (several alternative metrics tried and reverted — see `paper/results_tracking.md`'s "Methodology dead ends"). New `fig_partial_panel_search_by_case.{pdf,png}`: contiguous vs. non-contiguous gene panels perform indistinguishably. Brain-cancer's lower overlap investigated and attributed to genuine near-set-size effects, not a bug (search `rank` ≈ 1 throughout). Multi-block-query accuracy gap documented as a discussion-only limitation (not fixed). |
-| E12 | Not started | Stage C — fix `cross_modal_search.py`'s single-niche routing + stale paths, then multiseed. |
+| E12 | Done | Stage C — all-niche search + holdout GT/metrics, production index pipeline, `--seed`/`RunLogger`, data at `dataset/cross_modal/`. Bias correction switched to one **global** whole-matrix tangent-space shift (user decision: the per-niche all-query variant collapsed true-NN onto one niche, v2x recall 0.24 on seed 0). Seeds 0–4: x2v recall@ε0.1 1.000±0.000, v2x 0.956±0.033; all-niche ≥ single-niche routing on seed 0 (x2v 1.00 vs 0.00, v2x 0.98 vs 0.68). Tiles now 165/156 (low-density filter). Discussion point recorded: the correction is batch-level, so cross-modal search needs a reference dataset representative of the query tile's distribution. See `paper/results_tracking.md`. |
 | E2 | Not started | Stage D (parallel with E3, E4, E6). |
 | E3 | Not started | Stage D (parallel with E2, E4, E6). |
 | E4 | Not started | Stage D (parallel with E2, E3, E6). |

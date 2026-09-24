@@ -235,7 +235,8 @@ def summarize_hits(all_matched_train_ids: list):
 EPSILON_TOLERANCE_FRACTIONS = [0.1, 0.25, 0.5, 1.0]
 
 
-def compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers: int = 1):
+def compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers: int = 1,
+                         query_blocks_log_override=None):
     """Precompute the full-dataset exact-brute-force ground truth, once per dataset.
 
     This is everything ``evaluate_against_ground_truth`` needs that does NOT
@@ -248,6 +249,13 @@ def compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers: int
     in the benchmark, one matrix-log eigendecomposition per training tile
     per query) was redone from scratch at every budget point for no reason,
     since the ground truth itself never changes.
+
+    ``query_blocks_log_override`` (optional): a list aligned with
+    ``test_tile_covs`` whose i-th entry is a ``{niche: [block log matrices]}``
+    dict to use as query i's per-niche block logs instead of recomputing them
+    from the raw query covariance. Used by cross_modal_search.py, whose
+    queries are bias-corrected differently per niche. Default (None) is the
+    unchanged holdout behaviour.
     """
     tile_niche = {idx: int(lab) for idx, lab in enumerate(data.labels)}
 
@@ -268,7 +276,8 @@ def compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers: int
 
         niche_train_cache[niche] = (niche_indices, cached_logs)
 
-    def _ground_truth_one_query(q_dict):
+    def _ground_truth_one_query(args):
+        q_i, q_dict = args
         q_spd = q_dict if not isinstance(q_dict, dict) else q_dict.get('cov', q_dict.get('matrix', q_dict))
 
         # Full-dataset ground truth + brute-force timing: for every niche
@@ -288,8 +297,11 @@ def compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers: int
             block_runs = data.block_dict[niche]
             niche_indices, cached_logs = niche_train_cache[niche]
 
-            q_perm = q_spd[np.ix_(perm, perm)]
-            q_blocks_log = [log_spd(q_perm[s:e, s:e]) for s, e in block_runs]
+            if query_blocks_log_override is not None:
+                q_blocks_log = query_blocks_log_override[q_i][niche]
+            else:
+                q_perm = q_spd[np.ix_(perm, perm)]
+                q_blocks_log = [log_spd(q_perm[s:e, s:e]) for s, e in block_runs]
             query_blocks_log_by_niche[niche] = q_blocks_log
 
             bf_start = time.perf_counter()
@@ -331,7 +343,7 @@ def compute_ground_truth(test_tile_covs, train_tile_covs, data, num_workers: int
 
     if num_workers and num_workers > 1:
         print(f"Using a thread pool of {num_workers} workers for ground-truth computation.")
-    per_query = _map_queries(_ground_truth_one_query, test_tile_covs, num_workers=num_workers,
+    per_query = _map_queries(_ground_truth_one_query, list(enumerate(test_tile_covs)), num_workers=num_workers,
                               desc="Computing ground truth")
 
     return {

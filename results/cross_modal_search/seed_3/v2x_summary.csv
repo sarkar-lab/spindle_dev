@@ -1,0 +1,2 @@
+direction,seed,variant,correction,n_niches,n_tiles_index,n_tiles_query,build_time_s,Dataset,num_queries,mean_spindle_time_ms,mean_bf_time_ms,mean_speedup,recall_at_eps_0.1,overlap_at_eps_0.1,recall_at_eps_0.25,overlap_at_eps_0.25,recall_at_eps_0.5,overlap_at_eps_0.5,recall_at_eps_1.0,overlap_at_eps_1.0
+v2x,3,all_niche,global,3,165,156,2.27,cross_modal_brca_v2x_seed3,50,14.3223,1585.4148,110.7,0.94,0.94,0.94,0.94,0.94,0.925,0.94,0.924

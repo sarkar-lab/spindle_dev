@@ -203,7 +203,8 @@ class ProcessedData:
                         labels_try, _, _ = leiden_clustering_latent(
                             latent_feat,
                             k_neighbors=10,
-                            resolution=res
+                            resolution=res,
+                            random_state=random_state
                         )
                         sizes = np.bincount(labels_try)
                         labels = labels_try
@@ -225,7 +226,8 @@ class ProcessedData:
                     labels, _, _ = leiden_clustering_latent(
                         latent_feat,
                         k_neighbors=10,
-                        resolution=resolution
+                        resolution=resolution,
+                        random_state=random_state
                     )
             else:
                 raise ValueError(f"Unknown cluster_method: {cluster_method}")

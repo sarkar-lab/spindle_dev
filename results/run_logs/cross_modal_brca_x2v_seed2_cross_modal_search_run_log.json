@@ -1,0 +1,21 @@
+{
+  "dataset_name": "cross_modal_brca_x2v_seed2",
+  "stage": "cross_modal_search",
+  "start_time_utc": "2026-09-24T15:31:13.200735+00:00",
+  "end_time_utc": "2026-09-24T15:32:20.536085+00:00",
+  "wall_time_s": 67.335,
+  "peak_rss_gb": 1.149,
+  "hostname": "ROSALIND-CPU1.vuds.vanderbilt.edu",
+  "cpu_model": "AMD EPYC 9645 96-Core Processor",
+  "cpu_count": 384,
+  "total_ram_gb": 755.26,
+  "exit_status": "ok",
+  "error_message": null,
+  "seed": 2,
+  "direction": "x2v",
+  "n_queries": 50,
+  "budget_mult": 1.0,
+  "n_tiles_index": 156,
+  "n_tiles_query": 165,
+  "n_common_genes": 307
+}

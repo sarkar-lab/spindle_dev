@@ -17,7 +17,7 @@ Outputs (written to figures/)
   fig_query_speed.pdf/.png          — absolute Spindle vs brute-force latency per dataset
   fig_rank_distribution.pdf/.png    — cumulative recall curve across ranks 1-10
   fig_partial_panel_search.pdf/.png — per-dataset accuracy + speedup (2-panel)
-  fig_cross_modal.pdf/.png          — Recall/Overlap@K for k=1,5,10,20, both directions
+  fig_cross_modal.pdf/.png          — Recall/Overlap@eps (mean ± s.d.), both directions
   fig_gene_sig_luminal.pdf/.png     — Luminal Tumour Core spatial comparison (PNG wrap)
   fig_gene_sig_myoepithelial.pdf/.png — Myoepithelial & Basal Layer (PNG wrap)
 """
@@ -357,111 +357,47 @@ def generate_partial_panel_search_figure(project_root: Path, figures_dir: Path):
     _save(fig, figures_dir / 'fig_partial_panel_search')
 
 
-# ── 5. Cross-Modal — Recall/Overlap@K Across k=1,5,10,20 ────────────────────
+# ── 5. Cross-Modal — Recall/Overlap@eps, mean ± s.d. across seeds ───────────
 def generate_cross_modal_figure(project_root: Path, figures_dir: Path):
     """
-    Line chart of Recall@1 and Overlap@K (k=5,10,20) for both query directions
-    (Xenium→Visium and Visium→Xenium).  Main panel E shows only Recall@1 as a
-    dot plot; this figure adds the K-decay detail mentioned in the paper text.
+    Grouped bars of Recall@eps={0.1,0.5} and Overlap@eps={0.5,1.0} for both
+    query directions (Xenium→Visium, Visium→Xenium), mean ± s.d. across seeds.
 
     Data:
-      results/cross_modal_search/x2v_query_metrics.csv  (per-query, x2v direction)
-      results/cross_modal_search/v2x_query_metrics.csv  (per-query, v2x direction)
-      results/cross_modal_search/benchmark_summary.csv  (aggregate fallback)
+      results/cross_modal_search/summary.csv  (benchmarks/multiseed_cross_modal_search.py)
     """
-    print('Generating Cross-Modal Figure (Recall/Overlap@K line chart)…')
+    print('Generating Cross-Modal Figure (Recall/Overlap@eps bars)…')
+    summary_csv = project_root / 'results' / 'cross_modal_search' / 'summary.csv'
+    if not summary_csv.exists():
+        print(f'  SKIP cross-modal figure -- {summary_csv} not found '
+              f'(run benchmarks/multiseed_cross_modal_search.py first).')
+        return
+    df = pd.read_csv(summary_csv).set_index('direction')
 
-    # ── fallback (from paper text) ──
-    k_vals     = [1, 5, 10, 20]
-    x2v_scores = [100.0, 100.0, 90.0, 90.0]
-    v2x_scores = [84.0,  80.4,  78.2, 76.0]
-
-    def _load_per_query(csv_path):
-        """Return mean [recall@1, overlap@5, overlap@10, overlap@20] from per-query CSV."""
-        df = pd.read_csv(csv_path)
-        # recall@1 is already 0/1 per query; overlaps are fractions
-        cols = {}
-        for col in df.columns:
-            cl = col.lower().replace(' ', '_')
-            if 'recall_at_1' in cl or 'recall@1' in cl:
-                cols['r1'] = col
-            elif 'overlap_at_5' in cl or 'overlap@5' in cl:
-                cols['o5'] = col
-            elif 'overlap_at_10' in cl or 'overlap@10' in cl:
-                cols['o10'] = col
-            elif 'overlap_at_20' in cl or 'overlap@20' in cl:
-                cols['o20'] = col
-        if len(cols) < 4:
-            return None
-        return [
-            df[cols['r1']].mean() * 100,
-            df[cols['o5']].mean() * 100,
-            df[cols['o10']].mean() * 100,
-            df[cols['o20']].mean() * 100,
-        ]
-
-    x2v_csv = project_root / 'results' / 'cross_modal_search' / 'x2v_query_metrics.csv'
-    v2x_csv = project_root / 'results' / 'cross_modal_search' / 'v2x_query_metrics.csv'
-
-    if x2v_csv.exists():
-        try:
-            scores = _load_per_query(x2v_csv)
-            if scores:
-                x2v_scores = scores
-        except Exception as e:
-            print(f'  WARNING (x2v CSV): {e}')
-
-    if v2x_csv.exists():
-        try:
-            scores = _load_per_query(v2x_csv)
-            if scores:
-                v2x_scores = scores
-        except Exception as e:
-            print(f'  WARNING (v2x CSV): {e}')
-
-    # If per-query files failed, try the aggregate summary
-    agg_csv = project_root / 'results' / 'cross_modal_search' / 'benchmark_summary.csv'
-    if agg_csv.exists() and (x2v_scores == [100.0, 100.0, 90.0, 90.0]):
-        try:
-            df = pd.read_csv(agg_csv)
-            col_map = {'recall@1': 'r1', 'overlap@5': 'o5',
-                       'overlap@10': 'o10', 'overlap@20': 'o20'}
-            df.columns = [c.lower().strip() for c in df.columns]
-            if 'direction' in df.columns:
-                row_x2v = df[df['direction'] == 'x2v'].iloc[0]
-                row_v2x = df[df['direction'] == 'v2x'].iloc[0]
-                def _row_to_scores(row):
-                    return [
-                        float(row.get('recall@1', 0)) * 100,
-                        float(row.get('overlap@5', 0)) * 100,
-                        float(row.get('overlap@10', 0)) * 100,
-                        float(row.get('overlap@20', 0)) * 100,
-                    ]
-                x2v_scores = _row_to_scores(row_x2v)
-                v2x_scores = _row_to_scores(row_v2x)
-        except Exception as e:
-            print(f'  WARNING (cross-modal agg CSV): {e}')
+    metrics = [('recall_at_eps_0.1', 'Recall@ε=0.1'), ('recall_at_eps_0.5', 'Recall@ε=0.5'),
+               ('overlap_at_eps_0.5', 'Overlap@ε=0.5'), ('overlap_at_eps_1.0', 'Overlap@ε=1.0')]
+    directions = [('x2v', 'Xenium → Visium', TEAL), ('v2x', 'Visium → Xenium', TERRACOTTA)]
 
     fig, ax = plt.subplots(figsize=(7.5, 5))
+    x = np.arange(len(metrics))
+    bw = 0.36
+    for j, (key, label, color) in enumerate(directions):
+        if key not in df.index:
+            continue
+        means = [df.loc[key, f'mean_{m}'] * 100 for m, _ in metrics]
+        sds = [df.loc[key, f'sd_{m}'] * 100 for m, _ in metrics]
+        offs = (j - 0.5) * bw
+        ax.bar(x + offs, means, width=bw, yerr=sds, capsize=3, color=color, alpha=0.88,
+               edgecolor='none', label=f'{label} (n={int(df.loc[key, "n_seeds"])} seeds)')
+        for xi, mv, sv in zip(x, means, sds):
+            ax.annotate(f'{mv:.1f}%', (xi + offs, mv + sv + 1.5), ha='center',
+                        color=color, fontweight='bold', fontsize=8.5)
 
-    ax.plot(k_vals, x2v_scores, marker='o', markersize=9, color=TEAL,
-            linewidth=2.5, label='Xenium → Visium')
-    ax.plot(k_vals, v2x_scores, marker='s', markersize=9, color=TERRACOTTA,
-            linewidth=2.5, label='Visium → Xenium')
-
-    # Annotate each point
-    for k, xv, vx in zip(k_vals, x2v_scores, v2x_scores):
-        ax.annotate(f'{xv:.1f}%', (k, xv + 2.0), ha='center',
-                    color=TEAL, fontweight='bold', fontsize=8.5)
-        ax.annotate(f'{vx:.1f}%', (k, vx - 4.5), ha='center',
-                    color=TERRACOTTA, fontweight='bold', fontsize=8.5)
-
-    ax.set_xlabel('Top-K Candidates', fontweight='bold')
     ax.set_ylabel('Recall / Overlap (%)', fontweight='bold')
-    ax.set_xticks(k_vals)
-    ax.set_xticklabels(['Recall@1', 'Overlap@5', 'Overlap@10', 'Overlap@20'])
-    ax.set_ylim(0, 112)
-    ax.grid(axis='both', linestyle='--', alpha=0.4)
+    ax.set_xticks(x)
+    ax.set_xticklabels([lab for _, lab in metrics])
+    ax.set_ylim(0, 115)
+    ax.grid(axis='y', linestyle='--', alpha=0.4)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.legend(loc='lower left', frameon=True, facecolor='white',

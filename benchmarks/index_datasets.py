@@ -39,18 +39,22 @@ def prepare_to_index(adata):
     return tiles, tile_covs, genes_work
 
 
-def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20, max_niche_size=1000):
+def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_size=20, max_niche_size=1000,
+              random_state=0):
     """
     Run indexing workflow.
+
+    ``random_state`` seeds PCA/UMAP and Leiden clustering (default 0 keeps the
+    production behaviour; cross_modal_search.py varies it per seed).
     """
     data = index.ProcessedData(tiles, tile_covs, genes_work, adata.n_obs)
     num_pca = min(30, len(tiles) - 1)
     if num_pca < 2:
         num_pca = 2
-    data.reduce_dim(num_pca_components=num_pca, n_components=2, do_umap=True)
+    data.reduce_dim(num_pca_components=num_pca, n_components=2, do_umap=True, random_state=random_state)
     data.cluster_spds(
         cluster_distance="tree", cluster_method="leiden", resolution=resolution,
-        adaptive_resolution=True, max_niche_size=max_niche_size
+        adaptive_resolution=True, max_niche_size=max_niche_size, random_state=random_state
     )
     data.assign_label_to_spots()
     data.get_corr_mean_by_cluster()
