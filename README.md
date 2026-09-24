@@ -94,11 +94,15 @@ Outputs `results/partial_search/<dataset>/benchmark_interval_metrics.csv` with c
 ### 4. Cross-modal search (Xenium ↔ Visium)
 
 ```bash
-python benchmarks/cross_modal_search.py
+# data: dataset/cross_modal/{visium,xenium}_rotated.h5ad (or --visium-path/--xenium-path)
+python benchmarks/cross_modal_search.py --seed 0            # one seed, both directions
+./slurm_jobs/submit_cross_modal_search.sh                   # seeds 0-4 via SLURM
+python benchmarks/multiseed_cross_modal_search.py           # aggregate -> summary.csv
 ```
 
-Outputs `results/cross_modal_search/benchmark_summary.csv` with columns:
-`recall_at_1`, `overlap_at_5`, `overlap_at_10`, `overlap_at_20`
+Outputs `results/cross_modal_search/seed_<n>/{x2v,v2x}_query_metrics.csv` and the
+mean ± s.d. `results/cross_modal_search/summary.csv` with columns
+`mean_/sd_` × `recall_at_eps_{0.1,0.5}`, `overlap_at_eps_{0.5,1.0}`, `mean_speedup`
 
 ### 5. Gene signature–driven niche discovery
 

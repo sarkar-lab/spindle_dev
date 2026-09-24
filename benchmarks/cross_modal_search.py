@@ -1,529 +1,385 @@
-import os
+"""Cross-modal (Xenium <-> Visium) search benchmark, searching EVERY niche.
+
+Queries from one platform are searched against a Spindle index built on the
+other platform (matched serial breast-cancer sections, shared gene subset).
+Mirrors benchmarks/holdout_validation.py's methodology:
+
+- every niche's DAG is searched per query (no single-niche routing; see
+  ``holdout_validation.perform_search``'s docstring for why routing was removed),
+- ground truth is the exact block-diagonalized log-Euclidean distance over
+  every niche (``holdout_validation.compute_ground_truth``),
+- metrics are ``recall_at_eps_*`` / ``overlap_at_eps_*`` plus speedup against
+  the whole-matrix brute-force cost (``holdout_validation.evaluate_against_ground_truth``).
+
+The one cross-modal-specific step is a tangent-space modality bias
+correction (``--correction``, default ``global``): each query's whole-matrix
+log is standardized against the mean/std of ALL queries and rescaled onto the
+mean/std of ALL index tiles, once, before any niche's permutation/block layout
+is applied. The corrected query then goes through exactly the holdout
+pipeline, and the same corrected matrix defines the ground truth.
+
+``per_niche`` (correct separately in every niche x block layout) and ``none``
+are kept only as diagnostics. ``per_niche`` re-centres every query onto each
+niche's own mean, which makes all niches look equally close and collapses the
+true nearest neighbour onto whichever niche is tightest. On seed 0 that
+starved Stage-1 on v2x (recall@eps0.1 = 0.24 vs 0.98 for ``global``); see
+paper/results_tracking.md, E12.
+
+``--seed`` controls the random query subsample and the PCA/UMAP/Leiden
+random_state of the index build.
+"""
+
+import argparse
 import sys
 import time
-import argparse
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import scanpy as sc
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+from tqdm.auto import tqdm
 
 _this_dir = Path(__file__).resolve().parent
-sys.path.append(str(_this_dir.parent / "src"))
-from spindle_dev.preprocessing import prepare_multiple_adatas
-# IndexConfig is imported from spindle_dev.index (not spindle_dev.typing) — this is the
-# dataclass used by index_spds() and must match the one stored in the saved index files.
-from spindle_dev.index import ProcessedData, index_spds, IndexConfig
-from spindle_dev.search import search_index, SearchConfig, assign_clusters_to_new_spds
+project_root = _this_dir.parent
+sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(_this_dir))
 
-# Shared SPD math utilities — import from the existing spindle_dev.utils module.
-from spindle_dev.utils import log_spd, exp_spd
+import spindle_dev.search as search  # noqa: E402
+from spindle_dev.preprocessing import build_quadtree_tiles, QuadTile, build_tile_covs_full  # noqa: E402
+from spindle_dev.utils import log_spd, exp_spd  # noqa: E402
+import holdout_validation as hv  # type: ignore  # noqa: E402
+import index_datasets  # type: ignore  # noqa: E402
+from run_logging import RunLogger  # type: ignore  # noqa: E402
 
-def evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, data, direction="x2v"):  # noqa: E501
-    import csv
-    print("\n" + "=" * 60)
-    print("TASK 2: Brute-Force Approximation Benchmark")
-    print("=" * 60)
-    
-    exact_dists = []
-    spindle_dists = []
-    spindle_ranks = []
-    results_for_plot = []
-    metrics_records = []
-    
-    for i, q_spd in enumerate(query_covs):
-        target_niche = int(assigned_labels[i])
-        perm = data.perm_list[target_niche]
-        block_runs = data.block_dict[target_niche]
-        q_corr_blocks_log = corrected_queries_by_id.get(i, [])
-        if not q_corr_blocks_log: continue
-        
-        # NOTE: Ground-truth "exact" nearest neighbor is restricted to the
-        # predicted niche only (not a global brute-force across all train tiles).
-        # If the query is mis-assigned, the true global NN may be missed.
-        # This matches the design of holdout_validation.py and must be noted in paper results.
-        niche_train_indices = [idx for idx, lab in enumerate(data.labels) if int(lab) == target_niche]
-        distances = []
-        
-        for t_idx in niche_train_indices:
-            t_spd = train_covs[t_idx]
-            t_perm = t_spd[np.ix_(perm, perm)]
-            total_block_dist = 0.0
-            for b_idx, (start, end) in enumerate(block_runs):
-                t_block = t_perm[start:end, start:end]
-                t_block_log = log_spd(t_block)
-                diff = q_corr_blocks_log[b_idx] - t_block_log
-                p_block = t_block.shape[0]
-                total_block_dist += np.linalg.norm(diff, ord='fro') / np.sqrt(p_block)
-            distances.append((total_block_dist, t_idx))
-            
-        distances.sort(key=lambda x: x[0]) 
-        closest_dist = distances[0][0] if len(distances) > 0 else float('inf')
-        
-        best_exact_idx = distances[0][1] if len(distances) > 0 else -1
-        
-        # Stage 2: Spindle performs exact re-ranking on retrieved candidate tiles
-        spindle_reranked = []
-        for match_global_idx in all_matched_train_ids[i]:
-            t_spd = train_covs[match_global_idx]
-            t_perm = t_spd[np.ix_(perm, perm)]
-            cand_dist = 0.0
-            for b_idx, (start, end) in enumerate(block_runs):
-                t_block = t_perm[start:end, start:end]
-                t_block_log = log_spd(t_block)
-                diff = q_corr_blocks_log[b_idx] - t_block_log
-                p_block = t_block.shape[0]
-                cand_dist += np.linalg.norm(diff, ord='fro') / np.sqrt(p_block)
-            spindle_reranked.append((cand_dist, match_global_idx))
-            
-        spindle_reranked.sort(key=lambda x: x[0])
-        
-        spindle_best_dist = spindle_reranked[0][0] if spindle_reranked else float('inf')
-        best_spindle_idx = spindle_reranked[0][1] if spindle_reranked else -1
-        spindle_best_rank = -1
-        if best_spindle_idx != -1:
-            for r, (d, idx) in enumerate(distances):
-                if idx == best_spindle_idx:
-                    spindle_best_rank = r + 1
-                    break
-            if spindle_best_rank == -1:
-                # Spindle's best candidate is not in the predicted niche's train set —
-                # assign a rank beyond last place and log a warning.
-                spindle_best_rank = len(distances) + 1
-                print(f"  [WARN] Query {i}: Spindle best idx {best_spindle_idx} not found "
-                      f"in niche {target_niche} ({len(niche_train_indices)} members). "
-                      f"Assigning rank {spindle_best_rank}.")
-                
-        if not spindle_reranked:
-            print(f"Query {i:3d} (Niche {target_niche}): Exact closest dist = {closest_dist:.3f} | Spindle found NOTHING.")
-            exact_dists.append(closest_dist)
-            spindle_dists.append(float('inf'))
-            spindle_ranks.append(-1)
-        else:
-            print(f"Query {i:3d} (Niche {target_niche}): Exact dist = {closest_dist:.3f}, Spindle dist = {spindle_best_dist:.3f} | Rank {spindle_best_rank}")
-            exact_dists.append(closest_dist)
-            spindle_dists.append(spindle_best_dist)
-            spindle_ranks.append(spindle_best_rank)
-            
-        results_for_plot.append({
-            'query_idx': i,
-            'exact_idx': best_exact_idx,
-            'spindle_idx': best_spindle_idx,
-            'spindle_rank': spindle_best_rank
-        })
-        
-        bf_ranking = [idx for d, idx in distances]
-        spindle_ranking = [idx for _, idx in spindle_reranked]
-        
-        # Tie-aware recall@1: counts as a hit if Spindle's top-result distance matches
-        # the exact best distance within floating-point tolerance, consistent with
-        # holdout_validation.py.
-        recall_1 = 1 if (spindle_reranked and
-                         abs(spindle_reranked[0][0] - closest_dist) < 1e-5) else 0
-        
-        def calc_overlap(k):
-            if not bf_ranking: return 0.0
-            # Cap k to the actual niche size to avoid ill-defined overlap when
-            # the niche has fewer than k members.
-            effective_k = min(k, len(bf_ranking))
-            if effective_k == 0: return 0.0
-            bf_top = set(bf_ranking[:effective_k])
-            sp_top = set(spindle_ranking[:effective_k])
-            denom = max(1, len(bf_top))
-            return len(bf_top.intersection(sp_top)) / float(denom)
-            
-        overlap_5 = calc_overlap(5)
-        overlap_10 = calc_overlap(10)
-        overlap_20 = calc_overlap(20)
-        
-        metrics_records.append({
-            'query_idx': i,
-            'target_niche': target_niche,
-            'exact_best_dist': round(closest_dist, 4),
-            'spindle_best_dist': round(spindle_best_dist, 4) if spindle_best_rank != -1 else np.nan,
-            'spindle_best_rank': spindle_best_rank,
-            'recall_at_1': recall_1,
-            'overlap_at_5': round(overlap_5, 4),
-            'overlap_at_10': round(overlap_10, 4),
-            'overlap_at_20': round(overlap_20, 4)
-        })
-            
-    # Use an absolute path derived from the project root so outputs go to the correct location
-    # regardless of the working directory from which this script is invoked.
-    _project_root = _this_dir.parent
-    _out_dir = _project_root / "results" / "cross_modal_search"
-    _out_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = str(_out_dir / f"{direction}_query_metrics.csv")
-    if metrics_records:
-        fieldnames = list(metrics_records[0].keys())
-        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(metrics_records)
-        print(f"Saved detailed query metrics to {csv_path}")
-        
-        mean_r1 = np.mean([m['recall_at_1'] for m in metrics_records])
-        mean_o5 = np.mean([m['overlap_at_5'] for m in metrics_records])
-        mean_o10 = np.mean([m['overlap_at_10'] for m in metrics_records])
-        mean_o20 = np.mean([m['overlap_at_20'] for m in metrics_records])
-        
-        print("\n" + "-" * 60)
-        print(f"BENCHMARK OVERLAP METRICS SUMMARY ({direction}):")
-        print(f"  Recall@1   : {mean_r1:.4f}")
-        print(f"  Overlap@5  : {mean_o5:.4f}")
-        print(f"  Overlap@10 : {mean_o10:.4f}")
-        print(f"  Overlap@20 : {mean_o20:.4f}")
-        print("-" * 60)
-        
-        summary_dict = {
-            'direction': direction,
-            'recall@1': round(mean_r1, 4),
-            'overlap@5': round(mean_o5, 4),
-            'overlap@10': round(mean_o10, 4),
-            'overlap@20': round(mean_o20, 4)
-        }
-        summary_csv_path = str(_out_dir / "benchmark_summary.csv")
-        existing_rows = []
-        if os.path.exists(summary_csv_path):
-            with open(summary_csv_path, 'r', newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                existing_rows = list(reader)
-                
-        updated = False
-        for row in existing_rows:
-            if row.get('direction') == direction:
-                row.update({k: str(v) for k, v in summary_dict.items() if k != 'direction'})
-                updated = True
-                break
-        if not updated:
-            existing_rows.append({k: str(v) for k, v in summary_dict.items()})
-            
-        with open(summary_csv_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=['direction', 'recall@1', 'overlap@5', 'overlap@10', 'overlap@20'])
-            writer.writeheader()
-            writer.writerows(existing_rows)
-        print(f"Updated benchmark summary metrics in {summary_csv_path}")
-
-    print(f"\nCompleted evaluation for {direction}.")
-    return results_for_plot
+DEFAULT_DATA_DIR = project_root / "dataset" / "cross_modal"
+RESULTS_DIR = project_root / "results" / "cross_modal_search"
+DATASET_TAG = "cross_modal_brca"
 
 
-def plot_search_results(results_for_plot, coords_query, coords_index, tiles_query, tiles_index, query_name, index_name, direction):
-    print("Side-by-side search visualization disabled in CSV-only mode.")
+# =====================================================================
+# Modality bias correction
+# =====================================================================
 
-def run_search_pipeline(direction, n_queries, covs_xe, covs_vi, tiles_xe, tiles_vi, total_spots_xe, total_spots_vi, coords_xe, coords_vi, common_genes, args):
-    if direction == "x2v":
-        index_name = "Visium"
-        query_name = "Xenium"
-        tiles_index, covs_index, total_spots_index = tiles_vi, covs_vi, total_spots_vi
-        tiles_query, covs_query, total_spots_query = tiles_xe, covs_xe, total_spots_xe
-        coords_index, coords_query = coords_vi, coords_xe
-    else:
-        index_name = "Xenium"
-        query_name = "Visium"
-        tiles_index, covs_index, total_spots_index = tiles_xe, covs_xe, total_spots_xe
-        tiles_query, covs_query, total_spots_query = tiles_vi, covs_vi, total_spots_vi
-        coords_index, coords_query = coords_xe, coords_vi
-        
-    print(f"Generated {len(covs_query)} {query_name} query SPDs.")
-    
-    if n_queries is not None and n_queries < len(covs_query):
-        query_covs = [t["cov"] for t in covs_query[:n_queries]]
-    else:
-        query_covs = [t["cov"] for t in covs_query]
-        n_queries = len(query_covs)
-        
-    print(f"Selecting {n_queries} {query_name} queries for search.")
-    
-    print(f"\n[3/6] Building ProcessedData for {index_name}...")
-    processed_index = ProcessedData(tiles=tiles_index, tile_stats=covs_index, genes_work=common_genes, num_spots=total_spots_index)
-    
-    print(f"Reducing dimensions and clustering SPDs ({index_name})...")
-    processed_index.reduce_dim(cluster_distance="tree", num_pca_components=30, random_state=42)
-    # Use Leiden clustering (adaptive resolution) to match the holdout_validation.py methodology.
-    processed_index.cluster_spds(cluster_distance="tree", cluster_method="leiden", resolution=0.2)
-    
-    print("Computing mean correlations and finding block diagonal order...")
-    processed_index.get_corr_mean_by_cluster()
-    processed_index.get_adaptive_runs(find_blocks=True, min_final_size=5, max_final_size=50)
+def compute_corrected_query_logs(query_covs, train_covs, data):
+    """Return ``corrected[i][niche] = [corrected log block, ...]`` for every query and niche.
 
-    print(f"\n[4/6] Building DAG index for {index_name}...")
-    from spindle_dev.index import choose_adaptive_epsilons
-    config = IndexConfig()
-    # Use data-driven adaptive epsilons (elbow method) to match holdout_validation.py methodology.
-    for cluster_id in set(processed_index.labels):
-        _, _, eps = choose_adaptive_epsilons(processed_index, int(cluster_id), k_target_per_block=64)
-        config.epsilon_dict[int(cluster_id)] = eps
-        
-    try:
-        dag_dict, stats, global_dist_list = index_spds(processed_index, config)
-    except Exception as e:
-        print(f"Error building index: {e}")
-        return
+    For niche ``c`` and block ``b``: ``L_corr = (L_q - mean_q) * min(1, std_t/std_q) + mean_t``,
+    where ``mean_t/std_t`` come from niche ``c``'s training tiles and
+    ``mean_q/std_q`` from ALL queries projected into niche ``c``'s layout.
+    The scale is capped at 1.0 so the correction only ever shrinks query
+    spread, never amplifies it (unchanged from the original routed version).
+    """
+    labels = np.asarray(data.labels).astype(int)
+    unique_niches = sorted(set(labels.tolist()))
+    corrected = [dict() for _ in query_covs]
 
-    print(f"\n[5/6] Aligning {query_name} SPDs to {index_name} index clusters...")
-    assigned_labels = assign_clusters_to_new_spds(query_covs, processed_index, strategy="knn_majority", n_neighbors=5)
-    
-    print("Calculating tangent space block means and stds for modality bias correction...")
-    cluster_means = {}
-    train_covs = [t["cov"] for t in covs_index]
-    
-    for cluster_id in set(processed_index.labels):
-        perm = processed_index.perm_list[cluster_id]
-        block_runs = processed_index.block_dict[cluster_id]
-        
-        idx_train = [idx for idx, lab in enumerate(processed_index.labels) if int(lab) == cluster_id]
-        idx_query = [idx for idx, lab in enumerate(assigned_labels) if int(lab) == cluster_id]
-        
-        block_means_train = []
-        block_means_query = []
-        block_stds_train = []
-        block_stds_query = []
-        
-        for b_idx, (start, end) in enumerate(block_runs):
-            # Index Mean & Std
-            t_logs = []
-            for i in idx_train:
-                t_spd = train_covs[i]
-                t_perm = t_spd[np.ix_(perm, perm)]
-                t_logs.append(log_spd(t_perm[start:end, start:end]))
-            if t_logs:
-                block_means_train.append(np.mean(t_logs, axis=0))
-                block_stds_train.append(np.std(t_logs))
-            else:
-                block_means_train.append(0)
-                block_stds_train.append(1.0)
-            
-            # Query Mean & Std
-            q_logs = []
-            for i in idx_query:
-                q_spd = query_covs[i]
-                q_perm = q_spd[np.ix_(perm, perm)]
-                q_logs.append(log_spd(q_perm[start:end, start:end]))
-            if q_logs:
-                block_means_query.append(np.mean(q_logs, axis=0))
-                std_q = np.std(q_logs)
-                block_stds_query.append(std_q if std_q > 1e-6 else 1.0)
-            else:
-                block_means_query.append(0)
-                block_stds_query.append(1.0)
-            
-        cluster_means[cluster_id] = {
-            'train': block_means_train, 'query': block_means_query,
-            'std_train': block_stds_train, 'std_query': block_stds_query
-        }
+    for c in unique_niches:
+        perm = data.perm_list[c]
+        block_runs = data.block_dict[c]
+        train_members = np.where(labels == c)[0]
 
-    print("\n[6/6] Running cross-modal search with bias correction...")
-    # SearchConfig aligned with holdout_validation.py for direct comparability.
-    search_cfg = SearchConfig(
-        max_results=None,
-        debug=False,
-        max_failed_starts=10,
-        max_failed_paths=20,
-        total_paths_limit=300
-    )
-    
-    total_hits = 0
-    total_time = 0.0
-    valid_searches = 0
-    all_matched_train_ids = []
-    corrected_queries_by_id = {}
-    
-    for i, q_spd in enumerate(query_covs):
-        cluster_id = int(assigned_labels[i])
-        index_handle = dag_dict.get(cluster_id)
-        
-        if index_handle is None:
-            all_matched_train_ids.append([])
-            continue
-            
-        perm = processed_index.perm_list[cluster_id]
-        block_runs = processed_index.block_dict[cluster_id]
-        
-        q_spd_perm = q_spd[np.ix_(perm, perm)]
-        q_corr_blocks_log = []
-        q_spd_corr_perm = np.zeros_like(q_spd_perm)
-        
-        for b_idx, (start, end) in enumerate(block_runs):
-            q_block = q_spd_perm[start:end, start:end]
-            q_log = log_spd(q_block)
-            
-            raw_scale = cluster_means[cluster_id]['std_train'][b_idx] / cluster_means[cluster_id]['std_query'][b_idx]
-            # Cap the scale at 1.0 to prevent over-correction: when the index (train) modality
-            # has a larger spread than the query modality we still shrink the gap, but we never
-            # amplify the query variance beyond its natural level.  This is intentionally
-            # conservative — it means x2v (Xenium query, Visium index) benefits more from
-            # correction than v2x when Xenium std is larger, which accounts for part of the
-            # observed recall asymmetry between the two directions.
-            scale = min(1.0, raw_scale)
-            
-            L_corr = (q_log - cluster_means[cluster_id]['query'][b_idx]) * scale + cluster_means[cluster_id]['train'][b_idx]
-            q_corr_blocks_log.append(L_corr)
-            
-            C_corr = exp_spd(L_corr)
-            q_spd_corr_perm[start:end, start:end] = C_corr
-            
-        corrected_queries_by_id[i] = q_corr_blocks_log
-        
-        epsilon = config.epsilon_dict.get(cluster_id, 0.5) if hasattr(config, 'epsilon_dict') else 0.5
-        budget = float(epsilon) * float(len(block_runs)) * float(args.budget_mult)
+        q_perm_all = [q[np.ix_(perm, perm)] for q in query_covs]
+        t_perm_all = [train_covs[t][np.ix_(perm, perm)] for t in train_members]
 
-        if i == 0 or (i == 1 and direction):
-            print(f"  [Budget] Niche {cluster_id}: epsilon={epsilon:.4f}, "
-                  f"blocks={len(block_runs)}, mult={args.budget_mult}, budget={budget:.3f}")
-        
-        # Pass the permuted corrected SPD directly — block_runs are defined in permuted
-        # gene space, so search_index must receive q_spd_corr_perm (not the inverse-permuted
-        # version). Passing the un-permuted matrix caused a coordinate mismatch bug where
-        # block slices indexed the wrong rows/columns during DAG traversal.
-        t0 = time.perf_counter()
-        results = search_index(
-            index_handle=index_handle,
-            query_spd=q_spd_corr_perm,
-            query_indices=[],
-            query_block_runs=block_runs,
-            budget=budget,
-            config=search_cfg
+        for i in range(len(query_covs)):
+            corrected[i][c] = []
+
+        for s, e in block_runs:
+            t_logs = np.stack([log_spd(t[s:e, s:e]) for t in t_perm_all])
+            q_logs = np.stack([log_spd(q[s:e, s:e]) for q in q_perm_all])
+            mean_t, std_t = t_logs.mean(axis=0), float(np.std(t_logs))
+            mean_q, std_q = q_logs.mean(axis=0), float(np.std(q_logs))
+            if std_q <= 1e-6:
+                std_q = 1.0
+            scale = min(1.0, std_t / std_q)
+            for i in range(len(query_covs)):
+                corrected[i][c].append((q_logs[i] - mean_q) * scale + mean_t)
+
+    return corrected
+
+
+def compute_global_corrected_covs(query_covs, train_covs):
+    """Whole-matrix (niche-free) variant: one tangent-space shift for every query.
+
+    ``L_corr = (log Q - mean_q) * min(1, std_t/std_q) + mean_t`` on the full
+    gene x gene log matrix, with means/stds over ALL query / ALL index tiles.
+    Applied once, before any niche's permutation/block layout is used, so it
+    does not re-centre queries onto each niche separately.
+    """
+    q_logs = np.stack([log_spd(q) for q in query_covs])
+    t_logs = np.stack([log_spd(t) for t in train_covs])
+    mean_q, std_q = q_logs.mean(axis=0), float(np.std(q_logs))
+    mean_t, std_t = t_logs.mean(axis=0), float(np.std(t_logs))
+    scale = min(1.0, std_t / (std_q if std_q > 1e-6 else 1.0))
+    return [exp_spd((L - mean_q) * scale + mean_t) for L in q_logs]
+
+
+def blocks_log_per_niche(query_covs, data):
+    """``out[i][niche] = [log block, ...]`` of each query in each niche's own layout (no correction)."""
+    labels = np.asarray(data.labels).astype(int)
+    out = [dict() for _ in query_covs]
+    for c in sorted(set(labels.tolist())):
+        perm, block_runs = data.perm_list[c], data.block_dict[c]
+        for i, q in enumerate(query_covs):
+            q_perm = q[np.ix_(perm, perm)]
+            out[i][c] = [log_spd(q_perm[s:e, s:e]) for s, e in block_runs]
+    return out
+
+
+def _corrected_query_matrix(blocks_log, block_runs, p):
+    """Assemble a permuted-space query matrix from corrected per-block logs.
+
+    Only the diagonal blocks are ever read by ``search_index`` (it slices
+    ``query_spd[s:e, s:e]`` per block), so off-block entries are left at zero.
+    """
+    M = np.zeros((p, p), dtype=np.float64)
+    for L, (s, e) in zip(blocks_log, block_runs):
+        M[s:e, s:e] = exp_spd(L)
+    return M
+
+
+# =====================================================================
+# Stage 1: all-niche DAG search on corrected queries
+# =====================================================================
+
+def perform_search_corrected(corrected, data, dag_dict, config, budget_multiplier=1.0,
+                             restrict_niches=None):
+    """Mirror of ``holdout_validation.perform_search`` for per-niche corrected queries.
+
+    Same per-niche SearchConfig caps, budget formula and cross-niche candidate
+    merge; the only difference is that the query handed to niche ``c``'s DAG
+    is that query's niche-``c`` bias-corrected version. ``restrict_niches``
+    (optional list, one niche id per query) limits each query to a single
+    niche -- used only by ``--single-niche-baseline``.
+    """
+    labels = np.asarray(data.labels).astype(int)
+    unique_niches = sorted(set(labels.tolist()))
+    niche_sizes = {c: int(np.sum(labels == c)) for c in unique_niches}
+    niche_cfgs = {}
+    for c, n in niche_sizes.items():
+        f = hv._niche_scale_factor(n)
+        niche_cfgs[c] = search.SearchConfig(
+            max_results=None, debug=False,
+            max_failed_starts=max(1, round(100 * f)),
+            max_failed_paths=max(1, round(200 * f)),
+            total_paths_limit=max(1, round(3000 * f)),
         )
-        total_time += (time.perf_counter() - t0)
-        
-        matched_ids_for_query = []
-        seen_matched = set()
-        if results.paths:
-            for path in results.paths:
+    p = data.num_genes
+
+    all_matched, times = [], []
+    hits_per_niche = {c: 0 for c in unique_niches}
+    for i, q_corr in enumerate(tqdm(corrected, desc="Querying index")):
+        niches = unique_niches if restrict_niches is None else [int(restrict_niches[i])]
+        matched, seen, q_time = [], set(), 0.0
+        for c in niches:
+            index_handle = dag_dict[c]
+            f = hv._niche_scale_factor(niche_sizes[c])
+            budget = (float(config.epsilon_dict[c]) * float(len(index_handle.sorted_blocks))
+                      * float(budget_multiplier) * f)
+            block_runs = data.block_dict[c]
+            q_mat = _corrected_query_matrix(q_corr[c], block_runs, p)
+
+            t0 = time.perf_counter()
+            results = search.search_index(index_handle, q_mat, [], block_runs, budget, config=niche_cfgs[c])
+            q_time += time.perf_counter() - t0
+
+            # search_index returns a list ([SearchResults(paths=[])]) on its early exits.
+            paths = [] if isinstance(results, list) else (results.paths or [])
+            for path in paths:
                 member_sets = []
                 for node_id in path.node_path:
                     node = index_handle.nodes[node_id]
                     members = getattr(getattr(node, "metadata", None), "members", [])
-                    spd_ids = {int(spd_id) for spd_id, _ in members}
-                    member_sets.append(spd_ids)
-
+                    member_sets.append({int(spd_id) for spd_id, _ in members})
                 intersect_ids = set.intersection(*member_sets) if member_sets else set()
-                # Deduplicate: a candidate appearing in multiple paths should only be
-                # counted once, matching the holdout_validation.py implementation.
                 for spd_id in sorted(intersect_ids):
-                    if spd_id not in seen_matched:
-                        seen_matched.add(spd_id)
-                        matched_ids_for_query.append(spd_id)
-            
-        all_matched_train_ids.append(matched_ids_for_query)
-        
-        valid_searches += 1
-        total_hits += len(matched_ids_for_query)
-        
-        step = max(1, n_queries//10)
-        if (i+1) % step == 0:
-            print(f"Processed {i+1}/{n_queries} queries...")
+                    if spd_id not in seen:
+                        seen.add(spd_id)
+                        matched.append(spd_id)
+                        hits_per_niche[c] += 1
+        all_matched.append(matched)
+        times.append(q_time)
 
-    nothing_count = sum(1 for ids in all_matched_train_ids if len(ids) == 0)
-    print("\n" + "=" * 40)
-    print(f"Cross-Modal Search Results ({query_name} -> {index_name}):")
-    print(f"Total Valid Queries : {valid_searches}")
-    print(f"Total Paths Found   : {total_hits}")
-    print(f"Queries with NOTHING: {nothing_count}/{n_queries} "
-          f"({'budget too tight — try higher --budget-mult' if nothing_count > n_queries * 0.2 else 'OK'})")
-    print(f"Avg Time Per Query  : {total_time / valid_searches:.4f}s" if valid_searches else "No valid searches")
-    print("=" * 40)
+    print(f"Stage-1 candidates per niche (summed over queries): {hits_per_niche}")
+    return all_matched, times
 
-    plot_results = evaluate_brute_force_approximation(query_covs, corrected_queries_by_id, train_covs, assigned_labels, all_matched_train_ids, processed_index, direction=direction)
-    # Search visualization plotting disabled in CSV-only mode
 
-def main():
-    parser = argparse.ArgumentParser(description="Cross-Modal SPD Index Search")
-    parser.add_argument("--direction", type=str, choices=["x2v", "v2x", "both"], default="both",
-                        help="Search direction: 'x2v', 'v2x', or 'both'")
-    parser.add_argument("--n_queries", type=int, default=50,
-                        help="Number of queries to run if query dataset is large.")
-    parser.add_argument("--budget-mult", type=float, default=1.5,
-                        help=(
-                            "Distance budget multiplier for DAG search. "
-                            "Cross-modal search requires a higher value than same-modality "
-                            "split-test (default 1.0) because residual inter-modality distribution "
-                            "shift after bias correction inflates block-level distances. "
-                            "Default=3.0, empirically calibrated for Xenium/Visium cross-modal."
-                        ))
-    args = parser.parse_args()
+# =====================================================================
+# One direction
+# =====================================================================
 
-    print("Loading datasets...")
-    adata_vi = sc.read_h5ad(r"/home/asus/spindle_dev/dataset/opt_brca/brca/visium_rotated.h5ad")
-    adata_xe = sc.read_h5ad(r"/home/asus/spindle_dev/dataset/opt_brca/brca/xenium_rotated.h5ad")
+def run_direction(direction, args, tiles, covs, adatas, common_genes, out_dir):
+    index_mod, query_mod = ("vi", "xe") if direction == "x2v" else ("xe", "vi")
+    tiles_index, covs_index, adata_index = tiles[index_mod], covs[index_mod], adatas[index_mod]
+    covs_query = covs[query_mod]
+    dataset_name = f"{DATASET_TAG}_{direction}_seed{args.seed}"
 
-    adata_vi.var_names_make_unique()
-    adata_xe.var_names_make_unique()
+    rng = np.random.default_rng([args.seed, 0 if direction == "x2v" else 1])
+    n_q = len(covs_query) if args.n_queries is None else min(args.n_queries, len(covs_query))
+    query_sel = np.sort(rng.choice(len(covs_query), size=n_q, replace=False))
+    query_covs = [covs_query[j]["cov"] for j in query_sel]
+    query_tile_ids = [covs_query[j]["tile_id"] for j in query_sel]
+    print(f"\n[{direction}] {n_q}/{len(covs_query)} query tiles, {len(covs_index)} index tiles")
 
-    common_genes = sorted(list(set(adata_vi.var_names).intersection(adata_xe.var_names)))
-    print(f"Found {len(common_genes)} common genes.")
+    with RunLogger(dataset_name=dataset_name, stage="cross_modal_search",
+                   out_dir=project_root / "results" / "run_logs", seed=args.seed,
+                   direction=direction, n_queries=n_q, budget_mult=args.budget_mult,
+                   n_tiles_index=len(covs_index), n_tiles_query=len(covs_query),
+                   n_common_genes=len(common_genes)):
+        t0 = time.perf_counter()
+        data, _ = index_datasets.run_index(tiles_index, covs_index, common_genes, adata_index,
+                                           resolution=0.2, min_final_size=15, max_niche_size=1000,
+                                           random_state=args.seed)
+        dag_dict, config = index_datasets.configure_and_build_dag(data)
+        build_time_s = time.perf_counter() - t0
+        n_niches = len(set(int(x) for x in data.labels))
+        print(f"[{direction}] index built in {build_time_s:.1f}s, {n_niches} niches")
 
-    if not common_genes:
-        print("No common genes found!")
-        return
+        train_covs = [t["cov"] for t in covs_index]
+        if args.correction == "per_niche":
+            corrected = compute_corrected_query_logs(query_covs, train_covs, data)
+        elif args.correction == "global":
+            corrected = blocks_log_per_niche(compute_global_corrected_covs(query_covs, train_covs), data)
+        else:
+            corrected = blocks_log_per_niche(query_covs, data)
 
-    from spindle_dev.preprocessing import build_quadtree_tiles, QuadTile, build_tile_covs_full
+        gt_block = hv.compute_ground_truth(query_covs, train_covs, data,
+                                           query_blocks_log_override=corrected)
+        gt_whole = hv.compute_ground_truth_whole_matrix(query_covs, train_covs)
 
-    print("\n[1/6] Building quadtree tiles on Xenium...")
-    adata_xe_sub = adata_xe[:, common_genes].copy()
-    coords_xe = adata_xe_sub.obsm["spatial"]
+        variants = [("all_niche", None)]
+        if args.single_niche_baseline:
+            assigned = search.assign_clusters_to_new_spds(query_covs, data, strategy="knn_majority",
+                                                          n_neighbors=5)
+            variants.append(("single_niche_baseline", [int(a) for a in assigned]))
+
+        for variant, restrict in variants:
+            matched, times = perform_search_corrected(corrected, data, dag_dict, config,
+                                                      budget_multiplier=args.budget_mult,
+                                                      restrict_niches=restrict)
+            df, summary = hv.evaluate_against_ground_truth(
+                gt_block, gt_block, data.spd_ids, matched, times, data, dataset_name, config,
+                ground_truth_kind="block", top_c_candidates=args.top_c, ground_truth_whole=gt_whole,
+            )
+            extra = {"direction": direction, "seed": args.seed, "variant": variant,
+                     "correction": args.correction,
+                     "n_niches": n_niches, "n_tiles_index": len(covs_index),
+                     "n_tiles_query": len(covs_query), "build_time_s": round(build_time_s, 2)}
+            df.insert(1, "query_tile_id", query_tile_ids)
+            if restrict is not None:
+                df["searched_niche"] = restrict
+            df["true_best_niche"] = [q["true_best_niche"] for q in gt_block["per_query"]]
+            for k, v in extra.items():
+                df[k] = v
+            summary = {**extra, **summary}
+
+            suffix = "" if variant == "all_niche" else f"_{variant}"
+            if args.correction != "global":
+                suffix += f"_corr-{args.correction}"
+            df.to_csv(out_dir / f"{direction}{suffix}_query_metrics.csv", index=False)
+            pd.DataFrame([summary]).to_csv(out_dir / f"{direction}{suffix}_summary.csv", index=False)
+            print(f"[{direction}/{variant}] wrote {out_dir / f'{direction}{suffix}_query_metrics.csv'}")
+
+
+# =====================================================================
+# Main
+# =====================================================================
+
+def build_tiles(adata_xe, adata_vi):
+    """Quadtree-tile Xenium, then overlay the same bounding boxes on Visium."""
+    coords_xe = adata_xe.obsm["spatial"]
+    coords_vi = adata_vi.obsm["spatial"]
     tiles_xe = build_quadtree_tiles(coords_xe, max_pts=2000, min_side=0.0, max_depth=40)
-    
-    print("\n[2/6] Overlaying tiles on Visium...")
-    adata_vi_sub = adata_vi[:, common_genes].copy()
-    coords_vi = adata_vi_sub.obsm["spatial"]
-    
+
     tiles_vi = []
     for t in tiles_xe:
         x0, y0, x1, y1 = t.bbox
-        mask = (coords_vi[:, 0] >= x0) & (coords_vi[:, 0] < x1) & \
-               (coords_vi[:, 1] >= y0) & (coords_vi[:, 1] < y1)
+        mask = ((coords_vi[:, 0] >= x0) & (coords_vi[:, 0] < x1)
+                & (coords_vi[:, 1] >= y0) & (coords_vi[:, 1] < y1))
         child_idx = np.where(mask)[0]
-        if len(child_idx) >= 10:  
+        if len(child_idx) >= 10:
             tiles_vi.append(QuadTile(t.id, t.bbox, child_idx))
-            
-    for i, t in enumerate(tiles_xe): t.id = i
-    for i, t in enumerate(tiles_vi): t.id = i
-            
-    print(f"Built {len(tiles_xe)} Xenium tiles and {len(tiles_vi)} Visium tiles.")
 
-    project_root = Path(__file__).resolve().parent.parent
-    out_dir = project_root / "results" / "cross_modal_search"
+    # Tile ids are positional so that spd_ids == position in the covariance list.
+    for i, t in enumerate(tiles_xe):
+        t.id = i
+    for i, t in enumerate(tiles_vi):
+        t.id = i
+    return tiles_xe, tiles_vi
+
+
+def write_overlay_csvs(tiles_xe, tiles_vi, coords_xe, coords_vi):
+    """Figure-panel inputs (scripts/organize_panel_data.py panel G) -- seed-independent."""
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    boxes = [{'modality': mod, 'id': t.id, 'x0': t.bbox[0], 'y0': t.bbox[1], 'x1': t.bbox[2], 'y1': t.bbox[3]}
+             for mod, ts in (("Xenium", tiles_xe), ("Visium", tiles_vi)) for t in ts]
+    pd.DataFrame(boxes).to_csv(RESULTS_DIR / "tile_overlay_boxes.csv", index=False)
+
+    rng = np.random.default_rng(42)
+    records = []
+    for mod, coords in (("Xenium", coords_xe), ("Visium", coords_vi)):
+        pts = coords[rng.choice(len(coords), size=min(5000, len(coords)), replace=False)]
+        records.extend({'modality': mod, 'x': x, 'y': y} for x, y in pts[:, :2])
+    pd.DataFrame(records).to_csv(RESULTS_DIR / "spatial_coords_sample.csv", index=False)
+    print(f"Wrote tile_overlay_boxes.csv / spatial_coords_sample.csv to {RESULTS_DIR}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Cross-modal (Xenium<->Visium) all-niche Spindle search")
+    parser.add_argument("--direction", choices=["x2v", "v2x", "both"], default="both")
+    parser.add_argument("--xenium-path", type=Path, default=DEFAULT_DATA_DIR / "xenium_rotated.h5ad")
+    parser.add_argument("--visium-path", type=Path, default=DEFAULT_DATA_DIR / "visium_rotated.h5ad")
+    parser.add_argument("--seed", type=int, default=0,
+                        help="Seeds the query subsample and the index build's PCA/UMAP/Leiden random_state.")
+    parser.add_argument("--n-queries", type=int, default=50,
+                        help="Queries per direction, drawn at random (without replacement) from the query "
+                             "platform's tiles. Capped at the number of available tiles.")
+    parser.add_argument("--budget-mult", type=float, default=1.0,
+                        help="Search budget multiplier (production value 1.0, as in holdout_validation.py).")
+    parser.add_argument("--top-c", type=int, default=400,
+                        help="Per-niche Stage-1 candidate cap before Stage-2 exact re-ranking.")
+    parser.add_argument("--out-dir", type=Path, default=None,
+                        help="Default: results/cross_modal_search/seed_<seed>/")
+    parser.add_argument("--correction", choices=["global", "per_niche", "none"], default="global",
+                        help="Modality bias correction: global (one whole-matrix tangent-space shift; production), "
+                             "per_niche (per niche x block, stats over all queries; diagnostic), or none.")
+    parser.add_argument("--single-niche-baseline", action="store_true",
+                        help="Diagnostic: also run the old kNN-routed single-niche search, scored against "
+                             "the same all-niche ground truth (writes *_single_niche_baseline_* files).")
+    parser.add_argument("--write-overlay", action="store_true",
+                        help="Also (re)write the seed-independent tile overlay / coordinate-sample CSVs.")
+    args = parser.parse_args()
+
+    out_dir = args.out_dir or (RESULTS_DIR / f"seed_{args.seed}")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    box_records = []
-    for t in tiles_xe:
-        x0, y0, x1, y1 = t.bbox
-        box_records.append({'modality': 'Xenium', 'id': t.id, 'x0': x0, 'y0': y0, 'x1': x1, 'y1': y1})
-    for t in tiles_vi:
-        x0, y0, x1, y1 = t.bbox
-        box_records.append({'modality': 'Visium', 'id': t.id, 'x0': x0, 'y0': y0, 'x1': x1, 'y1': y1})
-    pd.DataFrame(box_records).to_csv(out_dir / "tile_overlay_boxes.csv", index=False)
-    print(f"Exported tile overlay bounding boxes CSV to {out_dir / 'tile_overlay_boxes.csv'}")
+    print("Loading datasets...")
+    adata_vi = sc.read_h5ad(args.visium_path)
+    adata_xe = sc.read_h5ad(args.xenium_path)
+    adata_vi.var_names_make_unique()
+    adata_xe.var_names_make_unique()
+    common_genes = sorted(set(adata_vi.var_names).intersection(adata_xe.var_names))
+    print(f"Found {len(common_genes)} common genes.")
+    if not common_genes:
+        raise SystemExit("No common genes found!")
+    adata_xe = adata_xe[:, common_genes].copy()
+    adata_vi = adata_vi[:, common_genes].copy()
 
-    coord_records = []
-    np.random.seed(42)
-    sample_xe = coords_xe[np.random.choice(len(coords_xe), size=min(5000, len(coords_xe)), replace=False)]
-    sample_vi = coords_vi[np.random.choice(len(coords_vi), size=min(5000, len(coords_vi)), replace=False)]
-    for pt in sample_xe:
-        coord_records.append({'modality': 'Xenium', 'x': pt[0], 'y': pt[1]})
-    for pt in sample_vi:
-        coord_records.append({'modality': 'Visium', 'x': pt[0], 'y': pt[1]})
-    pd.DataFrame(coord_records).to_csv(out_dir / "spatial_coords_sample.csv", index=False)
-    print(f"Exported background spatial coordinates sample CSV to {out_dir / 'spatial_coords_sample.csv'}")
+    tiles_xe, tiles_vi = build_tiles(adata_xe, adata_vi)
+    print(f"Built {len(tiles_xe)} Xenium tiles and {len(tiles_vi)} Visium tiles.")
+    if args.write_overlay:
+        write_overlay_csvs(tiles_xe, tiles_vi, adata_xe.obsm["spatial"], adata_vi.obsm["spatial"])
 
-    print("\n[3/6] Computing tile covariance matrices...")
-    covs_xe = build_tile_covs_full(adata_xe_sub, tiles_xe, gene_idx=None, n_jobs=8, eps=1e-6)
-    covs_vi = build_tile_covs_full(adata_vi_sub, tiles_vi, gene_idx=None, n_jobs=8, eps=1e-6)
-
-    total_spots_xe = adata_xe_sub.n_obs
-    total_spots_vi = adata_vi_sub.n_obs
+    print("Computing tile covariance matrices...")
+    covs = {"xe": build_tile_covs_full(adata_xe, tiles_xe, gene_idx=None, n_jobs=8, eps=1e-6),
+            "vi": build_tile_covs_full(adata_vi, tiles_vi, gene_idx=None, n_jobs=8, eps=1e-6)}
+    tiles = {"xe": tiles_xe, "vi": tiles_vi}
+    adatas = {"xe": adata_xe, "vi": adata_vi}
 
     directions = ["x2v", "v2x"] if args.direction == "both" else [args.direction]
-    for dir_str in directions:
-        print("\n" + "#" * 60)
-        print(f"### RUNNING SEARCH PIPELINE FOR DIRECTION: {dir_str.upper()}")
-        print("#" * 60)
-        run_search_pipeline(dir_str, args.n_queries, covs_xe, covs_vi, tiles_xe, tiles_vi, total_spots_xe, total_spots_vi, coords_xe, coords_vi, common_genes, args)
+    for direction in directions:
+        run_direction(direction, args, tiles, covs, adatas, common_genes, out_dir)
+
 
 if __name__ == "__main__":
     main()

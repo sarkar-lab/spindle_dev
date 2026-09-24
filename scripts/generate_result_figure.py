@@ -433,8 +433,8 @@ def plot_panel_g_visium(ax, project_root: Path):
 # ── Panel H: Cross-Modal Recall Bar Chart ───────────────────────────────────
 def plot_panel_h_recall(ax, project_root: Path):
     """
-    Panel H — Grouped vertical bar chart: Recall@1 + Overlap@10
-    per cross-modal query direction.
+    Panel H — Grouped vertical bar chart: Recall@eps=0.1 + Overlap@eps=0.5
+    per cross-modal query direction (mean ± s.d. across seeds).
     """
     df = _read_panel_csv(project_root, 'panel_H_recall_metrics.csv')
     if df is None:
@@ -443,8 +443,10 @@ def plot_panel_h_recall(ax, project_root: Path):
 
     try:
         directions = [d.replace(' to ', ' → ') for d in df['direction_label'].tolist()]
-        recall1   = df['recall_at_1_pct'].tolist()
-        overlap10 = df['overlap_at_10_pct'].tolist()
+        recall1   = df['recall_at_eps_0.1_pct'].tolist()
+        recall1_sd = df['recall_at_eps_0.1_sd_pct'].tolist()
+        overlap10 = df['overlap_at_eps_0.5_pct'].tolist()
+        overlap10_sd = df['overlap_at_eps_0.5_sd_pct'].tolist()
     except Exception as e:
         print(f'  WARNING (Panel H): {e}')
         _no_data(ax, 'panel_H_recall_metrics.csv')
@@ -454,11 +456,13 @@ def plot_panel_h_recall(ax, project_root: Path):
     x   = np.arange(n)
     bw  = 0.30
 
-    bars_r  = ax.bar(x - bw/2, recall1,   width=bw, color=TEAL,       alpha=0.88, edgecolor='none', label='Recall@1 (%)')
-    bars_o  = ax.bar(x + bw/2, overlap10, width=bw, color=TERRACOTTA, alpha=0.88, edgecolor='none', label='Overlap@10 (%)')
+    bars_r  = ax.bar(x - bw/2, recall1,   width=bw, yerr=recall1_sd, capsize=3, color=TEAL,
+                     alpha=0.88, edgecolor='none', label='Recall@ε=0.1 (%)')
+    bars_o  = ax.bar(x + bw/2, overlap10, width=bw, yerr=overlap10_sd, capsize=3, color=TERRACOTTA,
+                     alpha=0.88, edgecolor='none', label='Overlap@ε=0.5 (%)')
 
-    for val, bar in list(zip(recall1, bars_r)) + list(zip(overlap10, bars_o)):
-        h = bar.get_height()
+    for val, sd, bar in list(zip(recall1, recall1_sd, bars_r)) + list(zip(overlap10, overlap10_sd, bars_o)):
+        h = bar.get_height() + sd
         ax.text(bar.get_x() + bar.get_width() / 2, h + 0.8,
                 f'{val:.0f}%', ha='center', fontsize=ANNOT_FONT,
                 fontweight='bold', color=SLATE)
