@@ -578,8 +578,10 @@ def panel_h(d, q, W=43.0):
 
 def assemble():
     """Fig. 1 itself: the canvas (boxes, headers, chevrons, in-box text) drawn as a PDF, then every part
-    PDF overlaid at its brief coordinates, so the result stays vector with real text."""
+    PDF overlaid at its brief coordinates, so the result stays vector with real text. The PNG is built the
+    same way from the canvas PNG and the part PNGs (never rasterised from the PDF)."""
     from matplotlib.patches import Polygon
+    from PIL import Image
     from pypdf import PdfReader, PdfWriter, Transformation
 
     W, H = CANVAS
@@ -606,6 +608,7 @@ def assemble():
                 arrowprops=dict(arrowstyle="-|>", color=fs.MUTED, lw=0.6, mutation_scale=5))
     canvas_pdf = os.path.join(tempfile.mkdtemp(), "_canvas.pdf")
     fig.savefig(canvas_pdf)
+    canvas = fs.render_png(fig)
     plt.close(fig)
 
     pt = 72 / 25.4
@@ -617,13 +620,17 @@ def assemble():
         if box and (x + w > box[3] + 0.01 or y + h > box[5] + 0.01):
             raise ValueError(f"{name} leaves box {box[0]}")
         page.merge_transformed_page(part_page, Transformation().translate(x * pt, (H - y - h) * pt))
+        part_png = Image.open(fs.png_path(OUT / f"{name}.pdf")).convert("RGBA")
+        px = fs.PNG_DPI / 25.4
+        canvas.alpha_composite(part_png, (round(x * px), round(y * px)))
     out = PdfWriter()
     out.add_page(page)
     target = fs.PDF_DIR / "fig1_overview.pdf"
     with open(target, "wb") as fh:
         out.write(fh)
     os.remove(canvas_pdf)
-    png = fs.pdf_to_png(target)
+    png = fs.png_path(target)
+    canvas.convert("RGB").save(png, dpi=(fs.PNG_DPI, fs.PNG_DPI))
     print(f"saved {target.relative_to(fs.PROJECT_ROOT)} + {png.relative_to(fs.PROJECT_ROOT)}")
 
 
