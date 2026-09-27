@@ -120,7 +120,8 @@ def load():
     t["cx"], t["cy"] = (t.x0 + t.x1) / 2, (t.y0 + t.y1) / 2
     t["side"] = np.maximum(t.x1 - t.x0, t.y1 - t.y0)
     d["niches"] = sorted(t.loc[t.status == "train", "niche"].unique())
-    d["colors"] = dict(zip(d["niches"], fs.niche_palette(len(d["niches"]))))
+    from scanpy.pl import palettes  # niche label j -> default_20[j], as in the spot-level cluster plots
+    d["colors"] = {j: palettes.default_20[int(j)] for j in d["niches"]}
     return d
 
 
@@ -257,8 +258,8 @@ def panel_b(R40):
             sp.set_color(fs.MUTED)
     ax = ax_mm(fig, 3.0, 3.0, m, m)
     heat(ax, R40)
-    ax.set_xlabel(f"{len(R40)} genes", fontsize=fs.TICK_PT, labelpad=1.5)
-    ax.set_ylabel("Genes", fontsize=fs.TICK_PT, labelpad=1.5)
+    # ax.set_xlabel(f"{len(R40)} genes", fontsize=fs.TICK_PT, labelpad=1.5)
+    # ax.set_ylabel("Genes", fontsize=fs.TICK_PT, labelpad=1.5)
     save(fig, "b_tile_covariance")
     return {"W": W, "H": H}
 
@@ -297,8 +298,8 @@ def panel_c(d):
     h = W * tissue_aspect(t)
     fig = part(W, h)
     ax = ax_mm(fig, 0, 0, W, h)
-    rects(ax, tr, facecolor=list(col), edgecolor="white", lw=0.08)
-    rects(ax, t[t.status == "heldout"], facecolor=fs.LIGHT, edgecolor="white", lw=0.08)
+    rects(ax, tr, facecolor=list(col), edgecolor="black", lw=0.08)
+    rects(ax, t[t.status == "heldout"], facecolor=fs.LIGHT, edgecolor="black", lw=0.08)
     tissue_axes(ax, t)
     save(fig, "c_spatial_niches")
 
