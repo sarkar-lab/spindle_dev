@@ -52,7 +52,8 @@ MM = fs.MM
 
 N_LAYERS = 6          # DAG layers drawn in E
 N_LAYERED = 6         # largest nodes per layer in e_dag_layered
-N_SEARCH = 4          # largest nodes per layer in g_search_paths (plus the path node)
+G_LAYERS = 5          # DAG layers drawn in g_search_paths
+G_COVER, G_MIN, G_MAX = 0.3, 2, 6  # per layer: largest nodes holding 30% of its tiles, 2-6 of them (+ path node)
 N_B_GENES = 40        # genes shown in B and the tile glyphs
 K = 10                # retrieved tiles shown in H
 VLIM = 0.5            # correlation colour limits (B, D, glyphs)
@@ -512,30 +513,52 @@ def glyphs(R40, d):
 
 
 # ---------------------------------------------------------------- G: all-niche search
+def snake(a, b):
+    """S-shaped cubic Bezier from a to b, leaving and entering horizontally."""
+    xm = (a[0] + b[0]) / 2
+    return Path([a, (xm, a[1]), (xm, b[1]), b], [Path.MOVETO] + [Path.CURVE4] * 3)
+
+
 def panel_g_paths(d, q, W=50.0, H=38.0):
+    """Each niche's DAG, first G_LAYERS layers: per layer the largest nodes holding G_COVER of its tiles
+    (G_MIN..G_MAX of them, plus the path node), spread and centred in the strip; edges as S-curves."""
     paths = d["query_paths"].query("query_idx == @q and kind == 'best'")
     nodes_all, edges_all = d["dag_nodes"], d["dag_edges"]
+    layers = list(range(G_LAYERS))
+    shown = {}
+    for j in d["niches"]:
+        p = paths[(paths.niche == j) & (paths.layer < G_LAYERS)].sort_values("layer")
+        nodes = nodes_all[(nodes_all.niche == j) & (nodes_all.layer < G_LAYERS)]
+        keep = set(p.node)
+        for l in layers:
+            nl = nodes[nodes.layer == l].sort_values("n_tiles", ascending=False)
+            n = int(np.searchsorted(nl.n_tiles.cumsum() / nl.n_tiles.sum(), G_COVER) + 1)
+            keep |= set(nl.node[:int(np.clip(n, G_MIN, G_MAX))])
+        e = edges_all[(edges_all.niche == j) & edges_all.src.isin(keep) & edges_all.dst.isin(keep)]
+        order, pos = ordered_layers(nodes[nodes.node.isin(keep)], e, layers)
+        shown[j] = p, e, order, pos
+    rows = max(len(o[l]) for _, _, o, _ in shown.values() for l in layers)
     fig = part(W, H)
     strip = (H - 1.0) / len(d["niches"])
-    L_max = nodes_all.layer.max() + 1
     for i, j in enumerate(d["niches"]):
-        p = paths[paths.niche == j].sort_values("layer")
-        nodes, edges = nodes_all[nodes_all.niche == j], edges_all[edges_all.niche == j]
-        layers = sorted(nodes.layer.unique())
-        keep = top_nodes(nodes, N_SEARCH, force=p.node)
-        nk, ek = nodes[nodes.node.isin(keep)], edges[edges.src.isin(keep) & edges.dst.isin(keep)]
-        order, pos = ordered_layers(nk, ek, layers)
-        ax = ax_mm(fig, 9.0, H - (i + 1) * strip, (W - 10.0) * len(layers) / L_max, strip - 1.2)
-        xy = {v: (l, pos[v]) for l in layers for v in order[l]}
-        ax.add_collection(LineCollection([[xy[r.src], xy[r.dst]] for r in ek.itertuples()],
-                                         colors=d["colors"][j], alpha=0.45, lw=0.3, zorder=1))
+        p, e, order, pos = shown[j]
+        ax = ax_mm(fig, 9.0, H - (i + 1) * strip, W - 10.0, strip - 1.2)
+        xy = {}
+        for l in layers:  # height set by node count, centred, alternate layers nudged so rows rarely align
+            n = len(order[l])
+            span = min(rows - 1.6, 1.5 * (n - 1))
+            y0 = (rows - 1 - span) / 2 + (0.3 if l % 2 else -0.3)
+            xy.update({v: (l, y0 + (span * pos[v] / (n - 1) if n > 1 else 0)) for v in order[l]})
+        ax.add_collection(PatchCollection([PathPatch(snake(xy[r.src], xy[r.dst])) for r in e.itertuples()],
+                                          facecolor="none", edgecolor=d["colors"][j], alpha=0.45, lw=0.3, zorder=1))
         pts = np.array(list(xy.values()))
         ax.scatter(pts[:, 0], pts[:, 1], s=3.5, c=d["colors"][j], lw=0, zorder=2)
+        for a, b in zip(p.node[:-1], p.node[1:]):
+            ax.add_patch(PathPatch(snake(xy[a], xy[b]), fc="none", ec=Q, lw=1.0, capstyle="round", zorder=3))
         pp = np.array([xy[v] for v in p.node])
-        ax.plot(pp[:, 0], pp[:, 1], color=Q, lw=1.0, zorder=3, solid_capstyle="round")
         ax.scatter(pp[:, 0], pp[:, 1], s=5, c=Q, lw=0, zorder=4)
-        ax.set_xlim(-0.5, len(layers) - 0.5)
-        ax.set_ylim(N_SEARCH + 0.5, -0.5)
+        ax.set_xlim(-0.3, G_LAYERS - 0.7)
+        ax.set_ylim(rows - 0.5, -0.5)
         ax.set_axis_off()
         yc = (H - (i + 0.5) * strip - 0.6) / H
         fig.add_artist(Line2D([0.3 / W, 1.6 / W], [yc] * 2, color=d["colors"][j], lw=2.2, solid_capstyle="butt"))
