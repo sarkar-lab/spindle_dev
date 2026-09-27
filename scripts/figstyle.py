@@ -373,13 +373,14 @@ def png_path(pdf):
     return png
 
 
-def pdf_to_png(pdf):
-    """Rasterise a one-page PDF (e.g. one assembled with pypdf) to its PNG twin via pdftoppm."""
-    import subprocess
-    png = png_path(pdf)
-    subprocess.run(["pdftoppm", "-png", "-r", str(PNG_DPI), "-singlefile", str(pdf), str(png.with_suffix(""))],
-                   check=True)
-    return png
+def render_png(fig):
+    """The figure drawn straight to PNG at PNG_DPI, as an RGBA PIL image (for compositing)."""
+    import io
+    from PIL import Image
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=PNG_DPI)
+    buf.seek(0)
+    return Image.open(buf).convert("RGBA")
 
 
 def _save_panels(fig, name):
