@@ -1,0 +1,1106 @@
+dataset,module,module_size,library,background,term,overlap,set_size,p,fdr,genes,rank_in_test
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Mesenchymal Stem Cell Differentiation (GO:2000739),2,7,1.2570489476168942e-05,0.0041608320166119,PDGFRA;LTBP2,1
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cellular Response To Growth Factor Stimulus (GO:0090287),2,19,0.00010179008516647866,0.01138864748115,SFRP4;FSTL3,2
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Osteoclast Differentiation (GO:0045671),2,21,0.0001248889732037253,0.01138864748115,FSTL3;FBN1,3
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Nuclear Division (GO:0051785),2,26,0.0001928308312214584,0.01138864748115,CD28;IGF1,4
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Hematopoietic Progenitor Cell Differentiation (GO:0002244),2,28,0.00022406816820398208,0.01138864748115,PLD4;FSTL3,5
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Fibroblast Proliferation (GO:0048146),2,28,0.00022406816820398208,0.01138864748115,PDGFRA;IGF1,6
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Myeloid Leukocyte Differentiation (GO:0002762),2,30,0.00025761600687002403,0.01138864748115,FSTL3;FBN1,7
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0090092),2,31,0.000275254319786104,0.01138864748115,SFRP4;FSTL3,8
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Inositol Lipid-Mediated Signaling (GO:0048017),2,33,0.00031225565053905703,0.0114840689253808,PDGFRA;IGF1,9
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Mitotic Nuclear Division (GO:0045840),2,35,0.0003515511542246668,0.0116363432048364,CD28;IGF1,10
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Osteoclast Differentiation (GO:0045670),2,42,0.0005070581642096471,0.0131595451409251,FSTL3;FBN1,11
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of BMP Signaling Pathway (GO:0030514),2,43,0.0005315449008354333,0.0131595451409251,FSTL3;FBN1,12
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Skeletal System Morphogenesis (GO:0048705),2,43,0.0005315449008354333,0.0131595451409251,PDGFRA;SFRP4,13
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Organ Morphogenesis (GO:0048562),2,44,0.000556597075446985,0.0131595451409251,PDGFRA;FBN1,14
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Fibroblast Proliferation (GO:0048145),2,46,0.0006083945147130895,0.0134252389580021,PDGFRA;IGF1,15
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of ERK1 And ERK2 Cascade (GO:0070372),3,244,0.0008930526774887829,0.0175436751902656,PDGFRA;FBLN1;IGF1,16
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Mitotic Nuclear Division (GO:0007088),2,56,0.0009010346774456688,0.0175436751902656,CD28;IGF1,17
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Phosphatidylinositol-Mediated Signaling (GO:0048015),2,62,0.0011033108979298,0.0202886615119317,PDGFRA;IGF1,18
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of T Cell Proliferation (GO:0042102),2,65,0.0012118881637081,0.0211123674835468,CD28;IGF1,19
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014068),2,69,0.0013643245507822,0.0225795713154461,PDGFRA;IGF1,20
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of BMP Signaling Pathway (GO:0030510),2,75,0.0016093054383472,0.0253657190520443,SFRP4;FSTL3,21
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Wound Healing (GO:0042060),2,80,0.0018283141997896,0.0275078181877439,PDGFRA;IGF1,22
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014066),2,90,0.0023064446828637,0.0331927473925174,PDGFRA;IGF1,23
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Macromolecule Metabolic Process (GO:0010604),3,364,0.0028075001183164,0.0383084656701819,SFRP4;CD28;IGF1,24
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Hemopoiesis (GO:0030097),2,101,0.0028933886457841,0.0383084656701819,PLD4;FSTL3,25
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Cycle Process (GO:0090068),2,118,0.0039238767805382,0.048962812722408,CD28;IGF1,26
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Keratinocyte Apoptotic Process (GO:1902172),1,5,0.0039939454486556,0.048962812722408,SFRP4,27
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Macromolecule Biosynthetic Process (GO:0010557),2,122,0.0041877808212313,0.0495055518509853,CD28;IGF1,28
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Maintenance Of Protein Location In Extracellular Region (GO:0071694),1,6,0.0047909422750142,0.0495563091571788,FBN1,29
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Vascular Associated Smooth Muscle Cell Apoptotic Process (GO:1905459),1,6,0.0047909422750142,0.0495563091571788,IGF1,30
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Smooth Muscle Cell Apoptotic Process (GO:0034392),1,6,0.0047909422750142,0.0495563091571788,IGF1,31
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Bleb Assembly (GO:0032060),1,6,0.0047909422750142,0.0495563091571788,PMP22,32
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0043568),1,7,0.0055873417078214,0.0515527238550222,IGF1,33
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Gene Expression (GO:0010628),3,480,0.0060950700590914,0.0515527238550222,SFRP4;CD28;IGF1,34
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Skeletal System Development (GO:0001501),2,149,0.0061777372361864,0.0515527238550222,IGF1;FBN1,35
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Digestive Tract Morphogenesis (GO:0048557),1,8,0.0063831440708516,0.0515527238550222,PDGFRA,36
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Muscle Cell Apoptotic Process (GO:0010656),1,9,0.007178349711373,0.0515527238550222,IGF1,37
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Myelin Assembly (GO:0032288),1,9,0.007178349711373,0.0515527238550222,PMP22,38
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Amine Metabolic Process (GO:0009308),1,9,0.007178349711373,0.0515527238550222,INMT,39
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Eye Morphogenesis (GO:0048048),1,9,0.007178349711373,0.0515527238550222,FBN1,40
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Sequestering Of Extracellular Ligand From Receptor (GO:0035581),1,9,0.007178349711373,0.0515527238550222,FBN1,41
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Epidermis Development (GO:0045684),1,9,0.007178349711373,0.0515527238550222,SFRP4,42
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cytokine Production (GO:0001817),2,167,0.0077013980283088,0.0515527238550222,CD28;PLD4,43
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Smooth Muscle Cell Apoptotic Process (GO:0034391),1,10,0.0079729589968486,0.0515527238550222,IGF1,44
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Thyroid Hormone Generation (GO:0006590),1,10,0.0079729589968486,0.0515527238550222,CTSK,45
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Glycoprotein Biosynthetic Process (GO:0010559),1,10,0.0079729589968486,0.0515527238550222,IGF1,46
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0048009),1,10,0.0079729589968486,0.0515527238550222,IGF1,47
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Activin Receptor Signaling Pathway (GO:0032926),1,10,0.0079729589968486,0.0515527238550222,FSTL3,48
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cellular Biosynthetic Process (GO:0031328),2,174,0.0083354025976742,0.0515527238550222,CD28;IGF1,49
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phospholipase C Activity (GO:1900274),1,11,0.0087669723009575,0.0515527238550222,PDGFRA,50
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of ERK1 And ERK2 Cascade (GO:0070374),2,179,0.0088022673396748,0.0515527238550222,PDGFRA;IGF1,51
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Macromolecule Metabolic Process (GO:0010605),2,186,0.0094752961605087,0.0515527238550222,CD28;IGF1,52
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Phosphate Ion Homeostasis (GO:0055062),1,12,0.0095603900128118,0.0515527238550222,SFRP4,53
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Locomotion (GO:0040013),1,12,0.0095603900128118,0.0515527238550222,FBLN1,54
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Substrate Adhesion-Dependent Cell Spreading (GO:1900025),1,12,0.0095603900128118,0.0515527238550222,FBLN1,55
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Glycogen Biosynthetic Process (GO:0045725),1,13,0.0103532125188836,0.0515527238550222,IGF1,56
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Glycoprotein Biosynthetic Process (GO:0010560),1,13,0.0103532125188836,0.0515527238550222,IGF1,57
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Neuroinflammatory Response (GO:0150079),1,13,0.0103532125188836,0.0515527238550222,IGF1,58
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Activation (GO:0050866),1,13,0.0103532125188836,0.0515527238550222,PDGFRA,59
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Glycogen Metabolic Process (GO:0070875),1,14,0.011145440218903,0.0515527238550222,IGF1,60
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Activation Cascade (GO:0072376),1,14,0.011145440218903,0.0515527238550222,FBLN1,61
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Myotube Cell Development (GO:0014904),1,14,0.011145440218903,0.0515527238550222,IGF1,62
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Non-Canonical Wnt Signaling Pathway (GO:2000050),1,14,0.011145440218903,0.0515527238550222,SFRP4,63
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Cranial Skeleton Morphogenesis (GO:0048701),1,14,0.011145440218903,0.0515527238550222,PDGFRA,64
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,"Blood Coagulation, Fibrin Clot Formation (GO:0072378)",1,14,0.011145440218903,0.0515527238550222,FBLN1,65
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Bone Morphogenesis (GO:0060349),1,14,0.011145440218903,0.0515527238550222,SFRP4,66
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Primary Alcohol Metabolic Process (GO:0034308),1,14,0.011145440218903,0.0515527238550222,IGF1,67
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cardiac Myofibril Assembly (GO:0055003),1,15,0.0119370735063595,0.0515527238550222,PDGFRA,68
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Platelet-Derived Growth Factor Receptor Signaling Pathway (GO:0048008),1,15,0.0119370735063595,0.0515527238550222,PDGFRA,69
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Platelet Activation (GO:0010544),1,15,0.0119370735063595,0.0515527238550222,PDGFRA,70
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Activin Receptor Signaling Pathway (GO:0032925),1,15,0.0119370735063595,0.0515527238550222,FSTL3,71
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Digestive Tract Morphogenesis (GO:0048546),1,15,0.0119370735063595,0.0515527238550222,PDGFRA,72
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Stem Cell Proliferation (GO:0072091),1,16,0.0127281127836324,0.0515527238550222,FBLN1,73
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Muscle Hypertrophy (GO:0014742),1,16,0.0127281127836324,0.0515527238550222,IGF1,74
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Vasculature Development (GO:0001944),1,16,0.0127281127836324,0.0515527238550222,PDGFRA,75
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Release Of Cytochrome C From Mitochondria (GO:0090201),1,16,0.0127281127836324,0.0515527238550222,IGF1,76
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cardiac Muscle Tissue Growth (GO:0055023),1,16,0.0127281127836324,0.0515527238550222,IGF1,77
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Smooth Muscle Cell Migration (GO:0014911),1,16,0.0127281127836324,0.0515527238550222,IGF1,78
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Stem Cell Proliferation (GO:2000648),1,16,0.0127281127836324,0.0515527238550222,LTBP2,79
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Amyloid-Beta Formation (GO:1902430),1,16,0.0127281127836324,0.0515527238550222,IGF1,80
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Motility (GO:2000147),2,221,0.0131722346470274,0.0515527238550222,PDGFRA;IGF1,81
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cardiac Muscle Hypertrophy (GO:0010613),1,17,0.0135185584535393,0.0515527238550222,IGF1,82
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Small GTPase Mediated Signal Transduction (GO:0051057),1,17,0.0135185584535393,0.0515527238550222,IGF1,83
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Stem Cell Differentiation (GO:2000738),1,17,0.0135185584535393,0.0515527238550222,LTBP2,84
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Glycolytic Process (GO:0045821),1,18,0.0143084109196949,0.0515527238550222,IGF1,85
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Epidermal Cell Differentiation (GO:0045604),1,18,0.0143084109196949,0.0515527238550222,SFRP4,86
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Amyloid Precursor Protein Catabolic Process (GO:1902992),1,18,0.0143084109196949,0.0515527238550222,IGF1,87
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Epidermal Cell Differentiation (GO:0045606),1,18,0.0143084109196949,0.0515527238550222,SFRP4,88
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Eye Morphogenesis (GO:0048592),1,19,0.0150976705893844,0.0515527238550222,FBN1,89
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Smooth Muscle Cell Migration (GO:0014910),1,19,0.0150976705893844,0.0515527238550222,IGF1,90
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0043567),1,19,0.0150976705893844,0.0515527238550222,IGF1,91
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Activated T Cell Proliferation (GO:0042104),1,19,0.0150976705893844,0.0515527238550222,IGF1,92
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070886),1,19,0.0150976705893844,0.0515527238550222,IGF1,93
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Calcineurin-Mediated Signaling (GO:0106058),1,19,0.0150976705893844,0.0515527238550222,IGF1,94
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Neuroinflammatory Response (GO:0150077),1,19,0.0150976705893844,0.0515527238550222,IGF1,95
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Digestive Tract Development (GO:0048566),1,19,0.0150976705893844,0.0515527238550222,PDGFRA,96
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Peripheral Nervous System Development (GO:0007422),1,20,0.0158863378646896,0.0515527238550222,PMP22,97
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phospholipase Activity (GO:0010518),1,20,0.0158863378646896,0.0515527238550222,PDGFRA,98
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Reproductive Process (GO:2000242),1,20,0.0158863378646896,0.0515527238550222,IGF1,99
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Myoblast Differentiation (GO:0045445),1,20,0.0158863378646896,0.0515527238550222,IGF1,100
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904707),1,20,0.0158863378646896,0.0515527238550222,IGF1,101
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Epithelial Cell Differentiation (GO:0030858),1,20,0.0158863378646896,0.0515527238550222,SFRP4,102
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Transcription Regulatory Region DNA Binding (GO:2000679),1,21,0.0166744131586755,0.0529087554361326,IGF1,103
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Apoptotic Process (GO:0042981),3,705,0.0173335339193612,0.0529087554361326,SFRP4;CD28;IGF1,104
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Receptor Internalization (GO:0002092),1,22,0.0174618968734111,0.0529087554361326,SFRP4,105
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Development (GO:0010721),1,22,0.0174618968734111,0.0529087554361326,IGF1,106
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cardiac Muscle Hypertrophy (GO:0010611),1,23,0.0182487894189074,0.0529087554361326,IGF1,107
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Epithelial Cell Apoptotic Process (GO:1904037),1,23,0.0182487894189074,0.0529087554361326,SFRP4,108
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Protein Phosphorylation (GO:0001932),2,265,0.0185704547149639,0.0529087554361326,FBLN1;IGF1,109
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Signal Transduction (GO:0009967),2,266,0.0187024595943352,0.0529087554361326,CTSK;IGF1,110
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Signal Transduction (GO:0009968),2,267,0.0188348686027473,0.0529087554361326,SFRP4;FSTL3,111
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Kinase B Signaling (GO:0043491),1,24,0.0190350912060612,0.0529087554361326,IGF1,112
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,ERK1 And ERK2 Cascade (GO:0070371),1,24,0.0190350912060612,0.0529087554361326,IGF1,113
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Apoptotic Process (GO:0043065),2,270,0.0192345139810082,0.0529087554361326,SFRP4;CTSK,114
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Migration (GO:0030335),2,272,0.0195029530906708,0.0529087554361326,PDGFRA;IGF1,115
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Glucose Import (GO:0046326),1,25,0.0198208026407264,0.0529087554361326,IGF1,116
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Interleukin-2 Production (GO:0032743),1,25,0.0198208026407264,0.0529087554361326,CD28,117
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Proteoglycan Metabolic Process (GO:0006029),1,25,0.0198208026407264,0.0529087554361326,IGF1,118
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Glycogen Biosynthetic Process (GO:0005979),1,25,0.0198208026407264,0.0529087554361326,IGF1,119
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Peptidase Activity (GO:0010952),1,25,0.0198208026407264,0.0529087554361326,CTSK,120
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Activation Of Protein Kinase B Activity (GO:0032148),1,25,0.0198208026407264,0.0529087554361326,IGF1,121
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Myotube Differentiation (GO:0014902),1,25,0.0198208026407264,0.0529087554361326,IGF1,122
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Actin Cytoskeleton Reorganization (GO:2000249),1,25,0.0198208026407264,0.0529087554361326,PDGFRA,123
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Striated Muscle Cell Differentiation (GO:0051155),1,25,0.0198208026407264,0.0529087554361326,IGF1,124
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Camera-Type Eye Development (GO:0043010),1,26,0.0206059241328129,0.0532856319371959,FBN1,125
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cardiac Muscle Cell Development (GO:0055013),1,26,0.0206059241328129,0.0532856319371959,PDGFRA,126
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Interleukin-1 Beta Production (GO:0032691),1,26,0.0206059241328129,0.0532856319371959,IGF1,127
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043552),1,26,0.0206059241328129,0.0532856319371959,PDGFRA,128
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Transmembrane Receptor Protein Tyrosine Kinase Signaling Pathway (GO:0007169),2,284,0.02114703183746,0.0536381891442781,PDGFRA;IGF1,129
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Immune System Process (GO:0002684),1,27,0.0213904560937906,0.0536381891442781,C7,130
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Transcription Regulatory Region DNA Binding (GO:2000677),1,27,0.0213904560937906,0.0536381891442781,IGF1,131
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Peptidase Activity (GO:0052547),1,27,0.0213904560937906,0.0536381891442781,CTSK,132
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Population Proliferation (GO:0042127),3,766,0.0215867969800203,0.0537235323337347,PDGFRA;SFRP4;IGF1,133
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Chemotaxis (GO:0050920),1,28,0.0221743989287616,0.0543683410771858,PDGFRA,134
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Platelet Activation (GO:0010543),1,28,0.0221743989287616,0.0543683410771858,PDGFRA,135
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Viral Genome Replication (GO:0045070),1,29,0.0229577530466617,0.0557312889658673,CD28,136
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Interleukin-10 Production (GO:0032733),1,30,0.0237405188646141,0.0557312889658673,CD28,137
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Interleukin-1 Production (GO:0032692),1,30,0.0237405188646141,0.0557312889658673,IGF1,138
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Lipid Kinase Activity (GO:0090218),1,30,0.0237405188646141,0.0557312889658673,PDGFRA,139
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Blood Coagulation (GO:0030195),1,30,0.0237405188646141,0.0557312889658673,PDGFRA,140
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Skeletal System Morphogenesis (GO:0048704),1,30,0.0237405188646141,0.0557312889658673,PDGFRA,141
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Glucose Transmembrane Transport (GO:0010828),1,31,0.0245226967845343,0.0571620608146538,IGF1,142
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of MAPK Cascade (GO:0043410),2,310,0.0249017151806129,0.0573679388221601,PDGFRA;IGF1,143
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Phosphatidylinositol 3-Kinase Signaling (GO:0014065),1,32,0.0253042872146084,0.0573679388221601,IGF1,144
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Proteoglycan Biosynthetic Process (GO:0030166),1,32,0.0253042872146084,0.0573679388221601,IGF1,145
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Muscle Cell Development (GO:0055001),1,32,0.0253042872146084,0.0573679388221601,IGF1,146
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of DNA Binding (GO:0043388),1,33,0.0260852905726611,0.0573712845346002,IGF1,147
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Small Molecule Metabolic Process (GO:0062013),1,33,0.0260852905726611,0.0573712845346002,IGF1,148
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Activated T Cell Proliferation (GO:0046006),1,33,0.0260852905726611,0.0573712845346002,IGF1,149
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Amyloid-Beta Formation (GO:1902003),1,33,0.0260852905726611,0.0573712845346002,IGF1,150
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Amyloid-Beta (GO:1904646),1,34,0.0268657072594049,0.0573712845346002,IGF1,151
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Carbohydrate Metabolic Process (GO:0045913),1,34,0.0268657072594049,0.0573712845346002,IGF1,152
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070884),1,34,0.0268657072594049,0.0573712845346002,IGF1,153
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Embryonic Skeletal System Development (GO:0048706),1,34,0.0268657072594049,0.0573712845346002,PDGFRA,154
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043551),1,34,0.0268657072594049,0.0573712845346002,PDGFRA,155
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Platelet Aggregation (GO:0070527),1,35,0.0276455376880297,0.0586581600944734,PDGFRA,156
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Proteolysis (GO:0006508),2,330,0.0279636513245976,0.0588037683148052,CTSK;PCOLCE,157
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Receptor Internalization (GO:0002090),1,36,0.0284247822669753,0.0588037683148052,SFRP4,158
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Glucose Import (GO:0046324),1,36,0.0284247822669753,0.0588037683148052,IGF1,159
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phospholipase C Activity (GO:0010863),1,36,0.0284247822669753,0.0588037683148052,PDGFRA,160
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Gene Expression (GO:0010629),2,336,0.0289108596348062,0.0593026938888249,CD28;IGF1,161
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Mitochondrion Disassembly (GO:0061726),1,37,0.0292034414014455,0.0593026938888249,CTSK,162
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904705),1,37,0.0292034414014455,0.0593026938888249,IGF1,163
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Mitochondrion Organization (GO:0010823),1,39,0.0307590049844483,0.0613327147581469,IGF1,164
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Transport (GO:0051051),1,39,0.0307590049844483,0.0613327147581469,SFRP4,165
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell-Substrate Adhesion (GO:0010812),1,39,0.0307590049844483,0.0613327147581469,FBLN1,166
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Glycolytic Process (GO:0006110),1,40,0.0315359102498904,0.0625053071419985,IGF1,167
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Release Of Cytochrome C From Mitochondria (GO:0090199),1,41,0.0323122317033933,0.0629138158460189,IGF1,168
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Non-Canonical Wnt Signaling Pathway (GO:0035567),1,41,0.0323122317033933,0.0629138158460189,SFRP4,169
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Viral Process (GO:0048524),1,41,0.0323122317033933,0.0629138158460189,CD28,170
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Response To Amyloid-Beta (GO:1904645),1,43,0.0338631248228564,0.0633837959479636,IGF1,171
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Receptor-Mediated Endocytosis (GO:0048260),1,43,0.0338631248228564,0.0633837959479636,SFRP4,172
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell-Cell Adhesion (GO:0022407),1,43,0.0338631248228564,0.0633837959479636,FSTL3,173
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Extracellular Matrix Disassembly (GO:0022617),1,44,0.0346376973079083,0.0633837959479636,CTSK,174
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Osteoblast Differentiation (GO:0045669),1,44,0.0346376973079083,0.0633837959479636,IGF1,175
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Bone Development (GO:0060348),1,44,0.0346376973079083,0.0633837959479636,SFRP4,176
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Establishment Of Protein Localization To Extracellular Region (GO:0035592),1,45,0.0354116876094494,0.0633837959479636,LTBP2,177
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Protein Modification Process (GO:0031399),1,45,0.0354116876094494,0.0633837959479636,IGF1,178
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Stem Cell Differentiation (GO:2000736),1,45,0.0354116876094494,0.0633837959479636,PDGFRA,179
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Apoptotic Signaling Pathway (GO:2001233),1,45,0.0354116876094494,0.0633837959479636,CTSK,180
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Population Proliferation (GO:0008285),2,379,0.0360713426780201,0.0633837959479636,SFRP4;FBLN1,181
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cytokine Production Involved In Inflammatory Response (GO:1900015),1,46,0.0361850961442075,0.0633837959479636,PLD4,182
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Component Disassembly (GO:0022411),1,46,0.0361850961442075,0.0633837959479636,CTSK,183
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,T Cell Differentiation (GO:0030217),1,46,0.0361850961442075,0.0633837959479636,CD28,184
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Interleukin-10 Production (GO:0032653),1,46,0.0361850961442075,0.0633837959479636,CD28,185
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Myofibril Assembly (GO:0030239),1,46,0.0361850961442075,0.0633837959479636,PDGFRA,186
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Homotypic Cell-Cell Adhesion (GO:0034109),1,46,0.0361850961442075,0.0633837959479636,PDGFRA,187
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell-Cell Adhesion (GO:0022409),1,46,0.0361850961442075,0.0633837959479636,FSTL3,188
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Programmed Cell Death (GO:0043069),2,381,0.0364198356697853,0.0633837959479636,CD28;IGF1,189
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Epithelial To Mesenchymal Transition (GO:0001837),1,47,0.0369579233170905,0.0633837959479636,IGF1,190
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Interleukin-2 Production (GO:0032663),1,47,0.0369579233170905,0.0633837959479636,CD28,191
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Tumor Necrosis Factor Production (GO:0032720),1,47,0.0369579233170905,0.0633837959479636,IGF1,192
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Smooth Muscle Cell Proliferation (GO:0048661),1,47,0.0369579233170905,0.0633837959479636,IGF1,193
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of DNA Binding (GO:0051101),1,48,0.0377301695361429,0.0637177863084863,IGF1,194
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Myelination (GO:0042552),1,48,0.0377301695361429,0.0637177863084863,PMP22,195
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of ERK1 And ERK2 Cascade (GO:0070373),1,48,0.0377301695361429,0.0637177863084863,FBLN1,196
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Tumor Necrosis Factor Superfamily Cytokine Production (GO:1903556),1,49,0.0385018352066202,0.0643641790575318,IGF1,197
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Autophagy Of Mitochondrion (GO:0000422),1,49,0.0385018352066202,0.0643641790575318,CTSK,198
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cell Chemotaxis (GO:0060326),1,50,0.0392729207344652,0.0653233003171255,PDGFRA,199
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Substrate Adhesion-Dependent Cell Spreading (GO:1900024),1,51,0.0400434265231351,0.0659421600953121,FBLN1,200
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Ras Protein Signal Transduction (GO:0046579),1,51,0.0400434265231351,0.0659421600953121,IGF1,201
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Peptidyl-Tyrosine Modification (GO:0018212),1,54,0.0423514695379364,0.0687173353777302,PDGFRA,202
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Mesenchymal Cell Differentiation (GO:0048762),1,54,0.0423514695379364,0.0687173353777302,IGF1,203
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Smooth Muscle Cell Proliferation (GO:0048660),1,54,0.0423514695379364,0.0687173353777302,IGF1,204
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Tyrosine Phosphorylation Of STAT Protein (GO:0042531),1,55,0.0431196604465476,0.0696224761356452,IGF1,205
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Peptide (GO:1901653),1,56,0.0438872736413355,0.0705179008508838,IGF1,206
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Eye Development (GO:0001654),1,58,0.0454207685297007,0.0722801653044756,FBN1,207
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Muscle Organ Development (GO:0007517),1,58,0.0454207685297007,0.0722801653044756,IGF1,208
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Nervous System Development (GO:0007399),2,433,0.0459366526129324,0.0724539407177084,MAMDC2;PMP22,209
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Migration (GO:0030334),2,434,0.0461280044530782,0.0724539407177084,PDGFRA;IGF1,210
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Proteolysis (GO:0045862),1,59,0.0461866510315301,0.0724539407177084,CTSK,211
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Extrinsic Apoptotic Signaling Pathway (GO:2001236),1,60,0.0469519574385199,0.0733070656233495,IGF1,212
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Apoptotic Signaling Pathway (GO:2001235),1,62,0.048480843602201,0.0753387757386316,CTSK,213
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Canonical Wnt Signaling Pathway (GO:0060070),1,65,0.0507698622569058,0.0781619739862131,SFRP4,214
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Tyrosine Phosphorylation Of STAT Protein (GO:0042509),1,65,0.0507698622569058,0.0781619739862131,IGF1,215
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Response To Reactive Oxygen Species (GO:0000302),1,66,0.0515317205977756,0.0789675903604802,PDGFRA,216
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Peptidyl-Tyrosine Phosphorylation (GO:0018108),1,67,0.0522930056729502,0.0790364606289795,PDGFRA,217
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Secretion (GO:0009306),1,67,0.0522930056729502,0.0790364606289795,LTBP2,218
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Viral Genome Replication (GO:0045069),1,67,0.0522930056729502,0.0790364606289795,CD28,219
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Phagocytosis (GO:0006909),1,69,0.0538138576121539,0.0809653948619225,PLD4,220
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Extrinsic Apoptotic Signaling Pathway (GO:2001237),1,70,0.0545734252963437,0.0813684854643683,IGF1,221
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Transport (GO:0051222),1,70,0.0545734252963437,0.0813684854643683,IGF1,222
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cellular Response To Growth Factor Stimulus (GO:0090288),1,71,0.0553324213162424,0.0817888548458489,FSTL3,223
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Apoptotic Process (GO:0043066),2,482,0.055661359771286,0.0817888548458489,CD28;IGF1,224
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Population Proliferation (GO:0008284),2,483,0.0558670155999338,0.0817888548458489,PDGFRA;IGF1,225
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Transforming Growth Factor Beta Receptor Signaling Pathway (GO:0007179),1,72,0.0560908460725308,0.0817888548458489,LTBP2,226
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Adhesion (GO:0007162),1,72,0.0560908460725308,0.0817888548458489,FBLN1,227
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Reactive Oxygen Species (GO:0034614),1,73,0.0568486999685374,0.0821699549763576,PDGFRA,228
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Secretion By Cell (GO:1903532),1,73,0.0568486999685374,0.0821699549763576,IGF1,229
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Lymphocyte Proliferation (GO:0050671),1,74,0.0576059834084244,0.082659123309045,CD28,230
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Gene Expression (GO:0010468),3,1127,0.057686578502687,0.082659123309045,SFRP4;CD28;IGF1,231
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Phosphorylation (GO:0042326),1,75,0.0583626967999995,0.0829223069605637,FBLN1,232
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Wnt Signaling Pathway (GO:0016055),1,76,0.0591188405269398,0.0829223069605637,SFRP4,233
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Secretion (GO:0050714),1,76,0.0591188405269398,0.0829223069605637,IGF1,234
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Ras Protein Signal Transduction (GO:0046578),1,76,0.0591188405269398,0.0829223069605637,IGF1,235
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Immune Response (GO:0050776),1,77,0.0598744149956941,0.0829223069605637,C7,236
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of T Cell Proliferation (GO:0042129),1,77,0.0598744149956941,0.0829223069605637,CD28,237
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Transforming Growth Factor Beta Receptor Signaling Pathway (GO:0030512),1,77,0.0598744149956941,0.0829223069605637,FBN1,238
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Response To Stimulus (GO:0048584),1,77,0.0598744149956941,0.0829223069605637,C7,239
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Proteolysis Involved In Protein Catabolic Process (GO:0051603),1,78,0.0606294206121001,0.0832711129568678,CTSK,240
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Protein Modification Process (GO:0031400),1,78,0.0606294206121001,0.0832711129568678,FBLN1,241
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Immune Response (GO:0050778),1,80,0.0621377268635967,0.0846402781557634,C7,242
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Glycoprotein Biosynthetic Process (GO:0009101),1,80,0.0621377268635967,0.0846402781557634,IGF1,243
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Activation Of Protein Kinase Activity (GO:0032147),1,81,0.0628910282964444,0.0853152883857504,IGF1,244
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Apoptotic Signaling Pathway (GO:2001234),1,82,0.0636437624710048,0.0856344934061081,IGF1,245
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phosphorylation (GO:0042325),1,82,0.0636437624710048,0.0856344934061081,IGF1,246
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Intracellular Signal Transduction (GO:1902533),2,525,0.0647500889105928,0.0862151191748179,PDGFRA;IGF1,247
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Interleukin-1 Beta Production (GO:0032651),1,84,0.0651475306269686,0.0862151191748179,IGF1,248
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Kinase Activity (GO:0043549),1,85,0.0658985654115678,0.0862151191748179,PDGFRA,249
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Amide Metabolic Process (GO:0034250),1,85,0.0658985654115678,0.0862151191748179,CD28,250
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Canonical Wnt Signaling Pathway (GO:0090263),1,85,0.0658985654115678,0.0862151191748179,SFRP4,251
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Integrin-Mediated Signaling Pathway (GO:0007229),1,85,0.0658985654115678,0.0862151191748179,FBLN1,252
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Osteoblast Differentiation (GO:0045667),1,85,0.0658985654115678,0.0862151191748179,IGF1,253
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cellular Process (GO:0048523),2,537,0.0673732317209755,0.0877974003922949,SFRP4;FBLN1,254
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Adhesion (GO:0045785),1,88,0.0681482773262192,0.0884591364508963,FSTL3,255
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Peptidyl-Tyrosine Phosphorylation (GO:0050730),1,90,0.0696452622180501,0.0899615940424789,IGF1,256
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Epithelial Cell Proliferation (GO:0050678),1,91,0.0703929089335409,0.0899615940424789,IGF1,257
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Binding (GO:0051099),1,91,0.0703929089335409,0.0899615940424789,IGF1,258
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Actin Cytoskeleton Organization (GO:0032956),1,91,0.0703929089335409,0.0899615940424789,PDGFRA,259
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Kinase B Signaling (GO:0051897),1,93,0.0718865129143563,0.0911664205925362,IGF1,260
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Amide Metabolic Process (GO:0034249),1,93,0.0718865129143563,0.0911664205925362,IGF1,261
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,T Cell Receptor Signaling Pathway (GO:0050852),1,95,0.0733778669070871,0.0927025723139153,CD28,262
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Transforming Growth Factor Beta Stimulus (GO:0071560),1,96,0.0741227011346479,0.0932875059907545,LTBP2,263
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Monocarboxylic Acid Metabolic Process (GO:0032787),1,97,0.0748669740700115,0.0938673046105069,IGF1,264
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,MAPK Cascade (GO:0000165),1,98,0.075610686071539,0.0944420267535073,IGF1,265
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Catabolic Process (GO:0030163),1,102,0.0785799328413004,0.0974155721740466,CTSK,266
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Protein Secretion (GO:0050708),1,102,0.0785799328413004,0.0974155721740466,IGF1,267
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Kinase Activity (GO:0033674),1,104,0.0800612009686615,0.0988255860921176,PDGFRA,268
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cellular Process (GO:0048522),2,594,0.0803144491201802,0.0988255860921176,PDGFRA;IGF1,269
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of MAPK Cascade (GO:0043409),1,105,0.0808009975910041,0.0990560377874902,FBLN1,270
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Growth (GO:0030307),1,106,0.0815402364397426,0.0995934253193904,IGF1,271
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of T Cell Activation (GO:0050870),1,107,0.0822789179300537,0.1001261832163521,CD28,272
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Translation (GO:0045727),1,108,0.0830170424171289,0.100654362784138,CD28,273
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Wnt Signaling Pathway (GO:0030177),1,109,0.083754610332196,0.100810094618025,SFRP4,274
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Wnt Signaling Pathway (GO:0030111),1,109,0.083754610332196,0.100810094618025,SFRP4,275
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Inflammatory Response (GO:0050728),1,111,0.0852280779328564,0.1014765963876816,IGF1,276
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,T Cell Activation (GO:0042110),1,111,0.0852280779328564,0.1014765963876816,CD28,277
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0090101),1,111,0.0852280779328564,0.1014765963876816,FSTL3,278
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Small GTPase Mediated Signal Transduction (GO:0007264),1,112,0.0859639784104222,0.1019859385442643,IGF1,279
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Canonical Wnt Signaling Pathway (GO:0090090),1,114,0.0874341146770611,0.1033596141360973,SFRP4,280
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Oxidative Stress (GO:0034599),1,117,0.0896351632087383,0.1055844805056668,PDGFRA,281
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Epithelial Cell Proliferation (GO:0050679),1,123,0.0940223377126054,0.1099695893387717,IGF1,282
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Motility (GO:2000145),1,123,0.0940223377126054,0.1099695893387717,FBLN1,283
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Enzyme-Linked Receptor Protein Signaling Pathway (GO:0007167),1,124,0.094751603581391,0.1104323267092973,PDGFRA,284
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Response To External Stimulus (GO:0032101),1,127,0.0969361006486535,0.112188284317148,PDGFRA,285
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Tumor Necrosis Factor Production (GO:0032680),1,127,0.0969361006486535,0.112188284317148,IGF1,286
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Targeting (GO:0006605),1,129,0.0983896854030089,0.1134738183567803,LTBP2,287
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0007178),1,130,0.0991156549550441,0.1135200061941854,LTBP2,288
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Peptidyl-Tyrosine Phosphorylation (GO:0050731),1,130,0.0991156549550441,0.1135200061941854,IGF1,289
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Circulatory System Development (GO:0072359),1,132,0.1005659503466767,0.114783895050862,FBN1,290
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Motility (GO:2000146),1,133,0.1012902769451659,0.1152133390682128,FBLN1,291
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Antigen Receptor-Mediated Signaling Pathway (GO:0050851),1,134,0.1020140566792619,0.1156392217836839,CD28,292
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Protein Kinase B Signaling (GO:0051896),1,136,0.1034599770464627,0.1168779945473691,IGF1,293
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Wnt Signaling Pathway (GO:0030178),1,140,0.1063452722007835,0.1197288608791134,SFRP4,294
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Transferase Activity (GO:0051347),1,143,0.1085035282753908,0.1217253730347344,PDGFRA,295
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Ras Protein Signal Transduction (GO:0007265),1,144,0.1092218603967254,0.1217253730347344,IGF1,296
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Adhesion (GO:0030155),1,144,0.1092218603967254,0.1217253730347344,FBLN1,297
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cellular Catabolic Process (GO:0031331),1,146,0.1106568970524479,0.122910848739464,IGF1,298
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Protein Phosphorylation (GO:0001933),1,149,0.1128053888245382,0.1244619456697404,FBLN1,299
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of DNA-binding Transcription Factor Activity (GO:0043433),1,149,0.1128053888245382,0.1244619456697404,SFRP4,300
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Autophosphorylation (GO:0046777),1,162,0.1220594146159803,0.133780351781091,PDGFRA,301
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Macromolecule Metabolic Process (GO:0060255),1,162,0.1220594146159803,0.133780351781091,IGF1,302
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Heart Development (GO:0007507),1,171,0.128412953098994,0.1402794966196932,FBN1,303
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Hydrolase Activity (GO:0051345),1,176,0.1319240447424035,0.1431700288843789,CTSK,304
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Extracellular Matrix Organization (GO:0030198),1,176,0.1319240447424035,0.1431700288843789,CTSK,305
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Endocytosis (GO:0006897),1,189,0.1409909273153888,0.1525097939261231,PLD4,306
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Metabolic Process (GO:0051247),1,196,0.1458362449220826,0.1572371240039392,CD28,307
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Anterograde Trans-Synaptic Signaling (GO:0098916),1,199,0.1479049559232169,0.1589498065278727,PMP22,308
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Translation (GO:0006417),1,202,0.1499689691245871,0.160646371457082,CD28,309
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of MAPK Cascade (GO:0043408),1,204,0.1513423729401834,0.1615945982038732,IGF1,310
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Canonical Wnt Signaling Pathway (GO:0060828),1,207,0.1533985785829587,0.1632634389419914,SFRP4,311
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Stabilization (GO:0050821),1,208,0.1540829419243196,0.1634661980030442,IGF1,312
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Apoptotic Process (GO:0006915),1,228,0.1676617753131153,0.1773036665451795,PMP22,313
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphorylation (GO:0042327),1,231,0.1696808869337329,0.1788674317677248,PDGFRA,314
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944),2,938,0.1712151640739246,0.1799118073284732,IGF1;FSTL3,315
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Programmed Cell Death (GO:0043068),1,245,0.1790428408476454,0.1875417098752235,SFRP4,316
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Chemical Synaptic Transmission (GO:0007268),1,273,0.1974706380757586,0.2061917388109656,PMP22,317
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Plasma Membrane Bounded Cell Projection Assembly (GO:0120031),1,275,0.1987719580714357,0.2068978557284441,PMP22,318
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Differentiation (GO:0045597),1,283,0.2039574817776819,0.2116298635373439,IGF1,319
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Transport (GO:0015031),1,313,0.2231243177344509,0.2307942161565727,LTBP2,320
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Supramolecular Fiber Organization (GO:0097435),1,316,0.2250170171933034,0.2320268931183284,LTBP2,321
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cytokine Production (GO:0001819),1,320,0.2275338923697281,0.2338935353241615,CD28,322
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Intracellular Protein Transport (GO:0006886),1,325,0.2306692105257262,0.236382379826673,LTBP2,323
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of DNA-templated Transcription (GO:0045893),2,1243,0.2619759747761888,0.2674245010373157,IGF1;FSTL3,324
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Phosphorylation (GO:0001934),1,377,0.2625769270003855,0.2674245010373157,IGF1,325
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Multicellular Organismal Process (GO:0051240),1,387,0.2685689983178705,0.2726881547337888,CD28,326
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Oxygen-Containing Compound (GO:1901701),1,406,0.2798283819632886,0.2832513591126866,PDGFRA,327
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Protein Phosphorylation (GO:0006468),1,500,0.3331819510073031,0.3362293469006626,PDGFRA,328
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Nucleic Acid-Templated Transcription (GO:1903508),1,557,0.3637054888788485,0.3659164644951333,IGF1,329
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of DNA-templated Transcription (GO:0006355),2,1922,0.4636934577205547,0.4650985894106169,IGF1;FSTL3,330
+lung_cancer,0,16,GO_Biological_Process_2023,genome_enrichr,Regulation Of Transcription By RNA Polymerase II (GO:0006357),2,2028,0.4929987626295808,0.4929987626295808,IGF1;FSTL3,331
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cellular Response To Growth Factor Stimulus (GO:0090287),2,2,0.0016930978046165136,0.13968056888086236,FSTL3;SFRP4,1
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Mesenchymal Stem Cell Differentiation (GO:2000739),2,2,0.0016930978046165136,0.13968056888086236,PDGFRA;LTBP2,2
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0090092),2,2,0.0016930978046165136,0.13968056888086236,FSTL3;SFRP4,3
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Skeletal System Morphogenesis (GO:0048705),2,2,0.0016930978046165136,0.13968056888086236,PDGFRA;SFRP4,4
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of BMP Signaling Pathway (GO:0030514),2,3,0.004952875444438174,0.16672982190223573,FSTL3;FBN1,5
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Osteoclast Differentiation (GO:0045671),2,3,0.004952875444438174,0.16672982190223573,FSTL3;FBN1,6
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Fibroblast Proliferation (GO:0048146),2,3,0.004952875444438174,0.16672982190223573,PDGFRA;IGF1,7
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Fibroblast Proliferation (GO:0048145),2,3,0.004952875444438174,0.16672982190223573,PDGFRA;IGF1,8
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Osteoclast Differentiation (GO:0045670),2,3,0.004952875444438174,0.16672982190223573,FSTL3;FBN1,9
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Inositol Lipid-Mediated Signaling (GO:0048017),2,4,0.00965950626129298,0.16672982190223573,IGF1;PDGFRA,10
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Myeloid Leukocyte Differentiation (GO:0002762),2,4,0.00965950626129298,0.16672982190223573,FSTL3;FBN1,11
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of BMP Signaling Pathway (GO:0030510),2,4,0.00965950626129298,0.16672982190223573,FSTL3;SFRP4,12
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Organ Morphogenesis (GO:0048562),2,5,0.01569947217103694,0.16672982190223573,PDGFRA;FBN1,13
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Hematopoietic Progenitor Cell Differentiation (GO:0002244),2,5,0.01569947217103694,0.16672982190223573,FSTL3;PLD4,14
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Cycle Process (GO:0090068),2,5,0.01569947217103694,0.16672982190223573,IGF1;CD28,15
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Nuclear Division (GO:0051785),2,5,0.01569947217103694,0.16672982190223573,IGF1;CD28,16
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Wound Healing (GO:0042060),2,5,0.01569947217103694,0.16672982190223573,IGF1;PDGFRA,17
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Macromolecule Biosynthetic Process (GO:0010557),2,6,0.02296529137697895,0.16672982190223573,IGF1;CD28,18
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Mitotic Nuclear Division (GO:0045840),2,6,0.02296529137697895,0.16672982190223573,IGF1;CD28,19
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Mitotic Nuclear Division (GO:0007088),2,6,0.02296529137697895,0.16672982190223573,IGF1;CD28,20
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Skeletal System Development (GO:0001501),2,6,0.02296529137697895,0.16672982190223573,IGF1;FBN1,21
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of ERK1 And ERK2 Cascade (GO:0070372),3,17,0.029676236563913504,0.16672982190223573,IGF1;FBLN1;PDGFRA,22
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Phosphatidylinositol-Mediated Signaling (GO:0048015),2,7,0.03135525619591576,0.16672982190223573,IGF1;PDGFRA,23
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014068),2,8,0.040773180668343914,0.16672982190223573,IGF1;PDGFRA,24
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Amine Metabolic Process (GO:0009308),1,1,0.04244031830238727,0.16672982190223573,INMT,25
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Autophagy Of Mitochondrion (GO:0000422),1,1,0.04244031830238727,0.16672982190223573,CTSK,26
+lung_cancer,0,16,GO_Biological_Process_2023,panel,"Blood Coagulation, Fibrin Clot Formation (GO:0072378)",1,1,0.04244031830238727,0.16672982190223573,FBLN1,27
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Bone Morphogenesis (GO:0060349),1,1,0.04244031830238727,0.16672982190223573,SFRP4,28
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Camera-Type Eye Development (GO:0043010),1,1,0.04244031830238727,0.16672982190223573,FBN1,29
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Cranial Skeleton Morphogenesis (GO:0048701),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,30
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Digestive Tract Development (GO:0048566),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,31
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Digestive Tract Morphogenesis (GO:0048557),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,32
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Skeletal System Development (GO:0048706),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,33
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Skeletal System Morphogenesis (GO:0048704),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,34
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Glycoprotein Biosynthetic Process (GO:0009101),1,1,0.04244031830238727,0.16672982190223573,IGF1,35
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Homotypic Cell-Cell Adhesion (GO:0034109),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,36
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0048009),1,1,0.04244031830238727,0.16672982190223573,IGF1,37
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Intracellular Protein Transport (GO:0006886),1,1,0.04244031830238727,0.16672982190223573,LTBP2,38
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Maintenance Of Protein Location In Extracellular Region (GO:0071694),1,1,0.04244031830238727,0.16672982190223573,FBN1,39
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Mitochondrion Disassembly (GO:0061726),1,1,0.04244031830238727,0.16672982190223573,CTSK,40
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Myoblast Differentiation (GO:0045445),1,1,0.04244031830238727,0.16672982190223573,IGF1,41
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Myotube Cell Development (GO:0014904),1,1,0.04244031830238727,0.16672982190223573,IGF1,42
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Activin Receptor Signaling Pathway (GO:0032926),1,1,0.04244031830238727,0.16672982190223573,FSTL3,43
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Amyloid Precursor Protein Catabolic Process (GO:1902992),1,1,0.04244031830238727,0.16672982190223573,IGF1,44
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Amyloid-Beta Formation (GO:1902430),1,1,0.04244031830238727,0.16672982190223573,IGF1,45
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Development (GO:0010721),1,1,0.04244031830238727,0.16672982190223573,IGF1,46
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cell-Substrate Adhesion (GO:0010812),1,1,0.04244031830238727,0.16672982190223573,FBLN1,47
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Extrinsic Apoptotic Signaling Pathway (GO:2001237),1,1,0.04244031830238727,0.16672982190223573,IGF1,48
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Locomotion (GO:0040013),1,1,0.04244031830238727,0.16672982190223573,FBLN1,49
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Muscle Cell Apoptotic Process (GO:0010656),1,1,0.04244031830238727,0.16672982190223573,IGF1,50
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Phosphorylation (GO:0042326),1,1,0.04244031830238727,0.16672982190223573,FBLN1,51
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Platelet Activation (GO:0010544),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,52
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Release Of Cytochrome C From Mitochondria (GO:0090201),1,1,0.04244031830238727,0.16672982190223573,IGF1,53
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Reproductive Process (GO:2000242),1,1,0.04244031830238727,0.16672982190223573,IGF1,54
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Smooth Muscle Cell Apoptotic Process (GO:0034392),1,1,0.04244031830238727,0.16672982190223573,IGF1,55
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Substrate Adhesion-Dependent Cell Spreading (GO:1900025),1,1,0.04244031830238727,0.16672982190223573,FBLN1,56
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Platelet Aggregation (GO:0070527),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,57
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Activated T Cell Proliferation (GO:0042104),1,1,0.04244031830238727,0.16672982190223573,IGF1,58
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Calcineurin-Mediated Signaling (GO:0106058),1,1,0.04244031830238727,0.16672982190223573,IGF1,59
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Epidermal Cell Differentiation (GO:0045606),1,1,0.04244031830238727,0.16672982190223573,SFRP4,60
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Epidermis Development (GO:0045684),1,1,0.04244031830238727,0.16672982190223573,SFRP4,61
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0043568),1,1,0.04244031830238727,0.16672982190223573,IGF1,62
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Proteolysis (GO:0045862),1,1,0.04244031830238727,0.16672982190223573,CTSK,63
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Small GTPase Mediated Signal Transduction (GO:0051057),1,1,0.04244031830238727,0.16672982190223573,IGF1,64
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Transcription Regulatory Region DNA Binding (GO:2000679),1,1,0.04244031830238727,0.16672982190223573,IGF1,65
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904707),1,1,0.04244031830238727,0.16672982190223573,IGF1,66
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070886),1,1,0.04244031830238727,0.16672982190223573,IGF1,67
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Primary Alcohol Metabolic Process (GO:0034308),1,1,0.04244031830238727,0.16672982190223573,IGF1,68
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Activation Cascade (GO:0072376),1,1,0.04244031830238727,0.16672982190223573,FBLN1,69
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Targeting (GO:0006605),1,1,0.04244031830238727,0.16672982190223573,LTBP2,70
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Proteoglycan Biosynthetic Process (GO:0030166),1,1,0.04244031830238727,0.16672982190223573,IGF1,71
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Proteoglycan Metabolic Process (GO:0006029),1,1,0.04244031830238727,0.16672982190223573,IGF1,72
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Activin Receptor Signaling Pathway (GO:0032925),1,1,0.04244031830238727,0.16672982190223573,FSTL3,73
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Amyloid-Beta Formation (GO:1902003),1,1,0.04244031830238727,0.16672982190223573,IGF1,74
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cell-Cell Adhesion (GO:0022407),1,1,0.04244031830238727,0.16672982190223573,FSTL3,75
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0043567),1,1,0.04244031830238727,0.16672982190223573,IGF1,76
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Keratinocyte Apoptotic Process (GO:1902172),1,1,0.04244031830238727,0.16672982190223573,SFRP4,77
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Platelet Activation (GO:0010543),1,1,0.04244031830238727,0.16672982190223573,PDGFRA,78
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Protein Modification Process (GO:0031399),1,1,0.04244031830238727,0.16672982190223573,IGF1,79
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Ras Protein Signal Transduction (GO:0046578),1,1,0.04244031830238727,0.16672982190223573,IGF1,80
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Smooth Muscle Cell Apoptotic Process (GO:0034391),1,1,0.04244031830238727,0.16672982190223573,IGF1,81
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Transcription Regulatory Region DNA Binding (GO:2000677),1,1,0.04244031830238727,0.16672982190223573,IGF1,82
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Sequestering Of Extracellular Ligand From Receptor (GO:0035581),1,1,0.04244031830238727,0.16672982190223573,FBN1,83
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Thyroid Hormone Generation (GO:0006590),1,1,0.04244031830238727,0.16672982190223573,CTSK,84
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Macromolecule Metabolic Process (GO:0010604),3,20,0.0459505631957226,0.1783963041716289,IGF1;CD28;SFRP4,85
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cellular Biosynthetic Process (GO:0031328),2,9,0.05112815763377016,0.19197124338498006,IGF1;CD28,86
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Gene Expression (GO:0010628),3,21,0.052207540139039575,0.19197124338498006,IGF1;CD28;SFRP4,87
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Hemopoiesis (GO:0030097),2,10,0.06233432496116418,0.19197124338498006,FSTL3;PLD4,88
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014066),2,10,0.06233432496116418,0.19197124338498006,IGF1;PDGFRA,89
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Nervous System Development (GO:0007399),2,11,0.07431064063349262,0.19197124338498006,MAMDC2;PMP22,90
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Signal Transduction (GO:0009967),2,11,0.07431064063349262,0.19197124338498006,IGF1;CTSK,91
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cytokine Production (GO:0001817),2,11,0.07431064063349262,0.19197124338498006,PLD4;CD28,92
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Protein Phosphorylation (GO:0001932),2,11,0.07431064063349262,0.19197124338498006,IGF1;FBLN1,93
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Activation Of Protein Kinase B Activity (GO:0032148),1,2,0.08318753880015803,0.19197124338498006,IGF1,94
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Bleb Assembly (GO:0032060),1,2,0.08318753880015803,0.19197124338498006,PMP22,95
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Component Disassembly (GO:0022411),1,2,0.08318753880015803,0.19197124338498006,CTSK,96
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Digestive Tract Morphogenesis (GO:0048546),1,2,0.08318753880015803,0.19197124338498006,PDGFRA,97
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Embryonic Eye Morphogenesis (GO:0048048),1,2,0.08318753880015803,0.19197124338498006,FBN1,98
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Extracellular Matrix Disassembly (GO:0022617),1,2,0.08318753880015803,0.19197124338498006,CTSK,99
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Myelin Assembly (GO:0032288),1,2,0.08318753880015803,0.19197124338498006,PMP22,100
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Myofibril Assembly (GO:0030239),1,2,0.08318753880015803,0.19197124338498006,PDGFRA,101
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Myotube Differentiation (GO:0014902),1,2,0.08318753880015803,0.19197124338498006,IGF1,102
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Apoptotic Signaling Pathway (GO:2001234),1,2,0.08318753880015803,0.19197124338498006,IGF1,103
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Activation (GO:0050866),1,2,0.08318753880015803,0.19197124338498006,PDGFRA,104
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of ERK1 And ERK2 Cascade (GO:0070373),1,2,0.08318753880015803,0.19197124338498006,FBLN1,105
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Mitochondrion Organization (GO:0010823),1,2,0.08318753880015803,0.19197124338498006,IGF1,106
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Protein Modification Process (GO:0031400),1,2,0.08318753880015803,0.19197124338498006,FBLN1,107
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Non-Canonical Wnt Signaling Pathway (GO:0035567),1,2,0.08318753880015803,0.19197124338498006,SFRP4,108
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Peripheral Nervous System Development (GO:0007422),1,2,0.08318753880015803,0.19197124338498006,PMP22,109
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Phosphate Ion Homeostasis (GO:0055062),1,2,0.08318753880015803,0.19197124338498006,SFRP4,110
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Platelet-Derived Growth Factor Receptor Signaling Pathway (GO:0048008),1,2,0.08318753880015803,0.19197124338498006,PDGFRA,111
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Amide Metabolic Process (GO:0034250),1,2,0.08318753880015803,0.19197124338498006,CD28,112
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cardiac Muscle Hypertrophy (GO:0010613),1,2,0.08318753880015803,0.19197124338498006,IGF1,113
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of DNA Binding (GO:0043388),1,2,0.08318753880015803,0.19197124338498006,IGF1,114
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Epithelial Cell Apoptotic Process (GO:1904037),1,2,0.08318753880015803,0.19197124338498006,SFRP4,115
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Glucose Import (GO:0046326),1,2,0.08318753880015803,0.19197124338498006,IGF1,116
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Glucose Transmembrane Transport (GO:0010828),1,2,0.08318753880015803,0.19197124338498006,IGF1,117
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Glycogen Biosynthetic Process (GO:0045725),1,2,0.08318753880015803,0.19197124338498006,IGF1,118
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Glycogen Metabolic Process (GO:0070875),1,2,0.08318753880015803,0.19197124338498006,IGF1,119
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Glycolytic Process (GO:0045821),1,2,0.08318753880015803,0.19197124338498006,IGF1,120
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Interleukin-10 Production (GO:0032733),1,2,0.08318753880015803,0.19197124338498006,CD28,121
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Muscle Hypertrophy (GO:0014742),1,2,0.08318753880015803,0.19197124338498006,IGF1,122
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Osteoblast Differentiation (GO:0045669),1,2,0.08318753880015803,0.19197124338498006,IGF1,123
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Peptidase Activity (GO:0010952),1,2,0.08318753880015803,0.19197124338498006,CTSK,124
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Ras Protein Signal Transduction (GO:0046579),1,2,0.08318753880015803,0.19197124338498006,IGF1,125
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Receptor Internalization (GO:0002092),1,2,0.08318753880015803,0.19197124338498006,SFRP4,126
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Small Molecule Metabolic Process (GO:0062013),1,2,0.08318753880015803,0.19197124338498006,IGF1,127
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Viral Process (GO:0048524),1,2,0.08318753880015803,0.19197124338498006,CD28,128
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Kinase B Signaling (GO:0043491),1,2,0.08318753880015803,0.19197124338498006,IGF1,129
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Apoptotic Signaling Pathway (GO:2001233),1,2,0.08318753880015803,0.19197124338498006,CTSK,130
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cardiac Muscle Hypertrophy (GO:0010611),1,2,0.08318753880015803,0.19197124338498006,IGF1,131
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Epidermal Cell Differentiation (GO:0045604),1,2,0.08318753880015803,0.19197124338498006,SFRP4,132
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Extrinsic Apoptotic Signaling Pathway (GO:2001236),1,2,0.08318753880015803,0.19197124338498006,IGF1,133
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Glucose Import (GO:0046324),1,2,0.08318753880015803,0.19197124338498006,IGF1,134
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Glycogen Biosynthetic Process (GO:0005979),1,2,0.08318753880015803,0.19197124338498006,IGF1,135
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Glycolytic Process (GO:0006110),1,2,0.08318753880015803,0.19197124338498006,IGF1,136
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Glycoprotein Biosynthetic Process (GO:0010559),1,2,0.08318753880015803,0.19197124338498006,IGF1,137
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Non-Canonical Wnt Signaling Pathway (GO:2000050),1,2,0.08318753880015803,0.19197124338498006,SFRP4,138
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Receptor Internalization (GO:0002090),1,2,0.08318753880015803,0.19197124338498006,SFRP4,139
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Release Of Cytochrome C From Mitochondria (GO:0090199),1,2,0.08318753880015803,0.19197124338498006,IGF1,140
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Substrate Adhesion-Dependent Cell Spreading (GO:1900024),1,2,0.08318753880015803,0.19197124338498006,FBLN1,141
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Vascular Associated Smooth Muscle Cell Apoptotic Process (GO:1905459),1,2,0.08318753880015803,0.19197124338498006,IGF1,142
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Response To Reactive Oxygen Species (GO:0000302),1,2,0.08318753880015803,0.19197124338498006,PDGFRA,143
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of T Cell Proliferation (GO:0042102),2,12,0.08698066639394504,0.1993306938194574,IGF1;CD28,144
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Transmembrane Receptor Protein Tyrosine Kinase Signaling Pathway (GO:0007169),2,13,0.10027235966991649,0.21131207988348652,IGF1;PDGFRA,145
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of ERK1 And ERK2 Cascade (GO:0070374),2,14,0.11411787349905347,0.21131207988348652,IGF1;PDGFRA,146
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Activation Of Protein Kinase Activity (GO:0032147),1,3,0.12230487047801794,0.21131207988348652,IGF1,147
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Canonical Wnt Signaling Pathway (GO:0060070),1,3,0.12230487047801794,0.21131207988348652,SFRP4,148
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cardiac Muscle Cell Development (GO:0055013),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,149
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cardiac Myofibril Assembly (GO:0055003),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,150
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cell Chemotaxis (GO:0060326),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,151
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Response To Amyloid-Beta (GO:1904646),1,3,0.12230487047801794,0.21131207988348652,IGF1,152
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Response To Reactive Oxygen Species (GO:0034614),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,153
+lung_cancer,0,16,GO_Biological_Process_2023,panel,ERK1 And ERK2 Cascade (GO:0070371),1,3,0.12230487047801794,0.21131207988348652,IGF1,154
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Epithelial To Mesenchymal Transition (GO:0001837),1,3,0.12230487047801794,0.21131207988348652,IGF1,155
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Establishment Of Protein Localization To Extracellular Region (GO:0035592),1,3,0.12230487047801794,0.21131207988348652,LTBP2,156
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Eye Development (GO:0001654),1,3,0.12230487047801794,0.21131207988348652,FBN1,157
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Muscle Cell Development (GO:0055001),1,3,0.12230487047801794,0.21131207988348652,IGF1,158
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Amide Metabolic Process (GO:0034249),1,3,0.12230487047801794,0.21131207988348652,IGF1,159
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Interleukin-1 Beta Production (GO:0032691),1,3,0.12230487047801794,0.21131207988348652,IGF1,160
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Interleukin-1 Production (GO:0032692),1,3,0.12230487047801794,0.21131207988348652,IGF1,161
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Neuroinflammatory Response (GO:0150079),1,3,0.12230487047801794,0.21131207988348652,IGF1,162
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Transport (GO:0051051),1,3,0.12230487047801794,0.21131207988348652,SFRP4,163
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Apoptotic Signaling Pathway (GO:2001235),1,3,0.12230487047801794,0.21131207988348652,CTSK,164
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Carbohydrate Metabolic Process (GO:0045913),1,3,0.12230487047801794,0.21131207988348652,IGF1,165
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cardiac Muscle Tissue Growth (GO:0055023),1,3,0.12230487047801794,0.21131207988348652,IGF1,166
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Epithelial Cell Differentiation (GO:0030858),1,3,0.12230487047801794,0.21131207988348652,SFRP4,167
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Glycoprotein Biosynthetic Process (GO:0010560),1,3,0.12230487047801794,0.21131207988348652,IGF1,168
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Immune System Process (GO:0002684),1,3,0.12230487047801794,0.21131207988348652,C7,169
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Transport (GO:0051222),1,3,0.12230487047801794,0.21131207988348652,IGF1,170
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Stem Cell Differentiation (GO:2000738),1,3,0.12230487047801794,0.21131207988348652,LTBP2,171
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Stem Cell Proliferation (GO:2000648),1,3,0.12230487047801794,0.21131207988348652,LTBP2,172
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Translation (GO:0045727),1,3,0.12230487047801794,0.21131207988348652,CD28,173
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Viral Genome Replication (GO:0045070),1,3,0.12230487047801794,0.21131207988348652,CD28,174
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Secretion (GO:0009306),1,3,0.12230487047801794,0.21131207988348652,LTBP2,175
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Stabilization (GO:0050821),1,3,0.12230487047801794,0.21131207988348652,IGF1,176
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Actin Cytoskeleton Reorganization (GO:2000249),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,177
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cytokine Production Involved In Inflammatory Response (GO:1900015),1,3,0.12230487047801794,0.21131207988348652,PLD4,178
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of DNA Binding (GO:0051101),1,3,0.12230487047801794,0.21131207988348652,IGF1,179
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Neuroinflammatory Response (GO:0150077),1,3,0.12230487047801794,0.21131207988348652,IGF1,180
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Peptidase Activity (GO:0052547),1,3,0.12230487047801794,0.21131207988348652,CTSK,181
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Phosphorylation (GO:0042325),1,3,0.12230487047801794,0.21131207988348652,IGF1,182
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Smooth Muscle Cell Migration (GO:0014910),1,3,0.12230487047801794,0.21131207988348652,IGF1,183
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Stem Cell Differentiation (GO:2000736),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,184
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Stem Cell Proliferation (GO:0072091),1,3,0.12230487047801794,0.21131207988348652,FBLN1,185
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070884),1,3,0.12230487047801794,0.21131207988348652,IGF1,186
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Response To Amyloid-Beta (GO:1904645),1,3,0.12230487047801794,0.21131207988348652,IGF1,187
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Small GTPase Mediated Signal Transduction (GO:0007264),1,3,0.12230487047801794,0.21131207988348652,IGF1,188
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Transforming Growth Factor Beta Receptor Signaling Pathway (GO:0007179),1,3,0.12230487047801794,0.21131207988348652,LTBP2,189
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Vasculature Development (GO:0001944),1,3,0.12230487047801794,0.21131207988348652,PDGFRA,190
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Wnt Signaling Pathway (GO:0016055),1,3,0.12230487047801794,0.21131207988348652,SFRP4,191
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Apoptotic Process (GO:0043065),2,15,0.12845336418970046,0.21963528592021322,CTSK;SFRP4,192
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Proteolysis (GO:0006508),2,15,0.12845336418970046,0.21963528592021322,CTSK;PCOLCE,193
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Bone Development (GO:0060348),1,4,0.15985332521692627,0.23869501050491254,SFRP4,194
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Response To Oxidative Stress (GO:0034599),1,4,0.15985332521692627,0.23869501050491254,PDGFRA,195
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Response To Transforming Growth Factor Beta Stimulus (GO:0071560),1,4,0.15985332521692627,0.23869501050491254,LTBP2,196
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Eye Morphogenesis (GO:0048592),1,4,0.15985332521692627,0.23869501050491254,FBN1,197
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Mesenchymal Cell Differentiation (GO:0048762),1,4,0.15985332521692627,0.23869501050491254,IGF1,198
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Monocarboxylic Acid Metabolic Process (GO:0032787),1,4,0.15985332521692627,0.23869501050491254,IGF1,199
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Muscle Organ Development (GO:0007517),1,4,0.15985332521692627,0.23869501050491254,IGF1,200
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Adhesion (GO:0007162),1,4,0.15985332521692627,0.23869501050491254,FBLN1,201
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Peptidyl-Tyrosine Modification (GO:0018212),1,4,0.15985332521692627,0.23869501050491254,PDGFRA,202
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Peptidyl-Tyrosine Phosphorylation (GO:0018108),1,4,0.15985332521692627,0.23869501050491254,PDGFRA,203
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Phosphatidylinositol 3-Kinase Signaling (GO:0014065),1,4,0.15985332521692627,0.23869501050491254,IGF1,204
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cellular Catabolic Process (GO:0031331),1,4,0.15985332521692627,0.23869501050491254,IGF1,205
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Immune Response (GO:0050778),1,4,0.15985332521692627,0.23869501050491254,C7,206
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Receptor-Mediated Endocytosis (GO:0048260),1,4,0.15985332521692627,0.23869501050491254,SFRP4,207
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Response To Stimulus (GO:0048584),1,4,0.15985332521692627,0.23869501050491254,C7,208
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Smooth Muscle Cell Migration (GO:0014911),1,4,0.15985332521692627,0.23869501050491254,IGF1,209
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Striated Muscle Cell Differentiation (GO:0051155),1,4,0.15985332521692627,0.23869501050491254,IGF1,210
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Tyrosine Phosphorylation Of STAT Protein (GO:0042531),1,4,0.15985332521692627,0.23869501050491254,IGF1,211
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Catabolic Process (GO:0030163),1,4,0.15985332521692627,0.23869501050491254,CTSK,212
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Proteolysis Involved In Protein Catabolic Process (GO:0051603),1,4,0.15985332521692627,0.23869501050491254,CTSK,213
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Ras Protein Signal Transduction (GO:0007265),1,4,0.15985332521692627,0.23869501050491254,IGF1,214
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Actin Cytoskeleton Organization (GO:0032956),1,4,0.15985332521692627,0.23869501050491254,PDGFRA,215
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Activated T Cell Proliferation (GO:0046006),1,4,0.15985332521692627,0.23869501050491254,IGF1,216
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Phospholipase C Activity (GO:1900274),1,4,0.15985332521692627,0.23869501050491254,PDGFRA,217
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Translation (GO:0006417),1,4,0.15985332521692627,0.23869501050491254,CD28,218
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Tyrosine Phosphorylation Of STAT Protein (GO:0042509),1,4,0.15985332521692627,0.23869501050491254,IGF1,219
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Viral Genome Replication (GO:0045069),1,4,0.15985332521692627,0.23869501050491254,CD28,220
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Wnt Signaling Pathway (GO:0030111),1,4,0.15985332521692627,0.23869501050491254,SFRP4,221
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Apoptotic Process (GO:0042981),3,34,0.16652840610898248,0.24754222529713613,IGF1;CD28;SFRP4,222
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Gene Expression (GO:0010629),2,18,0.17381747772171838,0.2560703912864601,IGF1;CD28,223
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Macromolecule Metabolic Process (GO:0010605),2,18,0.17381747772171838,0.2560703912864601,IGF1;CD28,224
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Gene Expression (GO:0010468),3,36,0.18848102016616466,0.26385424570559807,IGF1;CD28;SFRP4,225
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Signal Transduction (GO:0009968),2,19,0.18954818404484777,0.26385424570559807,FSTL3;SFRP4,226
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Response To Peptide (GO:1901653),1,5,0.19589178847839858,0.26385424570559807,IGF1,227
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Circulatory System Development (GO:0072359),1,5,0.19589178847839858,0.26385424570559807,FBN1,228
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Integrin-Mediated Signaling Pathway (GO:0007229),1,5,0.19589178847839858,0.26385424570559807,FBLN1,229
+lung_cancer,0,16,GO_Biological_Process_2023,panel,MAPK Cascade (GO:0000165),1,5,0.19589178847839858,0.26385424570559807,IGF1,230
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Myelination (GO:0042552),1,5,0.19589178847839858,0.26385424570559807,PMP22,231
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Blood Coagulation (GO:0030195),1,5,0.19589178847839858,0.26385424570559807,PDGFRA,232
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Canonical Wnt Signaling Pathway (GO:0090090),1,5,0.19589178847839858,0.26385424570559807,SFRP4,233
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cellular Response To Growth Factor Stimulus (GO:0090288),1,5,0.19589178847839858,0.26385424570559807,FSTL3,234
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Transforming Growth Factor Beta Receptor Signaling Pathway (GO:0030512),1,5,0.19589178847839858,0.26385424570559807,FBN1,235
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0090101),1,5,0.19589178847839858,0.26385424570559807,FSTL3,236
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Phospholipase Activity (GO:0010518),1,5,0.19589178847839858,0.26385424570559807,PDGFRA,237
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Metabolic Process (GO:0051247),1,5,0.19589178847839858,0.26385424570559807,CD28,238
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Secretion (GO:0050714),1,5,0.19589178847839858,0.26385424570559807,IGF1,239
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Smooth Muscle Cell Proliferation (GO:0048661),1,5,0.19589178847839858,0.26385424570559807,IGF1,240
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Interleukin-10 Production (GO:0032653),1,5,0.19589178847839858,0.26385424570559807,CD28,241
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Osteoblast Differentiation (GO:0045667),1,5,0.19589178847839858,0.26385424570559807,IGF1,242
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Protein Secretion (GO:0050708),1,5,0.19589178847839858,0.26385424570559807,IGF1,243
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904705),1,5,0.19589178847839858,0.26385424570559807,IGF1,244
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0007178),1,5,0.19589178847839858,0.26385424570559807,LTBP2,245
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Population Proliferation (GO:0008285),2,20,0.20550347525030604,0.2723540033437791,FBLN1;SFRP4,246
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cellular Process (GO:0048523),2,20,0.20550347525030604,0.2723540033437791,FBLN1;SFRP4,247
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Migration (GO:0030335),2,20,0.20550347525030604,0.2723540033437791,IGF1;PDGFRA,248
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Motility (GO:2000147),2,20,0.20550347525030604,0.2723540033437791,IGF1;PDGFRA,249
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Anterograde Trans-Synaptic Signaling (GO:0098916),1,6,0.23047708789868251,0.28169421854283416,PMP22,250
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Extracellular Matrix Organization (GO:0030198),1,6,0.23047708789868251,0.28169421854283416,CTSK,251
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Inflammatory Response (GO:0050728),1,6,0.23047708789868251,0.28169421854283416,IGF1,252
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Tumor Necrosis Factor Production (GO:0032720),1,6,0.23047708789868251,0.28169421854283416,IGF1,253
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Wnt Signaling Pathway (GO:0030178),1,6,0.23047708789868251,0.28169421854283416,SFRP4,254
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Plasma Membrane Bounded Cell Projection Assembly (GO:0120031),1,6,0.23047708789868251,0.28169421854283416,PMP22,255
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Binding (GO:0051099),1,6,0.23047708789868251,0.28169421854283416,IGF1,256
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Adhesion (GO:0045785),1,6,0.23047708789868251,0.28169421854283416,FSTL3,257
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Growth (GO:0030307),1,6,0.23047708789868251,0.28169421854283416,IGF1,258
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell-Cell Adhesion (GO:0022409),1,6,0.23047708789868251,0.28169421854283416,FSTL3,259
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Interleukin-2 Production (GO:0032743),1,6,0.23047708789868251,0.28169421854283416,CD28,260
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Lipid Kinase Activity (GO:0090218),1,6,0.23047708789868251,0.28169421854283416,PDGFRA,261
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043552),1,6,0.23047708789868251,0.28169421854283416,PDGFRA,262
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Secretion By Cell (GO:1903532),1,6,0.23047708789868251,0.28169421854283416,IGF1,263
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Autophosphorylation (GO:0046777),1,6,0.23047708789868251,0.28169421854283416,PDGFRA,264
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Transport (GO:0015031),1,6,0.23047708789868251,0.28169421854283416,LTBP2,265
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cell Motility (GO:2000145),1,6,0.23047708789868251,0.28169421854283416,FBLN1,266
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Epithelial Cell Proliferation (GO:0050678),1,6,0.23047708789868251,0.28169421854283416,IGF1,267
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Interleukin-1 Beta Production (GO:0032651),1,6,0.23047708789868251,0.28169421854283416,IGF1,268
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043551),1,6,0.23047708789868251,0.28169421854283416,PDGFRA,269
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Smooth Muscle Cell Proliferation (GO:0048660),1,6,0.23047708789868251,0.28169421854283416,IGF1,270
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Programmed Cell Death (GO:0043069),2,22,0.23791681741413417,0.28971420570724826,IGF1;CD28,271
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cell Population Proliferation (GO:0042127),3,41,0.246668426788606,0.2992668413244117,IGF1;PDGFRA;SFRP4,272
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Chemical Synaptic Transmission (GO:0007268),1,7,0.26366405984914365,0.30211506857714376,PMP22,273
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Heart Development (GO:0007507),1,7,0.26366405984914365,0.30211506857714376,FBN1,274
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Motility (GO:2000146),1,7,0.26366405984914365,0.30211506857714376,FBLN1,275
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of DNA-binding Transcription Factor Activity (GO:0043433),1,7,0.26366405984914365,0.30211506857714376,SFRP4,276
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Protein Phosphorylation (GO:0001933),1,7,0.26366405984914365,0.30211506857714376,FBLN1,277
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Tumor Necrosis Factor Superfamily Cytokine Production (GO:1903556),1,7,0.26366405984914365,0.30211506857714376,IGF1,278
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Canonical Wnt Signaling Pathway (GO:0090263),1,7,0.26366405984914365,0.30211506857714376,SFRP4,279
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Epithelial Cell Proliferation (GO:0050679),1,7,0.26366405984914365,0.30211506857714376,IGF1,280
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Hydrolase Activity (GO:0051345),1,7,0.26366405984914365,0.30211506857714376,CTSK,281
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Phospholipase C Activity (GO:0010863),1,7,0.26366405984914365,0.30211506857714376,PDGFRA,282
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Kinase B Signaling (GO:0051897),1,7,0.26366405984914365,0.30211506857714376,IGF1,283
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Wnt Signaling Pathway (GO:0030177),1,7,0.26366405984914365,0.30211506857714376,SFRP4,284
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Chemotaxis (GO:0050920),1,7,0.26366405984914365,0.30211506857714376,PDGFRA,285
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Immune Response (GO:0050776),1,7,0.26366405984914365,0.30211506857714376,C7,286
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Kinase Activity (GO:0043549),1,7,0.26366405984914365,0.30211506857714376,PDGFRA,287
+lung_cancer,0,16,GO_Biological_Process_2023,panel,T Cell Differentiation (GO:0030217),1,7,0.26366405984914365,0.30211506857714376,CD28,288
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of Apoptotic Process (GO:0043066),2,25,0.28722449525510235,0.3257184997738274,IGF1;CD28,289
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of MAPK Cascade (GO:0043410),2,25,0.28722449525510235,0.3257184997738274,IGF1;PDGFRA,290
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cell Migration (GO:0030334),2,25,0.28722449525510235,0.3257184997738274,IGF1;PDGFRA,291
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Endocytosis (GO:0006897),1,8,0.29550561401782927,0.33056560212163955,PLD4,292
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Negative Regulation Of MAPK Cascade (GO:0043409),1,8,0.29550561401782927,0.33056560212163955,FBLN1,293
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Protein Kinase B Signaling (GO:0051896),1,8,0.29550561401782927,0.33056560212163955,IGF1,294
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Response To External Stimulus (GO:0032101),1,8,0.29550561401782927,0.33056560212163955,PDGFRA,295
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Phagocytosis (GO:0006909),1,9,0.3260527960658367,0.35985760100911746,PLD4,296
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Canonical Wnt Signaling Pathway (GO:0060828),1,9,0.3260527960658367,0.35985760100911746,SFRP4,297
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Cell Adhesion (GO:0030155),1,9,0.3260527960658367,0.35985760100911746,FBLN1,298
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Macromolecule Metabolic Process (GO:0060255),1,9,0.3260527960658367,0.35985760100911746,IGF1,299
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Population Proliferation (GO:0008284),2,28,0.3365805613214598,0.3702386174536058,IGF1;PDGFRA,300
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cellular Process (GO:0048522),2,29,0.352915792518815,0.3807373375830004,IGF1;PDGFRA,301
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Intracellular Signal Transduction (GO:1902533),2,29,0.352915792518815,0.3807373375830004,IGF1;PDGFRA,302
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Enzyme-Linked Receptor Protein Signaling Pathway (GO:0007167),1,10,0.35535484841080034,0.3807373375830004,PDGFRA,303
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Kinase Activity (GO:0033674),1,10,0.35535484841080034,0.3807373375830004,PDGFRA,304
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Transferase Activity (GO:0051347),1,10,0.35535484841080034,0.3807373375830004,PDGFRA,305
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Protein Phosphorylation (GO:0006468),1,10,0.35535484841080034,0.3807373375830004,PDGFRA,306
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Peptidyl-Tyrosine Phosphorylation (GO:0050730),1,10,0.35535484841080034,0.3807373375830004,IGF1,307
+lung_cancer,0,16,GO_Biological_Process_2023,panel,T Cell Receptor Signaling Pathway (GO:0050852),1,10,0.35535484841080034,0.3807373375830004,CD28,308
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Peptidyl-Tyrosine Phosphorylation (GO:0050731),1,11,0.38345926918853107,0.4081985768781137,IGF1,309
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Interleukin-2 Production (GO:0032663),1,11,0.38345926918853107,0.4081985768781137,CD28,310
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Lymphocyte Proliferation (GO:0050671),1,12,0.4104118694425844,0.4327026099554404,CD28,311
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of T Cell Proliferation (GO:0042129),1,12,0.4104118694425844,0.4327026099554404,CD28,312
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Supramolecular Fiber Organization (GO:0097435),1,12,0.4104118694425844,0.4327026099554404,LTBP2,313
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944),2,34,0.43274705683084824,0.45479786227445834,IGF1;FSTL3,314
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Apoptotic Process (GO:0006915),1,13,0.4362568285903067,0.45558466276835824,PMP22,315
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphorylation (GO:0042327),1,13,0.4362568285903067,0.45558466276835824,PDGFRA,316
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Programmed Cell Death (GO:0043068),1,14,0.4610367482127106,0.4769345671165972,SFRP4,317
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of T Cell Activation (GO:0050870),1,14,0.4610367482127106,0.4769345671165972,CD28,318
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of Tumor Necrosis Factor Production (GO:0032680),1,14,0.4610367482127106,0.4769345671165972,IGF1,319
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Nucleic Acid-Templated Transcription (GO:1903508),1,15,0.48479270421435466,0.49994247622105326,IGF1,320
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Antigen Receptor-Mediated Signaling Pathway (GO:0050851),1,16,0.5075642973982503,0.5174541402607244,CD28,321
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of MAPK Cascade (GO:0043408),1,16,0.5075642973982503,0.5174541402607244,IGF1,322
+lung_cancer,0,16,GO_Biological_Process_2023,panel,T Cell Activation (GO:0042110),1,16,0.5075642973982503,0.5174541402607244,CD28,323
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of DNA-templated Transcription (GO:0045893),2,39,0.5080458831650749,0.5174541402607244,IGF1;FSTL3,324
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Regulation Of DNA-templated Transcription (GO:0006355),2,43,0.5641000592679213,0.572778521718197,IGF1;FSTL3,325
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Differentiation (GO:0045597),1,19,0.5703478008151202,0.5738255313078953,IGF1,326
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Cytokine Production (GO:0001819),1,19,0.5703478008151202,0.5738255313078953,CD28,327
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Multicellular Organismal Process (GO:0051240),1,19,0.5703478008151202,0.5738255313078953,CD28,328
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Cellular Response To Oxygen-Containing Compound (GO:1901701),1,22,0.6255660663595457,0.6274674829746203,PDGFRA,329
+lung_cancer,0,16,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Phosphorylation (GO:0001934),1,25,0.6740768723215325,0.6740768723215325,IGF1,330
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Epithelial Mesenchymal Transition,6,200,6.833645208374978e-09,6.15028068753748e-08,SFRP4;PMP22;FBLN1;PCOLCE;FSTL3;FBN1,1
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Coagulation,2,138,0.0053235834718738,0.0239561256234324,CTSK;FBN1,2
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Xenobiotic Metabolism,2,200,0.0108884250018907,0.0326652750056722,FBLN1;IGF1,3
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,TGF-beta Signaling,1,54,0.0423514695379364,0.095290806460357,LTBP2,4
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,UV Response Dn,1,144,0.1092218603967254,0.1485934818111902,PMP22,5
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Fatty Acid Metabolism,1,158,0.1192217052176752,0.1485934818111902,INMT,6
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Myogenesis,1,200,0.1485934818111902,0.1485934818111902,IGF1,7
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Apical Junction,1,200,0.1485934818111902,0.1485934818111902,FBN1,8
+lung_cancer,0,16,MSigDB_Hallmark_2020,genome_enrichr,Allograft Rejection,1,200,0.1485934818111902,0.1485934818111902,CD28,9
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Epithelial Mesenchymal Transition,6,24,0.00018345454967132232,0.0016510909470419009,FBN1;SFRP4;FBLN1;PMP22;FSTL3;PCOLCE,1
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,TGF-beta Signaling,1,1,0.04244031830238727,0.1533844729013105,LTBP2,2
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Coagulation,2,9,0.05112815763377016,0.1533844729013105,CTSK;FBN1,3
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Xenobiotic Metabolism,2,11,0.07431064063349262,0.1671989414253584,IGF1;FBLN1,4
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Fatty Acid Metabolism,1,5,0.19589178847839858,0.35260521926111743,INMT,5
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Myogenesis,1,8,0.29550561401782927,0.4432584210267439,IGF1,6
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Apical Junction,1,12,0.4104118694425844,0.46171335312290746,FBN1,7
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,UV Response Dn,1,12,0.4104118694425844,0.46171335312290746,PMP22,8
+lung_cancer,0,16,MSigDB_Hallmark_2020,panel,Allograft Rejection,1,27,0.7030731412564079,0.7030731412564079,CD28,9
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Smooth Muscle Contraction (GO:0006939),2,14,1.270931618352025e-05,0.0014996432293603,MYH11;MYLK,1
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Aorta Morphogenesis (GO:0035909),2,17,1.898282568810592e-05,0.0014996432293603,PDGFRB;MYLK,2
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cardiac Muscle Cell Development (GO:0055013),2,26,4.528214327454185e-05,0.002233093640159,PDGFRB;MYH11,3
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Calcium Ion Transport (GO:0051928),2,29,5.653401620655799e-05,0.002233093640159,PDGFRB;MYLK,4
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Supramolecular Fiber Organization (GO:0097435),3,316,0.0002062869573304279,0.0065186678516415,CNN1;COL5A2;MYH11,5
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Muscle Contraction (GO:0006936),2,94,0.0006007887973136999,0.015820771662594,MYH11;MYLK,6
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Reproductive System Development (GO:0061458),1,5,0.0019985634316589,0.0233943273918019,TBX3,7
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,"Anterior/Posterior Axis Specification, Embryo (GO:0008595)",1,5,0.0019985634316589,0.0233943273918019,TBX3,8
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Tripartite Regional Subdivision (GO:0007351),1,5,0.0019985634316589,0.0233943273918019,TBX3,9
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cardiac Pacemaker Cell Development (GO:0060926),1,6,0.0023978589692277,0.0233943273918019,TBX3,10
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Hypotonic Response (GO:0006971),1,6,0.0023978589692277,0.0233943273918019,MYLK,11
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cellular Hypotonic Response (GO:0071476),1,6,0.0023978589692277,0.0233943273918019,MYLK,12
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Elastic Fiber Assembly (GO:0048251),1,6,0.0023978589692277,0.0233943273918019,MYH11,13
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Bleb Assembly (GO:0032060),1,6,0.0023978589692277,0.0233943273918019,MYLK,14
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Smooth Muscle Cell Migration (GO:0014909),1,6,0.0023978589692277,0.0233943273918019,PDGFRB,15
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cell Migration Involved In Heart Development (GO:0060973),1,7,0.002797015027105,0.0233943273918019,PDGFRB,16
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Calcium Ion Import (GO:0090280),1,7,0.002797015027105,0.0233943273918019,PDGFRB,17
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Differentiation (GO:0045596),2,207,0.0028649555222551,0.0233943273918019,COL5A2;TBX3,18
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Sensory Organ Morphogenesis (GO:0090596),1,8,0.0031960315919264,0.0233943273918019,COL5A2,19
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Embryonic Forelimb Morphogenesis (GO:0035115),1,8,0.0031960315919264,0.0233943273918019,TBX3,20
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Skeletal Myofibril Assembly (GO:0014866),1,8,0.0031960315919264,0.0233943273918019,MYH11,21
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Motility (GO:2000147),2,221,0.0032574379912635,0.0233943273918019,PDGFRB;MYLK,22
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Forelimb Morphogenesis (GO:0035136),1,9,0.0035949086662176,0.0236664820525993,TBX3,23
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Smooth Muscle Tissue Development (GO:0048745),1,9,0.0035949086662176,0.0236664820525993,MYLK,24
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phospholipase C Activity (GO:1900274),1,11,0.004392244396163,0.0242267371010013,PDGFRB,25
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Mesoderm Morphogenesis (GO:0048332),1,12,0.0047907030934129,0.0242267371010013,TBX3,26
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Migration (GO:0030335),2,272,0.0048882840152581,0.0242267371010013,PDGFRB;MYLK,27
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Myoblast Differentiation (GO:0045662),1,13,0.0051890223794998,0.0242267371010013,TBX3,28
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Establishment Of Chromosome Localization (GO:0051303),1,14,0.0055872022837974,0.0242267371010013,GEM,29
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cardiac Cell Development (GO:0055006),1,14,0.0055872022837974,0.0242267371010013,MYH11,30
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Aorta Development (GO:0035904),1,14,0.0055872022837974,0.0242267371010013,PDGFRB,31
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Genitalia Development (GO:0048806),1,14,0.0055872022837974,0.0242267371010013,TBX3,32
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cardiac Myofibril Assembly (GO:0055003),1,15,0.0059852428364459,0.0242267371010013,PDGFRB,33
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Platelet-Derived Growth Factor Receptor Signaling Pathway (GO:0048008),1,15,0.0059852428364459,0.0242267371010013,PDGFRB,34
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Smooth Muscle Cell Migration (GO:0014911),1,16,0.0063831440708516,0.0242267371010013,PDGFRB,35
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Nuclear Chromosome Segregation (GO:0098813),1,16,0.0063831440708516,0.0242267371010013,GEM,36
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Vasculature Development (GO:0001944),1,16,0.0063831440708516,0.0242267371010013,PDGFRB,37
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Muscle Tissue Morphogenesis (GO:0060415),1,17,0.0067809060200976,0.0242267371010013,MYLK,38
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Extracellular Matrix Assembly (GO:0085029),1,17,0.0067809060200976,0.0242267371010013,MYH11,39
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904706),1,17,0.0067809060200976,0.0242267371010013,CNN1,40
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Embryonic Axis Specification (GO:0000578),1,17,0.0067809060200976,0.0242267371010013,TBX3,41
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Embryonic Digit Morphogenesis (GO:0042733),1,17,0.0067809060200976,0.0242267371010013,TBX3,42
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphoprotein Phosphatase Activity (GO:0032516),1,18,0.0071785287204102,0.0242267371010013,PDGFRB,43
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cardiac Epithelial To Mesenchymal Transition (GO:0060317),1,19,0.0075760122063041,0.0242267371010013,TBX3,44
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Eye Morphogenesis (GO:0048592),1,19,0.0075760122063041,0.0242267371010013,COL5A2,45
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Mesoderm Development (GO:0007498),1,19,0.0075760122063041,0.0242267371010013,TBX3,46
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Smooth Muscle Cell Migration (GO:0014910),1,19,0.0075760122063041,0.0242267371010013,PDGFRB,47
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phospholipase Activity (GO:0010518),1,20,0.0079733565142536,0.0242267371010013,PDGFRB,48
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Anterior/Posterior Axis Specification (GO:0009948),1,20,0.0079733565142536,0.0242267371010013,TBX3,49
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Smooth Muscle Contraction (GO:0006940),1,20,0.0079733565142536,0.0242267371010013,CNN1,50
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Calcium Ion Import (GO:0090279),1,20,0.0079733565142536,0.0242267371010013,PDGFRB,51
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Limb Morphogenesis (GO:0035108),1,20,0.0079733565142536,0.0242267371010013,TBX3,52
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Mammary Gland Development (GO:0030879),1,22,0.0087676277457428,0.0256534293301363,TBX3,53
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphatase Activity (GO:0010922),1,22,0.0087676277457428,0.0256534293301363,PDGFRB,54
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043552),1,26,0.0103545017362565,0.029214487041581,PDGFRB,55
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Nuclear Division (GO:0051785),1,26,0.0103545017362565,0.029214487041581,PDGFRB,56
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cardiac Muscle Cell Differentiation (GO:0055007),1,27,0.0107508728609495,0.029286860552242,MYH11,57
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Response To Wounding (GO:1903036),1,27,0.0107508728609495,0.029286860552242,MYLK,58
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Chemotaxis (GO:0050920),1,28,0.011147105113416,0.0293229733416001,PDGFRB,59
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cellular Response To Osmotic Stress (GO:0071470),1,28,0.011147105113416,0.0293229733416001,MYLK,60
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Muscle Contraction (GO:0006937),1,29,0.0115431985365684,0.0293229733416001,CNN1,61
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Lipid Kinase Activity (GO:0090218),1,30,0.0119391531667426,0.0293229733416001,PDGFRB,62
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Locomotion (GO:0040017),1,30,0.0119391531667426,0.0293229733416001,PDGFRB,63
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Artery Morphogenesis (GO:0048844),1,30,0.0119391531667426,0.0293229733416001,PDGFRB,64
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Migration (GO:0030334),2,434,0.0120632485266076,0.0293229733416001,PDGFRB;MYLK,65
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Muscle Cell Development (GO:0055001),1,32,0.0127306462090213,0.0296723661288728,MYH11,66
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Dephosphorylation (GO:0035307),1,33,0.0131261847028175,0.0296723661288728,PDGFRB,67
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Inositol Lipid-Mediated Signaling (GO:0048017),1,33,0.0131261847028175,0.0296723661288728,PDGFRB,68
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Vasculogenesis (GO:0001570),1,33,0.0131261847028175,0.0296723661288728,PDGFRB,69
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of DNA Biosynthetic Process (GO:2000278),1,34,0.0135215845650559,0.0296723661288728,PDGFRB,70
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Embryonic Limb Morphogenesis (GO:0030326),1,34,0.0135215845650559,0.0296723661288728,TBX3,71
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043551),1,34,0.0135215845650559,0.0296723661288728,PDGFRB,72
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Mitotic Nuclear Division (GO:0045840),1,35,0.0139168458355771,0.0299753047703676,PDGFRB,73
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phospholipase C Activity (GO:0010863),1,36,0.0143119685548053,0.0299753047703676,PDGFRB,74
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Smooth Muscle Cell Proliferation (GO:0048662),1,37,0.014706952762456,0.0299753047703676,CNN1,75
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904705),1,37,0.014706952762456,0.0299753047703676,CNN1,76
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phosphoprotein Phosphatase Activity (GO:0043666),1,37,0.014706952762456,0.0299753047703676,PDGFRB,77
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Population Proliferation (GO:0008284),2,483,0.014797935266384,0.0299753047703676,PDGFRB;TBX3,78
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Monoatomic Ion Transport (GO:0043270),1,40,0.0158910747267934,0.031384872585417,MYLK,79
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Wound Healing (GO:0090303),1,40,0.0158910747267934,0.031384872585417,MYLK,80
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Collagen Fibril Organization (GO:0030199),1,42,0.0166797975569068,0.0325359014072998,COL5A2,81
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Chemotaxis (GO:0050921),1,44,0.0174679673184287,0.0336577906867285,PDGFRB,82
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Chromosome Organization (GO:0051276),1,45,0.0178618448998742,0.0338686360424064,GEM,83
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Myofibril Assembly (GO:0030239),1,46,0.0182555843351525,0.0338686360424064,PDGFRB,84
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Wound Healing (GO:0061041),1,47,0.01864918566892,0.0338686360424064,MYLK,85
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Epithelial To Mesenchymal Transition (GO:0001837),1,47,0.01864918566892,0.0338686360424064,TBX3,86
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Smooth Muscle Cell Proliferation (GO:0048661),1,47,0.01864918566892,0.0338686360424064,PDGFRB,87
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Reactive Oxygen Species Metabolic Process (GO:2000379),1,48,0.0190426489375205,0.0341902105923663,PDGFRB,88
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Cell Chemotaxis (GO:0060326),1,50,0.0198291614511851,0.0352023315650252,PDGFRB,89
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Metaphase Plate Congression (GO:0051310),1,51,0.0202222107748752,0.0355012144714476,GEM,90
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Peptidyl-Tyrosine Modification (GO:0018212),1,54,0.0214005315110721,0.0361370265527589,PDGFRB,91
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Smooth Muscle Cell Proliferation (GO:0048660),1,54,0.0214005315110721,0.0361370265527589,PDGFRB,92
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Myoblast Differentiation (GO:0045661),1,54,0.0214005315110721,0.0361370265527589,TBX3,93
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cellular Process (GO:0048522),2,594,0.0218949771296647,0.0361370265527589,PDGFRB;TBX3,94
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Reactive Oxygen Species Metabolic Process (GO:2000377),1,56,0.0221853897190988,0.0361370265527589,PDGFRB,95
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Mitotic Nuclear Division (GO:0007088),1,56,0.0221853897190988,0.0361370265527589,PDGFRB,96
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cellular Metabolic Process (GO:0031325),1,56,0.0221853897190988,0.0361370265527589,PDGFRB,97
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Calcium Ion Transport (GO:0051924),1,57,0.0225776122579708,0.0364006401710142,MYLK,98
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Eye Development (GO:0001654),1,58,0.0229696971452446,0.0366587085752388,COL5A2,99
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Heart Morphogenesis (GO:0003007),1,59,0.0233616444222661,0.0369113981871804,TBX3,100
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Phosphatidylinositol-Mediated Signaling (GO:0048015),1,62,0.0245366609727815,0.038007768957838,PDGFRB,101
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Glycerophospholipid Metabolic Process (GO:0006650),1,62,0.0245366609727815,0.038007768957838,PDGFRB,102
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Phosphatidylinositol Metabolic Process (GO:0046488),1,63,0.0249280582059939,0.0382391572480295,PDGFRB,103
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Cycle (GO:0045787),1,65,0.0257104404905407,0.0386880914048137,TBX3,104
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of DNA Biosynthetic Process (GO:2000573),1,65,0.0257104404905407,0.0386880914048137,PDGFRB,105
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Peptidyl-Tyrosine Phosphorylation (GO:0018108),1,67,0.0264922734714402,0.0394884830989392,PDGFRB,106
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Skin Development (GO:0043588),1,68,0.0268829840764004,0.0396963690100118,COL5A2,107
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014068),1,69,0.0272735574738309,0.0399002044524564,PDGFRB,108
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Actin Filament-Based Process (GO:0032970),1,70,0.0276639937151223,0.0401001009815535,PDGFRB,109
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Gland Development (GO:0048732),1,74,0.0292243678788926,0.0419768193169548,TBX3,110
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Actomyosin Structure Organization (GO:0031032),1,77,0.030393210313471,0.043262407473229,MYH11,111
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Kinase Activity (GO:0043549),1,85,0.033504105816256,0.0472647207050755,PDGFRB,112
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Population Proliferation (GO:0042127),2,766,0.0351831037759202,0.0488050327883447,PDGFRB;TBX3,113
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014066),1,90,0.035443977738633,0.0488050327883447,PDGFRB,114
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Actin Cytoskeleton Organization (GO:0032956),1,91,0.0358315430597973,0.0488050327883447,PDGFRB,115
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of MAP Kinase Activity (GO:0043406),1,91,0.0358315430597973,0.0488050327883447,PDGFRB,116
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Kinase Activity (GO:0033674),1,104,0.0408575074552191,0.0551750955378172,PDGFRB,117
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of DNA Metabolic Process (GO:0051054),1,108,0.0423993391086082,0.0567719964335601,PDGFRB,118
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Extracellular Structure Organization (GO:0043062),1,109,0.0427844580072879,0.0568062551693402,COL5A2,119
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,External Encapsulating Structure Organization (GO:0045229),1,110,0.0431694413819315,0.0568397644862099,COL5A2,120
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of MAP Kinase Activity (GO:0043405),1,114,0.0447080204553742,0.0579005510815502,PDGFRB,121
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cytoskeleton Organization (GO:0051493),1,114,0.0447080204553742,0.0579005510815502,PDGFRB,122
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Protein Serine/Threonine Kinase Activity (GO:0071902),1,117,0.0458605337584813,0.0589102791369109,PDGFRB,123
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Cycle Process (GO:0090068),1,118,0.0462444344043175,0.0589243599667917,PDGFRB,124
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Macromolecule Biosynthetic Process (GO:0010557),1,122,0.0477786858359173,0.0603922588965995,PDGFRB,125
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Enzyme-Linked Receptor Protein Signaling Pathway (GO:0007167),1,124,0.0485450014204767,0.0608738906701215,PDGFRB,126
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Transferase Activity (GO:0051347),1,143,0.0557981302248326,0.0693453729512515,PDGFRB,127
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Actin Filament Organization (GO:0007015),1,144,0.056178529985824,0.0693453729512515,CNN1,128
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Skeletal System Development (GO:0001501),1,149,0.0580785181093375,0.071134929157173,TBX3,129
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Response To External Stimulus (GO:0032103),1,155,0.0603540856180015,0.0733534271357249,PDGFRB,130
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Protein Autophosphorylation (GO:0046777),1,162,0.063002833601897,0.075988150451143,PDGFRB,131
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Heart Development (GO:0007507),1,171,0.0663987656859505,0.0794773104422741,TBX3,132
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cellular Biosynthetic Process (GO:0031328),1,174,0.0675283473829625,0.0802216457632186,PDGFRB,133
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Extracellular Matrix Organization (GO:0030198),1,176,0.0682807373186478,0.0805101231070624,COL5A2,134
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of ERK1 And ERK2 Cascade (GO:0070374),1,179,0.0694083262554719,0.0812334485064042,PDGFRB,135
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Phosphorylation (GO:0042327),1,231,0.0887643881520279,0.1031233332942678,PDGFRB,136
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of ERK1 And ERK2 Cascade (GO:0070372),1,244,0.093547999824044,0.1078874742496273,PDGFRB,137
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Plasma Membrane Bounded Cell Projection Assembly (GO:0120031),1,275,0.1048665056654721,0.1200645499648159,MYLK,138
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Transmembrane Receptor Protein Tyrosine Kinase Signaling Pathway (GO:0007169),1,284,0.1081292729206735,0.1229095332479598,PDGFRB,139
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Cycle (GO:0051726),1,298,0.1131840058919903,0.1277362352209605,TBX3,140
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of MAPK Cascade (GO:0043410),1,310,0.1174966647628637,0.1316629293087409,PDGFRB,141
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Macromolecule Metabolic Process (GO:0010604),1,364,0.1366773626378198,0.152077628850532,ACTA2,142
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Population Proliferation (GO:0008285),1,379,0.1419401645322181,0.1565074991265837,TBX3,143
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Programmed Cell Death (GO:0043069),1,381,0.142639746039418,0.1565074991265837,TBX3,144
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Organelle Organization (GO:0006996),1,418,0.1554922948369654,0.1694329833395899,GEM,145
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Nucleic Acid-Templated Transcription (GO:1903507),1,456,0.168516415396389,0.1823670796755442,TBX3,146
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Gene Expression (GO:0010628),1,480,0.1766513170413367,0.1893075623884961,ACTA2,147
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Apoptotic Process (GO:0043066),1,482,0.1773260710980849,0.1893075623884961,TBX3,148
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Protein Phosphorylation (GO:0006468),1,500,0.1833771175703178,0.194453587759129,PDGFRB,149
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Intracellular Signal Transduction (GO:1902533),1,525,0.1917167294201107,0.2019416216558499,PDGFRB,150
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Apoptotic Process (GO:0042981),1,705,0.2495939291532118,0.2611645086503806,TBX3,151
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Transcription By RNA Polymerase II (GO:0000122),1,763,0.2674539196045007,0.2780113111678363,TBX3,152
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944),1,938,0.3191081277625573,0.3295364979508762,TBX3,153
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of DNA-templated Transcription (GO:0045892),1,1025,0.3435800035552407,0.3525041594917405,TBX3,154
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Gene Expression (GO:0010468),1,1127,0.3712882034923171,0.3784744267857168,ACTA2,155
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of DNA-templated Transcription (GO:0045893),1,1243,0.4015509725896932,0.4066990619818688,TBX3,156
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of DNA-templated Transcription (GO:0006355),1,1922,0.5544472913662554,0.5579788027762315,TBX3,157
+lung_cancer,1,8,GO_Biological_Process_2023,genome_enrichr,Regulation Of Transcription By RNA Polymerase II (GO:0006357),1,2028,0.5749271258875436,0.5749271258875436,TBX3,158
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Smooth Muscle Contraction (GO:0006939),2,2,0.0003950561544105198,0.039857542365157705,MYH11;MYLK,1
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Aorta Morphogenesis (GO:0035909),2,3,0.0011725266662904227,0.039857542365157705,MYLK;PDGFRB,2
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cardiac Muscle Cell Development (GO:0055013),2,3,0.0011725266662904227,0.039857542365157705,MYH11;PDGFRB,3
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Muscle Contraction (GO:0006936),2,3,0.0011725266662904227,0.039857542365157705,MYH11;MYLK,4
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Supramolecular Fiber Organization (GO:0097435),3,12,0.0012693484829668059,0.039857542365157705,MYH11;CNN1;COL5A2,5
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Calcium Ion Transport (GO:0051928),2,4,0.0023200232506693174,0.06070727505918047,MYLK;PDGFRB,6
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Actomyosin Structure Organization (GO:0031032),1,1,0.021220159151193636,0.10314228370675543,MYH11,7
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Anterior/Posterior Axis Specification (GO:0009948),1,1,0.021220159151193636,0.10314228370675543,TBX3,8
+lung_cancer,1,8,GO_Biological_Process_2023,panel,"Anterior/Posterior Axis Specification, Embryo (GO:0008595)",1,1,0.021220159151193636,0.10314228370675543,TBX3,9
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Aorta Development (GO:0035904),1,1,0.021220159151193636,0.10314228370675543,PDGFRB,10
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Artery Morphogenesis (GO:0048844),1,1,0.021220159151193636,0.10314228370675543,PDGFRB,11
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cardiac Cell Development (GO:0055006),1,1,0.021220159151193636,0.10314228370675543,MYH11,12
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cardiac Pacemaker Cell Development (GO:0060926),1,1,0.021220159151193636,0.10314228370675543,TBX3,13
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cell Migration Involved In Heart Development (GO:0060973),1,1,0.021220159151193636,0.10314228370675543,PDGFRB,14
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cellular Hypotonic Response (GO:0071476),1,1,0.021220159151193636,0.10314228370675543,MYLK,15
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cellular Response To Osmotic Stress (GO:0071470),1,1,0.021220159151193636,0.10314228370675543,MYLK,16
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Elastic Fiber Assembly (GO:0048251),1,1,0.021220159151193636,0.10314228370675543,MYH11,17
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Embryonic Axis Specification (GO:0000578),1,1,0.021220159151193636,0.10314228370675543,TBX3,18
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Embryonic Digit Morphogenesis (GO:0042733),1,1,0.021220159151193636,0.10314228370675543,TBX3,19
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Embryonic Forelimb Morphogenesis (GO:0035115),1,1,0.021220159151193636,0.10314228370675543,TBX3,20
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Embryonic Limb Morphogenesis (GO:0030326),1,1,0.021220159151193636,0.10314228370675543,TBX3,21
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Forelimb Morphogenesis (GO:0035136),1,1,0.021220159151193636,0.10314228370675543,TBX3,22
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Genitalia Development (GO:0048806),1,1,0.021220159151193636,0.10314228370675543,TBX3,23
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Hypotonic Response (GO:0006971),1,1,0.021220159151193636,0.10314228370675543,MYLK,24
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Limb Morphogenesis (GO:0035108),1,1,0.021220159151193636,0.10314228370675543,TBX3,25
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Myoblast Differentiation (GO:0045662),1,1,0.021220159151193636,0.10314228370675543,TBX3,26
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Wound Healing (GO:0090303),1,1,0.021220159151193636,0.10314228370675543,MYLK,27
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Reproductive System Development (GO:0061458),1,1,0.021220159151193636,0.10314228370675543,TBX3,28
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Sensory Organ Morphogenesis (GO:0090596),1,1,0.021220159151193636,0.10314228370675543,COL5A2,29
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Skin Development (GO:0043588),1,1,0.021220159151193636,0.10314228370675543,COL5A2,30
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Smooth Muscle Cell Migration (GO:0014909),1,1,0.021220159151193636,0.10314228370675543,PDGFRB,31
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Tripartite Regional Subdivision (GO:0007351),1,1,0.021220159151193636,0.10314228370675543,TBX3,32
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Differentiation (GO:0045596),2,12,0.02341516199616532,0.10314228370675543,TBX3;COL5A2,33
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Bleb Assembly (GO:0032060),1,2,0.04204526214797674,0.10314228370675543,MYLK,34
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cardiac Epithelial To Mesenchymal Transition (GO:0060317),1,2,0.04204526214797674,0.10314228370675543,TBX3,35
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cardiac Muscle Cell Differentiation (GO:0055007),1,2,0.04204526214797674,0.10314228370675543,MYH11,36
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Collagen Fibril Organization (GO:0030199),1,2,0.04204526214797674,0.10314228370675543,COL5A2,37
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Establishment Of Chromosome Localization (GO:0051303),1,2,0.04204526214797674,0.10314228370675543,GEM,38
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Extracellular Matrix Assembly (GO:0085029),1,2,0.04204526214797674,0.10314228370675543,MYH11,39
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Glycerophospholipid Metabolic Process (GO:0006650),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,40
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Heart Morphogenesis (GO:0003007),1,2,0.04204526214797674,0.10314228370675543,TBX3,41
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Mammary Gland Development (GO:0030879),1,2,0.04204526214797674,0.10314228370675543,TBX3,42
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Mesoderm Morphogenesis (GO:0048332),1,2,0.04204526214797674,0.10314228370675543,TBX3,43
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Metaphase Plate Congression (GO:0051310),1,2,0.04204526214797674,0.10314228370675543,GEM,44
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Muscle Tissue Morphogenesis (GO:0060415),1,2,0.04204526214797674,0.10314228370675543,MYLK,45
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Myofibril Assembly (GO:0030239),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,46
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Platelet-Derived Growth Factor Receptor Signaling Pathway (GO:0048008),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,47
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Calcium Ion Import (GO:0090280),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,48
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Monoatomic Ion Transport (GO:0043270),1,2,0.04204526214797674,0.10314228370675543,MYLK,49
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphatase Activity (GO:0010922),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,50
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphoprotein Phosphatase Activity (GO:0032516),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,51
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Dephosphorylation (GO:0035307),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,52
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Reactive Oxygen Species Metabolic Process (GO:2000379),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,53
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Response To Wounding (GO:1903036),1,2,0.04204526214797674,0.10314228370675543,MYLK,54
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Actin Filament-Based Process (GO:0032970),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,55
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Calcium Ion Import (GO:0090279),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,56
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Cytoskeleton Organization (GO:0051493),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,57
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of DNA Biosynthetic Process (GO:2000278),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,58
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Muscle Contraction (GO:0006937),1,2,0.04204526214797674,0.10314228370675543,CNN1,59
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Myoblast Differentiation (GO:0045661),1,2,0.04204526214797674,0.10314228370675543,TBX3,60
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Phosphoprotein Phosphatase Activity (GO:0043666),1,2,0.04204526214797674,0.10314228370675543,PDGFRB,61
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Smooth Muscle Contraction (GO:0006940),1,2,0.04204526214797674,0.10314228370675543,CNN1,62
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Skeletal Myofibril Assembly (GO:0014866),1,2,0.04204526214797674,0.10314228370675543,MYH11,63
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Smooth Muscle Tissue Development (GO:0048745),1,2,0.04204526214797674,0.10314228370675543,MYLK,64
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Migration (GO:0030335),2,20,0.06182248495191406,0.11818814328367144,MYLK;PDGFRB,65
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Motility (GO:2000147),2,20,0.06182248495191406,0.11818814328367144,MYLK;PDGFRB,66
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cardiac Myofibril Assembly (GO:0055003),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,67
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Cell Chemotaxis (GO:0060326),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,68
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Chromosome Organization (GO:0051276),1,3,0.06248162988881993,0.11818814328367144,GEM,69
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Epithelial To Mesenchymal Transition (GO:0001837),1,3,0.06248162988881993,0.11818814328367144,TBX3,70
+lung_cancer,1,8,GO_Biological_Process_2023,panel,External Encapsulating Structure Organization (GO:0045229),1,3,0.06248162988881993,0.11818814328367144,COL5A2,71
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Extracellular Structure Organization (GO:0043062),1,3,0.06248162988881993,0.11818814328367144,COL5A2,72
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Eye Development (GO:0001654),1,3,0.06248162988881993,0.11818814328367144,COL5A2,73
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Mesoderm Development (GO:0007498),1,3,0.06248162988881993,0.11818814328367144,TBX3,74
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Muscle Cell Development (GO:0055001),1,3,0.06248162988881993,0.11818814328367144,MYH11,75
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904706),1,3,0.06248162988881993,0.11818814328367144,CNN1,76
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Nuclear Chromosome Segregation (GO:0098813),1,3,0.06248162988881993,0.11818814328367144,GEM,77
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Phosphatidylinositol Metabolic Process (GO:0046488),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,78
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of DNA Biosynthetic Process (GO:2000573),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,79
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Reactive Oxygen Species Metabolic Process (GO:2000377),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,80
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Smooth Muscle Cell Migration (GO:0014910),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,81
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Wound Healing (GO:0061041),1,3,0.06248162988881993,0.11818814328367144,MYLK,82
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Vasculature Development (GO:0001944),1,3,0.06248162988881993,0.11818814328367144,PDGFRB,83
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Eye Morphogenesis (GO:0048592),1,4,0.08253549876820346,0.14239640996272465,COL5A2,84
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Inositol Lipid-Mediated Signaling (GO:0048017),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,85
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Peptidyl-Tyrosine Modification (GO:0018212),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,86
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Peptidyl-Tyrosine Phosphorylation (GO:0018108),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,87
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of DNA Metabolic Process (GO:0051054),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,88
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Smooth Muscle Cell Migration (GO:0014911),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,89
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Actin Cytoskeleton Organization (GO:0032956),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,90
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Phospholipase C Activity (GO:1900274),1,4,0.08253549876820346,0.14239640996272465,PDGFRB,91
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Cell Migration (GO:0030334),2,25,0.09246141078240354,0.1528328037000357,MYLK;PDGFRB,92
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Actin Filament Organization (GO:0007015),1,5,0.10221302158282643,0.1528328037000357,CNN1,93
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Gland Development (GO:0048732),1,5,0.10221302158282643,0.1528328037000357,TBX3,94
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Smooth Muscle Cell Proliferation (GO:0048662),1,5,0.10221302158282643,0.1528328037000357,CNN1,95
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Cycle (GO:0045787),1,5,0.10221302158282643,0.1528328037000357,TBX3,96
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Cycle Process (GO:0090068),1,5,0.10221302158282643,0.1528328037000357,PDGFRB,97
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cellular Metabolic Process (GO:0031325),1,5,0.10221302158282643,0.1528328037000357,PDGFRB,98
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Locomotion (GO:0040017),1,5,0.10221302158282643,0.1528328037000357,PDGFRB,99
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Nuclear Division (GO:0051785),1,5,0.10221302158282643,0.1528328037000357,PDGFRB,100
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phospholipase Activity (GO:0010518),1,5,0.10221302158282643,0.1528328037000357,PDGFRB,101
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Smooth Muscle Cell Proliferation (GO:0048661),1,5,0.10221302158282643,0.1528328037000357,PDGFRB,102
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Calcium Ion Transport (GO:0051924),1,5,0.10221302158282643,0.1528328037000357,MYLK,103
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Cell Cycle (GO:0051726),1,5,0.10221302158282643,0.1528328037000357,TBX3,104
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Vascular Associated Smooth Muscle Cell Proliferation (GO:1904705),1,5,0.10221302158282643,0.1528328037000357,CNN1,105
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Population Proliferation (GO:0008284),2,28,0.11276459707185298,0.16032506003016542,TBX3;PDGFRB,106
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cellular Process (GO:0048522),2,29,0.11980735989643676,0.16032506003016542,TBX3;PDGFRB,107
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Extracellular Matrix Organization (GO:0030198),1,6,0.12152026843050756,0.16032506003016542,COL5A2,108
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Plasma Membrane Bounded Cell Projection Assembly (GO:0120031),1,6,0.12152026843050756,0.16032506003016542,MYLK,109
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Lipid Kinase Activity (GO:0090218),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,110
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Macromolecule Biosynthetic Process (GO:0010557),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,111
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Mitotic Nuclear Division (GO:0045840),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,112
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043552),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,113
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Protein Autophosphorylation (GO:0046777),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,114
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Mitotic Nuclear Division (GO:0007088),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,115
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Phosphatidylinositol 3-Kinase Activity (GO:0043551),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,116
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Smooth Muscle Cell Proliferation (GO:0048660),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,117
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Skeletal System Development (GO:0001501),1,6,0.12152026843050756,0.16032506003016542,TBX3,118
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Vasculogenesis (GO:0001570),1,6,0.12152026843050756,0.16032506003016542,PDGFRB,119
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Heart Development (GO:0007507),1,7,0.14046322760181737,0.17502164074194704,TBX3,120
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Organelle Organization (GO:0006996),1,7,0.14046322760181737,0.17502164074194704,GEM,121
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Phosphatidylinositol-Mediated Signaling (GO:0048015),1,7,0.14046322760181737,0.17502164074194704,PDGFRB,122
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Chemotaxis (GO:0050921),1,7,0.14046322760181737,0.17502164074194704,PDGFRB,123
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phospholipase C Activity (GO:0010863),1,7,0.14046322760181737,0.17502164074194704,PDGFRB,124
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Chemotaxis (GO:0050920),1,7,0.14046322760181737,0.17502164074194704,PDGFRB,125
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Kinase Activity (GO:0043549),1,7,0.14046322760181737,0.17502164074194704,PDGFRB,126
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of MAP Kinase Activity (GO:0043406),1,8,0.15904780646448077,0.19508207511658968,PDGFRB,127
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014068),1,8,0.15904780646448077,0.19508207511658968,PDGFRB,128
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Cellular Biosynthetic Process (GO:0031328),1,9,0.17727983234058955,0.21409948982671198,PDGFRB,129
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of MAP Kinase Activity (GO:0043405),1,9,0.17727983234058955,0.21409948982671198,PDGFRB,130
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Enzyme-Linked Receptor Protein Signaling Pathway (GO:0007167),1,10,0.19516505337666382,0.22696972874174975,PDGFRB,131
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Kinase Activity (GO:0033674),1,10,0.19516505337666382,0.22696972874174975,PDGFRB,132
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Transferase Activity (GO:0051347),1,10,0.19516505337666382,0.22696972874174975,PDGFRB,133
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Protein Phosphorylation (GO:0006468),1,10,0.19516505337666382,0.22696972874174975,PDGFRB,134
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Phosphatidylinositol 3-Kinase Signaling (GO:0014066),1,10,0.19516505337666382,0.22696972874174975,PDGFRB,135
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Cell Population Proliferation (GO:0042127),2,41,0.21230026161761867,0.24508191966151566,TBX3;PDGFRB,136
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Protein Serine/Threonine Kinase Activity (GO:0071902),1,12,0.22991768280754882,0.2634823080349282,PDGFRB,137
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Nucleic Acid-Templated Transcription (GO:1903507),1,13,0.24679619934875324,0.2748014418280444,TBX3,138
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Phosphorylation (GO:0042327),1,13,0.24679619934875324,0.2748014418280444,PDGFRB,139
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Response To External Stimulus (GO:0032103),1,13,0.24679619934875324,0.2748014418280444,PDGFRB,140
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Transmembrane Receptor Protein Tyrosine Kinase Signaling Pathway (GO:0007169),1,13,0.24679619934875324,0.2748014418280444,PDGFRB,141
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of ERK1 And ERK2 Cascade (GO:0070374),1,14,0.263350129033396,0.2911688046355153,PDGFRB,142
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of ERK1 And ERK2 Cascade (GO:0070372),1,17,0.31111767797311296,0.34157675134111004,PDGFRB,143
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Population Proliferation (GO:0008285),1,20,0.35615268575131365,0.38562739077900854,TBX3,144
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Macromolecule Metabolic Process (GO:0010604),1,20,0.35615268575131365,0.38562739077900854,ACTA2,145
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Gene Expression (GO:0010628),1,21,0.3705806367708919,0.39850109570568515,ACTA2,146
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Programmed Cell Death (GO:0043069),1,22,0.38472489212435507,0.4108966534933588,TBX3,147
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Transcription By RNA Polymerase II (GO:0000122),1,24,0.4121814275342908,0.4372465143438085,TBX3,148
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of Apoptotic Process (GO:0043066),1,25,0.4255030948989527,0.4453599059942372,TBX3,149
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of MAPK Cascade (GO:0043410),1,25,0.4255030948989527,0.4453599059942372,PDGFRB,150
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Intracellular Signal Transduction (GO:1902533),1,29,0.4761855318057329,0.49510681121523226,PDGFRB,151
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Negative Regulation Of DNA-templated Transcription (GO:0045892),1,31,0.5000260392521182,0.5164742642275169,TBX3,152
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944),1,34,0.5340067472712698,0.5444094761142166,TBX3,153
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Apoptotic Process (GO:0042981),1,34,0.5340067472712698,0.5444094761142166,TBX3,154
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of Gene Expression (GO:0010468),1,36,0.5555215841660477,0.5626896046068999,ACTA2,155
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Positive Regulation Of DNA-templated Transcription (GO:0045893),1,39,0.5861642617951962,0.589921725011832,TBX3,156
+lung_cancer,1,8,GO_Biological_Process_2023,panel,Regulation Of DNA-templated Transcription (GO:0006355),1,43,0.6241377220085633,0.6241377220085633,TBX3,157
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,Epithelial Mesenchymal Transition,5,200,5.197809453130906e-09,3.6384666171916345e-08,ACTA2;PDGFRB;COL5A2;GEM;MYLK,1
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,UV Response Dn,2,144,0.0014010766280144,0.0049037681980505,PDGFRB;COL5A2,2
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,Myogenesis,2,200,0.0026777674677022,0.0062481240913053,MYH11;MYLK,3
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,Angiogenesis,1,36,0.0143119685548053,0.0250459449709093,COL5A2,4
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,Apoptosis,1,161,0.0626248414810233,0.0772680713380291,PDGFRB,5
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,TNF-alpha Signaling via NF-kB,1,200,0.0772680713380291,0.0772680713380291,GEM,6
+lung_cancer,1,8,MSigDB_Hallmark_2020,genome_enrichr,Adipogenesis,1,200,0.0772680713380291,0.0772680713380291,MYLK,7
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,Epithelial Mesenchymal Transition,5,24,3.3801068432838054e-05,0.0002366074790298664,MYLK;COL5A2;GEM;ACTA2;PDGFRB,1
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,Myogenesis,2,8,0.010371175563173528,0.036299114471107355,MYH11;MYLK,2
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,UV Response Dn,2,12,0.02341516199616532,0.05463537799105242,COL5A2;PDGFRB,3
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,Angiogenesis,1,5,0.10221302158282643,0.17887278776994625,COL5A2,4
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,Adipogenesis,1,9,0.17727983234058955,0.22769256227277446,MYLK,5
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,Apoptosis,1,10,0.19516505337666382,0.22769256227277446,PDGFRB,6
+lung_cancer,1,8,MSigDB_Hallmark_2020,panel,TNF-alpha Signaling via NF-kB,1,16,0.29550561401782927,0.29550561401782927,GEM,7
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Extracellular Matrix Organization (GO:0030198),2,176,0.0011284919947954,0.0204893375621494,ADAMTS1;DPT,1
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of Circadian Sleep/Wake Cycle (GO:0042749),1,5,0.0014992198216206,0.0204893375621494,PTGDS,2
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,"Regulation Of Circadian Sleep/Wake Cycle, Sleep (GO:0045187)",1,5,0.0014992198216206,0.0204893375621494,PTGDS,3
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Cyclooxygenase Pathway (GO:0019371),1,8,0.0023978589692277,0.0225214754554714,PTGDS,4
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070885),1,11,0.0032958256764104,0.0225214754554714,FHL2,5
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Calcineurin-Mediated Signaling (GO:0106057),1,11,0.0032958256764104,0.0225214754554714,FHL2,6
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Prostanoid Biosynthetic Process (GO:0046457),1,14,0.0041931197986946,0.0245597016780688,PTGDS,7
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Prostaglandin Biosynthetic Process (GO:0001516),1,17,0.0050897414535705,0.0260849249495491,PTGDS,8
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Prostaglandin Metabolic Process (GO:0006693),1,30,0.008967337727522,0.0367110385159974,PTGDS,9
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of G1/S Transition Of Mitotic Cell Cycle (GO:1900087),1,31,0.0092650922497144,0.0367110385159974,ADAMTS1,10
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070884),1,34,0.0101579087405383,0.0367110385159974,FHL2,11
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Cycle G1/S Phase Transition (GO:1902808),1,40,0.0119415311049953,0.0367110385159974,ADAMTS1,12
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Neuron Differentiation (GO:0045666),1,42,0.0125354765664381,0.0367110385159974,TCF4,13
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Collagen Fibril Organization (GO:0030199),1,42,0.0125354765664381,0.0367110385159974,DPT,14
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Arachidonic Acid Metabolic Process (GO:0019369),1,52,0.0155007440273006,0.0423687003412884,PTGDS,15
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,protein-DNA Complex Assembly (GO:0065004),1,59,0.0175720139945569,0.0427173665252926,TCF4,16
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,protein-DNA Complex Organization (GO:0071824),1,60,0.0178676130920248,0.0427173665252926,TCF4,17
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Mitotic Cell Cycle Phase Transition (GO:1901992),1,63,0.0187539657915919,0.0427173665252926,ADAMTS1,18
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of Neuron Differentiation (GO:0045664),1,79,0.023469931862476,0.0506456424400799,TCF4,19
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Integrin-Mediated Signaling Pathway (GO:0007229),1,85,0.02523354305099,0.0517287632545295,ADAMTS1,20
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of G1/S Transition Of Mitotic Cell Cycle (GO:2000045),1,106,0.031385296805751,0.0580299445357766,ADAMTS1,21
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Extracellular Structure Organization (GO:0043062),1,109,0.0322614719403215,0.0580299445357766,ADAMTS1,22
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,External Encapsulating Structure Organization (GO:0045229),1,110,0.0325533835200698,0.0580299445357766,ADAMTS1,23
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of Angiogenesis (GO:0045765),1,205,0.0599524820622111,0.1024188235229439,ADAMTS1,24
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Cell Differentiation (GO:0045597),1,283,0.0819623201795013,0.1344182050943821,TCF4,25
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Supramolecular Fiber Organization (GO:0097435),1,316,0.0911439979098563,0.1391306708238812,DPT,26
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Protein-Containing Complex Assembly (GO:0065003),1,328,0.0944637581981329,0.1391306708238812,TCF4,27
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Proteolysis (GO:0006508),1,330,0.0950160678797237,0.1391306708238812,ADAMTS1,28
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cell Population Proliferation (GO:0008285),1,379,0.1084602352383251,0.1489740759115018,ADAMTS1,29
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Programmed Cell Death (GO:0043069),1,381,0.1090054213986598,0.1489740759115018,FHL2,30
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of Transcription By RNA Polymerase II (GO:0006357),2,2028,0.1170064062234409,0.1547504082310025,FHL2;TCF4,31
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Apoptotic Process (GO:0043066),1,482,0.1361784362553051,0.1744786214521097,FHL2,32
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Cellular Process (GO:0048523),1,537,0.150682795237769,0.1872119577196524,ADAMTS1,33
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Nucleic Acid-Templated Transcription (GO:1903508),1,557,0.1559065268847739,0.1880049294786979,TCF4,34
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of Apoptotic Process (GO:0042981),1,705,0.1937364286447065,0.2269483878409419,FHL2,35
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of Transcription By RNA Polymerase II (GO:0000122),1,763,0.2081710019637134,0.2314967711873796,FHL2,36
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of Cell Population Proliferation (GO:0042127),1,766,0.2089117203398304,0.2314967711873796,ADAMTS1,37
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944),1,938,0.2504250845565226,0.2701954859688796,TCF4,38
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Negative Regulation Of DNA-templated Transcription (GO:0045892),1,1025,0.2707215025190063,0.2846046564943399,FHL2,39
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Positive Regulation Of DNA-templated Transcription (GO:0045893),1,1243,0.3195769443121374,0.3275663679199408,TCF4,40
+lung_cancer,3,6,GO_Biological_Process_2023,genome_enrichr,Regulation Of DNA-templated Transcription (GO:0006355),1,1922,0.4546338956557295,0.4546338956557295,TCF4,41
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Extracellular Matrix Organization (GO:0030198),2,6,0.003085072365035662,0.09094353921940129,DPT;ADAMTS1,1
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Cyclooxygenase Pathway (GO:0019371),1,1,0.015915119363395226,0.09094353921940129,PTGDS,2
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of Calcineurin-Mediated Signaling (GO:0106057),1,1,0.015915119363395226,0.09094353921940129,FHL2,3
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070885),1,1,0.015915119363395226,0.09094353921940129,FHL2,4
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of Circadian Sleep/Wake Cycle (GO:0042749),1,1,0.015915119363395226,0.09094353921940129,PTGDS,5
+lung_cancer,3,6,GO_Biological_Process_2023,panel,"Regulation Of Circadian Sleep/Wake Cycle, Sleep (GO:0045187)",1,1,0.015915119363395226,0.09094353921940129,PTGDS,6
+lung_cancer,3,6,GO_Biological_Process_2023,panel,protein-DNA Complex Assembly (GO:0065004),1,1,0.015915119363395226,0.09094353921940129,TCF4,7
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Collagen Fibril Organization (GO:0030199),1,2,0.031618601501213386,0.11085342088751524,DPT,8
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Prostaglandin Biosynthetic Process (GO:0001516),1,2,0.031618601501213386,0.11085342088751524,PTGDS,9
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Prostanoid Biosynthetic Process (GO:0046457),1,2,0.031618601501213386,0.11085342088751524,PTGDS,10
+lung_cancer,3,6,GO_Biological_Process_2023,panel,External Encapsulating Structure Organization (GO:0045229),1,3,0.047112703877193976,0.11085342088751524,ADAMTS1,11
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Extracellular Structure Organization (GO:0043062),1,3,0.047112703877193976,0.11085342088751524,ADAMTS1,12
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of G1/S Transition Of Mitotic Cell Cycle (GO:1900087),1,3,0.047112703877193976,0.11085342088751524,ADAMTS1,13
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Prostaglandin Metabolic Process (GO:0006693),1,3,0.047112703877193976,0.11085342088751524,PTGDS,14
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of G1/S Transition Of Mitotic Cell Cycle (GO:2000045),1,3,0.047112703877193976,0.11085342088751524,ADAMTS1,15
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of calcineurin-NFAT Signaling Cascade (GO:0070884),1,3,0.047112703877193976,0.11085342088751524,FHL2,16
+lung_cancer,3,6,GO_Biological_Process_2023,panel,protein-DNA Complex Organization (GO:0071824),1,3,0.047112703877193976,0.11085342088751524,TCF4,17
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Cycle G1/S Phase Transition (GO:1902808),1,4,0.062399665847078574,0.1347507978360081,ADAMTS1,18
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Arachidonic Acid Metabolic Process (GO:0019369),1,5,0.07748170875570465,0.1347507978360081,PTGDS,19
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Integrin-Mediated Signaling Pathway (GO:0007229),1,5,0.07748170875570465,0.1347507978360081,ADAMTS1,20
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of Mitotic Cell Cycle Phase Transition (GO:1901992),1,5,0.07748170875570465,0.1347507978360081,ADAMTS1,21
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of Neuron Differentiation (GO:0045666),1,5,0.07748170875570465,0.1347507978360081,TCF4,22
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of Neuron Differentiation (GO:0045664),1,5,0.07748170875570465,0.1347507978360081,TCF4,23
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Protein-Containing Complex Assembly (GO:0065003),1,11,0.1637928162050759,0.27298802700845987,TCF4,24
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Supramolecular Fiber Organization (GO:0097435),1,12,0.1775011306935173,0.2840018091096277,DPT,25
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of Angiogenesis (GO:0045765),1,13,0.19102166005198007,0.29387947700304623,ADAMTS1,26
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of Nucleic Acid-Templated Transcription (GO:1903508),1,15,0.21750760061607602,0.31072514373725146,TCF4,27
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Proteolysis (GO:0006508),1,15,0.21750760061607602,0.31072514373725146,ADAMTS1,28
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of Cell Differentiation (GO:0045597),1,19,0.26831572001987936,0.36203688393223127,TCF4,29
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of Cell Population Proliferation (GO:0008285),1,20,0.28057858504747923,0.36203688393223127,ADAMTS1,30
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of Cellular Process (GO:0048523),1,20,0.28057858504747923,0.36203688393223127,ADAMTS1,31
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of Programmed Cell Death (GO:0043069),1,22,0.30459099843485676,0.38073874804357094,FHL2,32
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of Transcription By RNA Polymerase II (GO:0000122),1,24,0.3279317732307649,0.3974930584615332,FHL2,33
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of Apoptotic Process (GO:0043066),1,25,0.33935502920984534,0.39924121083511216,FHL2,34
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Negative Regulation Of DNA-templated Transcription (GO:0045892),1,31,0.4045512268622093,0.46234425927109635,FHL2,35
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944),1,34,0.43508112722487646,0.4703579753782448,TCF4,36
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of Apoptotic Process (GO:0042981),1,34,0.43508112722487646,0.4703579753782448,FHL2,37
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Positive Regulation Of DNA-templated Transcription (GO:0045893),1,39,0.48306308208628995,0.5084874548276737,TCF4,38
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of Cell Population Proliferation (GO:0042127),1,41,0.5012797237777341,0.5141330500284452,ADAMTS1,39
+lung_cancer,3,6,GO_Biological_Process_2023,panel,Regulation Of DNA-templated Transcription (GO:0006355),1,43,0.5189582410318817,0.5189582410318817,TCF4,40
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,Androgen Response,1,100,0.0296309633944118,0.0585267307609904,ADAMTS1,1
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,UV Response Dn,1,144,0.0424348143896667,0.0585267307609904,FHL2,2
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,Apoptosis,1,161,0.0473439014083444,0.0585267307609904,CD69,3
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,Xenobiotic Metabolism,1,200,0.0585267307609904,0.0585267307609904,PTGDS,4
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,TNF-alpha Signaling via NF-kB,1,200,0.0585267307609904,0.0585267307609904,CD69,5
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,Interferon Gamma Response,1,200,0.0585267307609904,0.0585267307609904,CD69,6
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,Estrogen Response Early,1,200,0.0585267307609904,0.0585267307609904,FHL2,7
+lung_cancer,3,6,MSigDB_Hallmark_2020,genome_enrichr,Inflammatory Response,1,200,0.0585267307609904,0.0585267307609904,CD69,8
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,Androgen Response,1,5,0.07748170875570465,0.2634023861699229,ADAMTS1,1
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,Estrogen Response Early,1,8,0.12152026843050756,0.2634023861699229,FHL2,2
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,Apoptosis,1,10,0.1498946358649941,0.2634023861699229,CD69,3
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,Xenobiotic Metabolism,1,11,0.1637928162050759,0.2634023861699229,PTGDS,4
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,UV Response Dn,1,12,0.1775011306935173,0.2634023861699229,FHL2,5
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,Interferon Gamma Response,1,14,0.20435646785332107,0.2634023861699229,CD69,6
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,TNF-alpha Signaling via NF-kB,1,16,0.23047708789868251,0.2634023861699229,CD69,7
+lung_cancer,3,6,MSigDB_Hallmark_2020,panel,Inflammatory Response,1,26,0.35061602303013206,0.35061602303013206,CD69,8

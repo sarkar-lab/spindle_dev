@@ -64,7 +64,7 @@ def create_index(adata, index_path, resolution=0.5, min_final_size=10, top_genes
     # Floor each niche's budget-sizing epsilon at the dataset-wide median
     # across niches -- prevents small/homogeneous niches from being starved
     # of search budget regardless of budget_multiplier (see
-    # benchmarks/index_datasets.py's configure_and_build_dag for the full
+    # benchmarks/build_indexes.py's configure_and_build_dag for the full
     # rationale and the confirmed failure case this fixes).
     if epsilon_dict:
         median_eps = float(np.median(list(epsilon_dict.values())))

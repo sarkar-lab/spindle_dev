@@ -1,0 +1,2 @@
+dataset,niche,layer,node,library,highlight_module,highlight_size,jaccard_ref,reference_in_module,reference_size,rank,n_nodes,score,E,Q,S,n_tiles_node,block_size,n_panel_genes,n_niches,best_jaccard_any_node,n_candidate_modules
+pancreatic_cancer,3,23,1454,GO_Biological_Process_2023,1,25,0.4230769230769231,11,12,198,6641,0.13002458082388757,1.6755386106379277,0.14605338828330944,0.4686796963214874,1,58,474,4,0.47619047619047616,18

@@ -1,0 +1,2 @@
+dataset,niche,layer,node,library,highlight_module,highlight_size,jaccard_ref,reference_in_module,reference_size,rank,n_nodes,score,E,Q,S,n_tiles_node,block_size,n_panel_genes,n_niches,best_jaccard_any_node,n_candidate_modules
+breast_cancer,2,11,694,MSigDB_Hallmark_2020,1,14,1.0,14,14,55,4123,0.16597442418604202,1.6278585706438338,0.16407131997401028,0.37857434153556824,1,49,313,4,1.0,1

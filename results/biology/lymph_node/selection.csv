@@ -1,0 +1,2 @@
+dataset,niche,layer,node,library,highlight_module,highlight_size,jaccard_ref,reference_in_module,reference_size,rank,n_nodes,score,E,Q,S,n_tiles_node,block_size,n_panel_genes,n_niches,best_jaccard_any_node,n_candidate_modules
+lymph_node,3,13,878,GO_Biological_Process_2023,1,17,0.5555555555555556,15,25,584,7871,0.10407817856061298,1.665545267852241,0.15008192971486728,0.5836371779441833,1,50,377,6,0.5555555555555556,3

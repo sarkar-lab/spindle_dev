@@ -1,0 +1,2 @@
+dataset,niche,layer,node,library,highlight_module,highlight_size,jaccard_ref,reference_in_module,reference_size,rank,n_nodes,score,E,Q,S,n_tiles_node,block_size,n_panel_genes,n_niches,best_jaccard_any_node,n_candidate_modules
+lung_cancer,0,11,709,GO_Biological_Process_2023,1,8,0.3888888888888889,7,17,24,3937,0.24865877899159947,1.3239642460024545,0.3084111515625378,0.3910297751426697,1,38,377,4,0.47368421052631576,2

@@ -1,0 +1,2 @@
+dataset,niche,layer,node,library,highlight_module,highlight_size,jaccard_ref,reference_in_module,reference_size,rank,n_nodes,score,E,Q,S,n_tiles_node,block_size,n_panel_genes,n_niches,best_jaccard_any_node,n_candidate_modules
+skin_melanoma,3,9,584,GO_Biological_Process_2023,0,27,0.7586206896551724,22,24,7,4891,0.2371621675524667,3.391032166764018,0.16619681624721783,0.5791879296302795,1,44,382,4,0.88,7
