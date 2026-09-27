@@ -298,8 +298,15 @@ def panel_c(d):
     h = W * tissue_aspect(t)
     fig = part(W, h)
     ax = ax_mm(fig, 0, 0, W, h)
-    rects(ax, tr, facecolor=list(col), edgecolor="black", lw=0.08)
-    rects(ax, t[t.status == "heldout"], facecolor=fs.LIGHT, edgecolor="black", lw=0.08)
+    cells = d["cells"]
+    x, y = cells.x.to_numpy(), cells.y.to_numpy()
+    cell_col = np.full(len(cells), None, dtype=object)  # each cell takes its tile's niche colour (held out: grey)
+    for r in t.itertuples():
+        inside = (cell_col == None) & (x >= r.x0) & (x <= r.x1) & (y >= r.y0) & (y <= r.y1)  # noqa: E711
+        cell_col[inside] = d["colors"][r.niche] if r.status == "train" else fs.LIGHT
+    keep = cell_col != None  # noqa: E711
+    ax.scatter(x[keep], y[keep], s=0.02, c=list(cell_col[keep]), lw=0, alpha=0.8, rasterized=True, zorder=1)
+    rects(ax, t, facecolor="none", edgecolor="black", lw=0.08, zorder=2)
     tissue_axes(ax, t)
     save(fig, "c_spatial_niches")
 
