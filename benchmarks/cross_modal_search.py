@@ -2,14 +2,14 @@
 
 Queries from one platform are searched against a Spindle index built on the
 other platform (matched serial breast-cancer sections, shared gene subset).
-Mirrors benchmarks/holdout_validation.py's methodology:
+Mirrors benchmarks/holdout_core.py's methodology:
 
 - every niche's DAG is searched per query (no single-niche routing; see
-  ``holdout_validation.perform_search``'s docstring for why routing was removed),
+  ``holdout_core.perform_search``'s docstring for why routing was removed),
 - ground truth is the exact block-diagonalized log-Euclidean distance over
-  every niche (``holdout_validation.compute_ground_truth``),
+  every niche (``holdout_core.compute_ground_truth``),
 - metrics are ``recall_at_eps_*`` / ``overlap_at_eps_*`` plus speedup against
-  the whole-matrix brute-force cost (``holdout_validation.evaluate_against_ground_truth``).
+  the whole-matrix brute-force cost (``holdout_core.evaluate_against_ground_truth``).
 
 The one cross-modal-specific step is a tangent-space modality bias
 correction (``--correction``, default ``global``): each query's whole-matrix
@@ -47,9 +47,8 @@ sys.path.insert(0, str(_this_dir))
 import spindle_dev.search as search  # noqa: E402
 from spindle_dev.preprocessing import build_quadtree_tiles, QuadTile, build_tile_covs_full  # noqa: E402
 from spindle_dev.utils import log_spd, exp_spd  # noqa: E402
-import holdout_validation as hv  # type: ignore  # noqa: E402
-import index_datasets  # type: ignore  # noqa: E402
-from run_logging import RunLogger  # type: ignore  # noqa: E402
+import holdout_core as hv  # type: ignore  # noqa: E402
+import build_indexes  # type: ignore  # noqa: E402
 
 DEFAULT_DATA_DIR = project_root / "dataset" / "cross_modal"
 RESULTS_DIR = project_root / "results" / "cross_modal_search"
@@ -144,7 +143,7 @@ def _corrected_query_matrix(blocks_log, block_runs, p):
 
 def perform_search_corrected(corrected, data, dag_dict, config, budget_multiplier=1.0,
                              restrict_niches=None):
-    """Mirror of ``holdout_validation.perform_search`` for per-niche corrected queries.
+    """Mirror of ``holdout_core.perform_search`` for per-niche corrected queries.
 
     Same per-niche SearchConfig caps, budget formula and cross-niche candidate
     merge; the only difference is that the query handed to niche ``c``'s DAG
@@ -221,64 +220,59 @@ def run_direction(direction, args, tiles, covs, adatas, common_genes, out_dir):
     query_tile_ids = [covs_query[j]["tile_id"] for j in query_sel]
     print(f"\n[{direction}] {n_q}/{len(covs_query)} query tiles, {len(covs_index)} index tiles")
 
-    with RunLogger(dataset_name=dataset_name, stage="cross_modal_search",
-                   out_dir=project_root / "results" / "run_logs", seed=args.seed,
-                   direction=direction, n_queries=n_q, budget_mult=args.budget_mult,
-                   n_tiles_index=len(covs_index), n_tiles_query=len(covs_query),
-                   n_common_genes=len(common_genes)):
-        t0 = time.perf_counter()
-        data, _ = index_datasets.run_index(tiles_index, covs_index, common_genes, adata_index,
-                                           resolution=0.2, min_final_size=15, max_niche_size=1000,
-                                           random_state=args.seed)
-        dag_dict, config = index_datasets.configure_and_build_dag(data)
-        build_time_s = time.perf_counter() - t0
-        n_niches = len(set(int(x) for x in data.labels))
-        print(f"[{direction}] index built in {build_time_s:.1f}s, {n_niches} niches")
+    t0 = time.perf_counter()
+    data, _ = build_indexes.run_index(tiles_index, covs_index, common_genes, adata_index,
+                                       resolution=0.2, min_final_size=15, max_niche_size=1000,
+                                       random_state=args.seed)
+    dag_dict, config = build_indexes.configure_and_build_dag(data)
+    build_time_s = time.perf_counter() - t0
+    n_niches = len(set(int(x) for x in data.labels))
+    print(f"[{direction}] index built in {build_time_s:.1f}s, {n_niches} niches")
 
-        train_covs = [t["cov"] for t in covs_index]
-        if args.correction == "per_niche":
-            corrected = compute_corrected_query_logs(query_covs, train_covs, data)
-        elif args.correction == "global":
-            corrected = blocks_log_per_niche(compute_global_corrected_covs(query_covs, train_covs), data)
-        else:
-            corrected = blocks_log_per_niche(query_covs, data)
+    train_covs = [t["cov"] for t in covs_index]
+    if args.correction == "per_niche":
+        corrected = compute_corrected_query_logs(query_covs, train_covs, data)
+    elif args.correction == "global":
+        corrected = blocks_log_per_niche(compute_global_corrected_covs(query_covs, train_covs), data)
+    else:
+        corrected = blocks_log_per_niche(query_covs, data)
 
-        gt_block = hv.compute_ground_truth(query_covs, train_covs, data,
-                                           query_blocks_log_override=corrected)
-        gt_whole = hv.compute_ground_truth_whole_matrix(query_covs, train_covs)
+    gt_block = hv.compute_ground_truth(query_covs, train_covs, data,
+                                       query_blocks_log_override=corrected)
+    gt_whole = hv.compute_ground_truth_whole_matrix(query_covs, train_covs)
 
-        variants = [("all_niche", None)]
-        if args.single_niche_baseline:
-            assigned = search.assign_clusters_to_new_spds(query_covs, data, strategy="knn_majority",
-                                                          n_neighbors=5)
-            variants.append(("single_niche_baseline", [int(a) for a in assigned]))
+    variants = [("all_niche", None)]
+    if args.single_niche_baseline:
+        assigned = search.assign_clusters_to_new_spds(query_covs, data, strategy="knn_majority",
+                                                      n_neighbors=5)
+        variants.append(("single_niche_baseline", [int(a) for a in assigned]))
 
-        for variant, restrict in variants:
-            matched, times = perform_search_corrected(corrected, data, dag_dict, config,
-                                                      budget_multiplier=args.budget_mult,
-                                                      restrict_niches=restrict)
-            df, summary = hv.evaluate_against_ground_truth(
-                gt_block, gt_block, data.spd_ids, matched, times, data, dataset_name, config,
-                ground_truth_kind="block", top_c_candidates=args.top_c, ground_truth_whole=gt_whole,
-            )
-            extra = {"direction": direction, "seed": args.seed, "variant": variant,
-                     "correction": args.correction,
-                     "n_niches": n_niches, "n_tiles_index": len(covs_index),
-                     "n_tiles_query": len(covs_query), "build_time_s": round(build_time_s, 2)}
-            df.insert(1, "query_tile_id", query_tile_ids)
-            if restrict is not None:
-                df["searched_niche"] = restrict
-            df["true_best_niche"] = [q["true_best_niche"] for q in gt_block["per_query"]]
-            for k, v in extra.items():
-                df[k] = v
-            summary = {**extra, **summary}
+    for variant, restrict in variants:
+        matched, times = perform_search_corrected(corrected, data, dag_dict, config,
+                                                  budget_multiplier=args.budget_mult,
+                                                  restrict_niches=restrict)
+        df, summary = hv.evaluate_against_ground_truth(
+            gt_block, gt_block, data.spd_ids, matched, times, data, dataset_name, config,
+            ground_truth_kind="block", top_c_candidates=args.top_c, ground_truth_whole=gt_whole,
+        )
+        extra = {"direction": direction, "seed": args.seed, "variant": variant,
+                 "correction": args.correction,
+                 "n_niches": n_niches, "n_tiles_index": len(covs_index),
+                 "n_tiles_query": len(covs_query), "build_time_s": round(build_time_s, 2)}
+        df.insert(1, "query_tile_id", query_tile_ids)
+        if restrict is not None:
+            df["searched_niche"] = restrict
+        df["true_best_niche"] = [q["true_best_niche"] for q in gt_block["per_query"]]
+        for k, v in extra.items():
+            df[k] = v
+        summary = {**extra, **summary}
 
-            suffix = "" if variant == "all_niche" else f"_{variant}"
-            if args.correction != "global":
-                suffix += f"_corr-{args.correction}"
-            df.to_csv(out_dir / f"{direction}{suffix}_query_metrics.csv", index=False)
-            pd.DataFrame([summary]).to_csv(out_dir / f"{direction}{suffix}_summary.csv", index=False)
-            print(f"[{direction}/{variant}] wrote {out_dir / f'{direction}{suffix}_query_metrics.csv'}")
+        suffix = "" if variant == "all_niche" else f"_{variant}"
+        if args.correction != "global":
+            suffix += f"_corr-{args.correction}"
+        df.to_csv(out_dir / f"{direction}{suffix}_query_metrics.csv", index=False)
+        pd.DataFrame([summary]).to_csv(out_dir / f"{direction}{suffix}_summary.csv", index=False)
+        print(f"[{direction}/{variant}] wrote {out_dir / f'{direction}{suffix}_query_metrics.csv'}")
 
 
 # =====================================================================
@@ -308,20 +302,13 @@ def build_tiles(adata_xe, adata_vi):
     return tiles_xe, tiles_vi
 
 
-def write_overlay_csvs(tiles_xe, tiles_vi, coords_xe, coords_vi):
-    """Figure-panel inputs (scripts/organize_panel_data.py panel G) -- seed-independent."""
+def write_overlay_csvs(tiles_xe, tiles_vi):
+    """Figure-panel inputs (scripts/fig5_cross_platform.py panels A and E) -- seed-independent."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     boxes = [{'modality': mod, 'id': t.id, 'x0': t.bbox[0], 'y0': t.bbox[1], 'x1': t.bbox[2], 'y1': t.bbox[3]}
              for mod, ts in (("Xenium", tiles_xe), ("Visium", tiles_vi)) for t in ts]
     pd.DataFrame(boxes).to_csv(RESULTS_DIR / "tile_overlay_boxes.csv", index=False)
-
-    rng = np.random.default_rng(42)
-    records = []
-    for mod, coords in (("Xenium", coords_xe), ("Visium", coords_vi)):
-        pts = coords[rng.choice(len(coords), size=min(5000, len(coords)), replace=False)]
-        records.extend({'modality': mod, 'x': x, 'y': y} for x, y in pts[:, :2])
-    pd.DataFrame(records).to_csv(RESULTS_DIR / "spatial_coords_sample.csv", index=False)
-    print(f"Wrote tile_overlay_boxes.csv / spatial_coords_sample.csv to {RESULTS_DIR}")
+    print(f"Wrote tile_overlay_boxes.csv to {RESULTS_DIR}")
 
 
 def main():
@@ -335,7 +322,7 @@ def main():
                         help="Queries per direction, drawn at random (without replacement) from the query "
                              "platform's tiles. Capped at the number of available tiles.")
     parser.add_argument("--budget-mult", type=float, default=1.0,
-                        help="Search budget multiplier (production value 1.0, as in holdout_validation.py).")
+                        help="Search budget multiplier (production value 1.0, as in holdout_core.py).")
     parser.add_argument("--top-c", type=int, default=400,
                         help="Per-niche Stage-1 candidate cap before Stage-2 exact re-ranking.")
     parser.add_argument("--out-dir", type=Path, default=None,
@@ -368,7 +355,7 @@ def main():
     tiles_xe, tiles_vi = build_tiles(adata_xe, adata_vi)
     print(f"Built {len(tiles_xe)} Xenium tiles and {len(tiles_vi)} Visium tiles.")
     if args.write_overlay:
-        write_overlay_csvs(tiles_xe, tiles_vi, adata_xe.obsm["spatial"], adata_vi.obsm["spatial"])
+        write_overlay_csvs(tiles_xe, tiles_vi)
 
     print("Computing tile covariance matrices...")
     covs = {"xe": build_tile_covs_full(adata_xe, tiles_xe, gene_idx=None, n_jobs=8, eps=1e-6),

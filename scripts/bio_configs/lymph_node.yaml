@@ -1,0 +1,11 @@
+# Fig. S10 row 4.
+# (niche, layer, node) are 0-based and follow the selection rule in scripts/bio_modules.py.
+dataset: lymph_node
+niche: 3
+layer: 13
+node: 878
+library: GO_Biological_Process_2023
+reference:
+  source: sup_4_bio.pdf D2/D3, module 0 (notebook hlymph_01202025, cluster 2 / block 17)
+  genes: [APOLD1, CAVIN1, CAVIN2, CD93, CXCL2, ECSCR, EGFL7, FBN1, LYVE1, MALL, MARCO, MYC, NPDC1, PDPN,
+          PECAM1, PROX1, RAMP2, RBP5, SERPINB9, SH2D3C, SMYD2, STC2, TFPI, TM4SF18, TNC]

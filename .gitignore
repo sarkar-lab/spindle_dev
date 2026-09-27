@@ -69,7 +69,6 @@ paper/
 # Benchmark pre-built index files (large, re-generable)
 *.pkl
 
-# HPC-specific job scripts (not part of paper code)
-hpc/
+# Manuscript: local copy of the Overleaf project (independent of the code; synced by hand)
+Spindle/
 
-/results/gene_signature_search/

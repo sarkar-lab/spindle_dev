@@ -2,7 +2,7 @@
 # Stage C / E12: submit one cross-modal search job per seed (0-4).
 # Seed 0 also runs the single-niche-routing diagnostic and rewrites the
 # seed-independent figure-panel overlay CSVs.
-# Afterwards (login node): python benchmarks/multiseed_cross_modal_search.py
+# Afterwards (login node): python benchmarks/aggregate_cross_modal_seeds.py
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

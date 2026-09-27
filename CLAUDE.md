@@ -18,16 +18,18 @@ pip install -e .
 
 ## Common Commands
 
-### Build documentation locally
-```bash
-python -m sphinx -b html docs_src docs/_build/html -a
-```
-
 ### Run a typical workflow (end-to-end)
 ```bash
-python ISMB_notebook/spindle_xenium_single.py path/to/sample.h5ad \
-  --top-genes 800 --all-genes --max-queries 100
+python examples/run_single_dataset.py path/to/sample.h5ad
 ```
+
+### Paper experiments and figures
+Use the `spindle_env` conda env; heavy compute goes through `sbatch` (the shell is a login node).
+`slurm_jobs/README.md` gives the run order (index build → experiments → figure data → figures),
+`results/README.md` maps each results folder to its script and paper figure/table, and
+`bash slurm_jobs/run_make_figures.sbatch` redraws every figure into `figures/` (plus one PDF per panel in
+`figures/panels/<figure>/`). The manuscript is a separate Overleaf project (local copy `Spindle/`,
+gitignored); no code writes into it. Plan and status: `paper/PLAN.md` (gitignored).
 
 No formal test suite exists; sanity testing is done via `spindle_dev.test.run_sanity_search()`.
 
@@ -105,4 +107,5 @@ The two main entry points:
 
 ## Documentation
 
-Sphinx + MyST (Markdown). Source in `docs_src/`, built output in `docs/`. CI auto-deploys to GitHub Pages on push to `main` (`.github/workflows/sphinx_docs.yml`).
+Published docs: https://www.hiraksarkar.com/spindle_dev/. The Sphinx sources (`docs_src/`) are not in this
+checkout, so the `.github/workflows/` docs jobs currently fail.

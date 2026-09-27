@@ -47,7 +47,7 @@ class RunLogger:
     Usage::
 
         with RunLogger(dataset_name="xenium_human_lung_cancer", stage="index_build",
-                        out_dir=project_root / "results" / "run_logs",
+                        out_dir=project_root / "results" / "index_stats" / "build_run_logs",
                         seed=1, n_holdout=100):
             ... per-dataset work ...
     """

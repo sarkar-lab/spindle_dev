@@ -11,3 +11,5 @@ myst-parser
 plotly
 igraph
 leidenalg
+faiss-cpu
+gseapy

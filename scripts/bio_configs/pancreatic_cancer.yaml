@@ -1,0 +1,10 @@
+# Fig. S10 row 3.
+# (niche, layer, node) are 0-based and follow the selection rule in scripts/bio_modules.py.
+dataset: pancreatic_cancer
+niche: 3
+layer: 23
+node: 1454
+library: GO_Biological_Process_2023
+reference:
+  source: sup_4_bio.pdf C2/C3, module 2 (notebook hpancreas_01202025, cluster 0 / block 39)
+  genes: [ANPEP, CXCL2, DSP, EEF1B2, EEF1D, GATM, NOP53, SEC62, SERPINB1, SSR2, SSR4, SUMO2]

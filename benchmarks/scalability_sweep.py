@@ -6,11 +6,11 @@ datasets spanning less than a 10x range in cell count (87,499-377,985
 cells). This sweeps ONE real base dataset up to synthetic cell counts of
 [1e3, 5e3, 2e4, 5e4, 1e5, 5e5, 1e6] and re-runs the real index-build pipeline
 (the same ``prepare_to_index`` -> ``run_index`` -> ``configure_and_build_dag``
-steps ``index_datasets.py`` uses) at each size, so build_time_s/index_size_mb
+steps ``build_indexes.py`` uses) at each size, so build_time_s/index_size_mb
 are measured on the actual indexing code path, not simulated.
 
 Synthetic generation, applied to the base dataset's AnnData (after the same
-'Cluster' != 'Unlabeled' filter ``index_datasets.py`` applies):
+'Cluster' != 'Unlabeled' filter ``build_indexes.py`` applies):
   - target_cells <= real cell count: uniform subsampling without replacement
     (``synthesis_method=subsample``).
   - target_cells > real cell count: bootstrap resampling WITH replacement up
@@ -64,11 +64,11 @@ if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
 import spindle_dev.typing as typing  # type: ignore
-from index_datasets import prepare_to_index, run_index, configure_and_build_dag  # type: ignore
+from build_indexes import prepare_to_index, run_index, configure_and_build_dag  # type: ignore
 from run_logging import RunLogger  # type: ignore
 
 SCALABILITY_DIR = project_root / "results" / "scalability_sweep"
-RUN_LOG_DIR = project_root / "results" / "run_logs"
+RUN_LOG_DIR = project_root / "results" / "index_stats" / "build_run_logs"
 
 DEFAULT_TARGET_CELLS = [1_000, 5_000, 20_000, 50_000, 100_000, 500_000, 1_000_000]
 SPATIAL_JITTER_FRACTION = 0.01
@@ -124,7 +124,7 @@ def run_unit(dataset_path: Path, target_cells: int, seed: int) -> None:
         tiles, tile_covs, genes_work = prepare_to_index(synthetic_adata)
         num_tiles = len(tiles)
 
-        print(f"Running index (build_time_s measured from here, matching index_datasets.py)...")
+        print(f"Running index (build_time_s measured from here, matching build_indexes.py)...")
         t0 = time.perf_counter()
         data, out_dict = run_index(tiles, tile_covs, genes_work, synthetic_adata,
                                      resolution=0.2, min_final_size=15, max_niche_size=1000)
