@@ -13,7 +13,7 @@ spindle_dev/
 ├── scripts/           # Figure-data extraction + one script per paper figure (CSV in, PDF out)
 ├── slurm_jobs/        # One SLURM job per experiment; README.md gives the run order
 ├── results/           # Result CSVs (README.md maps folder -> experiment -> figure); index pickles not committed
-├── figures/           # Figure PDFs written by scripts/fig*.py, plus figures/panels/<figure>/<panel>.pdf
+├── figures/           # Figures from scripts/fig*.py: pdf/ and png/ copies, each with panels/<figure>/<panel>.*
 ├── examples/          # End-to-end runnable examples
 └── dataset/           # Cross-platform .h5ad pair (gitignored)
 ```

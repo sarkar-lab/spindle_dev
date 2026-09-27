@@ -2,7 +2,7 @@
 
 Every part is drawn at its final printed size (mm below), so the assembler
 places it at 100% and the 6-7 pt text stays 6-7 pt. Parts are written to
-figures/panels/fig1_overview/; the layout grid is BOXES / PLACE below.
+figures/pdf/panels/fig1_overview/ (PNG twins in figures/png/panels/fig1_overview/); the layout grid is BOXES / PLACE below.
 
 Top row, index construction (breast production build, seed 73):
   a_tissue_tiles        cells + adaptive quadtree tiles, zoomed dense/sparse inset
@@ -19,7 +19,7 @@ Bottom row, query:
   g_rerank              Stage-2 exact re-rank of the Stage-1 pool
   h_query_hits          the example held-out query and its Spindle top 10
 Shared keys: c_niche_legend, colorbar_corr.
-figures/fig1_overview.pdf: the assembled figure, every part PDF placed at the
+figures/pdf/fig1_overview.pdf (+ figures/png/fig1_overview.png): the assembled figure, every part PDF placed at the
 BOXES / PLACE coordinates below; fails loudly if a part leaves its box.
 
 Example choices (rules, not hand picks; printed when run):
@@ -98,11 +98,12 @@ def part(w_mm, h_mm):
 
 
 def save(fig, name):
-    """Transparent, borderless PDF (vector; scatter/heatmap layers raster at 600 dpi)."""
+    """Transparent, borderless PDF (vector; scatter/heatmap layers raster at 600 dpi) and its PNG twin."""
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT / f"{name}.pdf", dpi=600, transparent=True)
+    fig.savefig(fs.png_path(OUT / f"{name}.pdf"), dpi=fs.PNG_DPI, transparent=True)
     plt.close(fig)
-    print(f"saved {(OUT / name).relative_to(fs.PROJECT_ROOT)}.pdf")
+    print(f"saved {(OUT / name).relative_to(fs.PROJECT_ROOT)}.pdf (+ .png)")
 
 
 def ax_mm(fig, x, y, w, h):
@@ -618,11 +619,12 @@ def assemble():
         page.merge_transformed_page(part_page, Transformation().translate(x * pt, (H - y - h) * pt))
     out = PdfWriter()
     out.add_page(page)
-    target = fs.FIG_DIR / "fig1_overview.pdf"
+    target = fs.PDF_DIR / "fig1_overview.pdf"
     with open(target, "wb") as fh:
         out.write(fh)
     os.remove(canvas_pdf)
-    print(f"saved {target.relative_to(fs.PROJECT_ROOT)}")
+    png = fs.pdf_to_png(target)
+    print(f"saved {target.relative_to(fs.PROJECT_ROOT)} + {png.relative_to(fs.PROJECT_ROOT)}")
 
 
 def main():

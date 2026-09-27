@@ -26,6 +26,6 @@ Run order:
 
 3. **Figure inputs**: `run_collect_index_stats.sbatch`, `run_extract_figure_data.sbatch`,
    `run_extract_fig1_data.sbatch`, `run_bio_modules.sbatch`.
-4. **Figures**: `run_make_figures.sbatch` draws every figure into `figures/` (one PDF per
-   figure, plus one PDF per panel in `figures/panels/`). Copy the ones you need into the
+4. **Figures**: `run_make_figures.sbatch` draws every figure twice, into `figures/pdf/` and
+   `figures/png/` (one file per figure, plus one per panel in `panels/<figure>/`). Copy the ones you need into the
    Overleaf project by hand.

@@ -6,7 +6,7 @@ Import this before creating any figure:
     fig = fs.figure(fs.DOUBLE, 120)          # width, height in mm
     ...
     fs.label_panel(fig, ax, "A")
-    fs.save(fig, "fig2_index_scaling")       # figures/<name>.pdf + figures/panels/<name>/<letter>.pdf
+    fs.save(fig, "fig2_index_scaling")       # figures/{pdf,png}/<name>.* + figures/{pdf,png}/panels/<name>/<letter>.*
 
 Rules the helpers enforce:
 - 85 mm (SINGLE) or 180 mm (DOUBLE) wide; one figure + GridSpec, never pasted PNGs.
@@ -21,7 +21,8 @@ Rules the helpers enforce:
 Panel export: every axes, figure-level text and patch is assigned to the nearest panel
 letter above and left of it (``label_panel`` / ``label_at`` register the letters); pass
 ``panel=`` to either to override. Figures without letters export one file per axes, and
-figure-level legends are exported as ``legend*.pdf``.
+figure-level legends are exported as ``legend*``. Every file is written twice: a PDF under
+figures/pdf/ and a PNG (PNG_DPI) under figures/png/, with the same relative path.
 """
 
 from pathlib import Path
@@ -38,7 +39,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESULTS = PROJECT_ROOT / "results"
 FIG_DATA = RESULTS / "figure_data"
 FIG_DIR = PROJECT_ROOT / "figures"
-PANEL_DIR = FIG_DIR / "panels"
+PDF_DIR = FIG_DIR / "pdf"
+PNG_DIR = FIG_DIR / "png"
+PANEL_DIR = PDF_DIR / "panels"
+PNG_PANEL_DIR = PNG_DIR / "panels"
+PNG_DPI = 600
 
 MM = 1 / 25.4
 SINGLE = 85.0  # mm
@@ -361,13 +366,30 @@ def _panel_groups(fig, r):
     return groups
 
 
+def png_path(pdf):
+    """figures/pdf/<...>.pdf -> figures/png/<...>.png (parent created)."""
+    png = PNG_DIR / Path(pdf).relative_to(PDF_DIR).with_suffix(".png")
+    png.parent.mkdir(parents=True, exist_ok=True)
+    return png
+
+
+def pdf_to_png(pdf):
+    """Rasterise a one-page PDF (e.g. one assembled with pypdf) to its PNG twin via pdftoppm."""
+    import subprocess
+    png = png_path(pdf)
+    subprocess.run(["pdftoppm", "-png", "-r", str(PNG_DPI), "-singlefile", str(pdf), str(png.with_suffix(""))],
+                   check=True)
+    return png
+
+
 def _save_panels(fig, name):
-    """Write figures/panels/<name>/<panel>.pdf: each panel alone, cropped to its extent."""
+    """Write figures/{pdf,png}/panels/<name>/<panel>.*: each panel alone, cropped to its extent."""
     from matplotlib.transforms import Bbox
-    out = PANEL_DIR / name
-    out.mkdir(parents=True, exist_ok=True)
-    for old in out.glob("*.pdf"):
-        old.unlink()
+    out, out_png = PANEL_DIR / name, PNG_PANEL_DIR / name
+    for d, ext in ((out, "pdf"), (out_png, "png")):
+        d.mkdir(parents=True, exist_ok=True)
+        for old in d.glob(f"*.{ext}"):
+            old.unlink()
     fig.canvas.draw()
     r = fig.canvas.get_renderer()
     groups = _panel_groups(fig, r)
@@ -381,20 +403,24 @@ def _save_panels(fig, name):
         hidden = [a for a in everything if a not in members and a.get_visible()]
         for a in hidden:
             a.set_visible(False)
-        fig.savefig(out / f"{key}.pdf", dpi=600, bbox_inches=b.transformed(fig.dpi_scale_trans.inverted()))
+        bbox = b.transformed(fig.dpi_scale_trans.inverted())
+        fig.savefig(out / f"{key}.pdf", dpi=600, bbox_inches=bbox)
+        fig.savefig(out_png / f"{key}.png", dpi=PNG_DPI, bbox_inches=bbox)
         for a in hidden:
             a.set_visible(True)
     return len(groups)
 
 
 def save(fig, name):
-    """Write figures/<name>.pdf (vector, exact printed size) and one PDF per panel."""
-    FIG_DIR.mkdir(parents=True, exist_ok=True)
-    pdf = FIG_DIR / f"{name}.pdf"
+    """Write figures/pdf/<name>.pdf (vector, exact printed size), its PNG twin and one file per panel."""
+    PDF_DIR.mkdir(parents=True, exist_ok=True)
+    pdf = PDF_DIR / f"{name}.pdf"
     fig.savefig(pdf, dpi=600)  # 600 dpi applies to rasterized layers only
+    fig.savefig(png_path(pdf), dpi=PNG_DPI)
     n = _save_panels(fig, name)
     plt.close(fig)
-    print(f"saved {pdf.relative_to(PROJECT_ROOT)} + {n} panels in {(PANEL_DIR / name).relative_to(PROJECT_ROOT)}/")
+    print(f"saved {pdf.relative_to(PROJECT_ROOT)} (+ .png) + {n} panels in {(PANEL_DIR / name).relative_to(PROJECT_ROOT)}/ "
+          f"and {(PNG_PANEL_DIR / name).relative_to(PROJECT_ROOT)}/")
 
 
 def stem_to_key(s):
