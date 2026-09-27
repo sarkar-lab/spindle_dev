@@ -10,8 +10,8 @@
 
 # Draws every manuscript figure from the CSVs in results/ (about a minute in
 # total; also fine to run directly with `bash slurm_jobs/run_make_figures.sbatch`).
-# Writes figures/<name>.pdf (exact printed size) and one PDF per panel in
-# figures/panels/<name>/. Copy the PDFs you need into the Overleaf project by hand.
+# Writes figures/pdf/<name>.pdf (exact printed size) and figures/png/<name>.png (600 dpi),
+# plus one file per panel in figures/{pdf,png}/panels/<name>/. Copy the PDFs you need into the Overleaf project by hand.
 #
 # Usage: sbatch slurm_jobs/run_make_figures.sbatch [script ...]   (default: all)
 
