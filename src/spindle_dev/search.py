@@ -7,7 +7,9 @@ DAG produced by :mod:`index`.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import heapq
 from typing import Dict, List, Tuple, Optional
+import weakref
 
 import numpy as np
 
@@ -64,13 +66,24 @@ class SearchConfig:
 class SearchPath:
     """Represents a single path (leaf) through the block-DAG.
 
-    This stores only the path of node IDs and the total distance; the
-    SPD members for a leaf can always be recovered from the
-    corresponding leaf node's metadata.
+    ``node_path`` is the path of global node IDs and ``total_distance`` its
+    accumulated radius-adjusted lower bound (the quantity the search orders and
+    prunes by). ``path_score`` is the accumulated raw distance to the node means.
+    ``member_ids`` lists the SPD IDs shared by every node on the path (decoded on
+    first access).
     """
 
     node_path: List[int]
     total_distance: float
+    path_score: Optional[float] = None
+    _mask: Optional[int] = field(default=None, repr=False, compare=False)
+    _decoder: Optional[object] = field(default=None, repr=False, compare=False)
+
+    @property
+    def member_ids(self) -> List[int]:
+        if self._mask is None or self._decoder is None:
+            return []
+        return self._decoder.decode(self._mask)
 
 
 @dataclass
@@ -127,6 +140,159 @@ def query_index(index_handle: IndexHandle, query_spd: np.ndarray, budget: float,
     return SearchResults(paths=[])
 
 
+def _align_query(index_handle, query_spd, query_indices, query_block_runs):
+    """Choose the index layers a query covers and slice its blocks.
+
+    Returns ``(used_blocks, query_blocks)`` or ``None`` when the query cannot be searched
+    (the caller then returns an empty result).
+    """
+    nodes = index_handle.nodes
+    block_to_nodes = index_handle.block_to_nodes
+    if not nodes or not block_to_nodes:
+        logger.info("Index is empty; returning no search results.")
+        return None
+
+    sorted_blocks: List[int] = index_handle.sorted_blocks  # type: ignore[assignment]
+    if not sorted_blocks:
+        logger.info("Index has no block layers; returning no search results.")
+        return None
+
+    # True alignment: choose index layers that overlap query runs
+    index_block_runs = index_handle.block_runs  # type: ignore[attr-defined]
+
+    if len(query_indices) == 0 and len(query_block_runs) == 0:
+        logger.info("No query indices or block runs provided; returning no search results.")
+        return None
+
+    if len(query_block_runs) == 0:
+        logger.info("Using query_indices to align blocks.")
+        logger.warning("Not implemented: returning no search results.")
+        return None
+    elif len(query_indices) == 0:
+        # first check if they are same
+        if len(query_block_runs) == len(index_block_runs):
+            used_blocks = [b for b in sorted_blocks]
+        elif len(query_block_runs) > len(index_block_runs):
+            logger.warning("Query block runs longer than index block runs; using index block runs to align.")
+            logger.info("Not implemented: returning no search results.")
+            return None
+        else:
+            logger.info("Using query_block_runs to align blocks.")
+            used_blocks: List[int] = determine_active_blocks(query_block_runs, index_block_runs)
+    else:
+        logger.info("Both query_indices and query_block_runs provided; using indices to align blocks.")
+        used_blocks = find_matching_blocks(query_indices, index_block_runs)
+    used_blocks = [b for b in used_blocks if b in sorted_blocks]
+    if any(used_blocks[i] + 1 != used_blocks[i + 1] for i in range(len(used_blocks) - 1)):
+        logger.warning("Non-contiguous blocks detected in used_blocks; search may be suboptimal.")
+        logger.info("Not implemented: returning no search results.")
+        return None
+    if not used_blocks:
+        logger.info("No overlapping blocks between query and index; returning no search results.")
+        return None
+
+    num_layers = len(used_blocks)
+    # Pre-extract aligned query blocks corresponding to each used index layer.
+    is_spd_matrix_full = query_spd.shape[0] == index_block_runs[sorted_blocks[0]][1]
+    query_blocks: List[np.ndarray] = []
+    offset_start = 0
+    for layer_idx in range(num_layers):
+        start, end = query_block_runs[layer_idx]
+        if is_spd_matrix_full:
+            query_blocks.append(query_spd[start:end, start:end])
+        else:
+            offset_size = end - start
+            query_blocks.append(query_spd[offset_start:offset_start + offset_size, offset_start:offset_start + offset_size])
+            offset_start += offset_size
+    if not query_blocks:
+        logger.info("No query blocks align to index layers; returning no search results.")
+        return None
+    return used_blocks, query_blocks
+
+
+class _FastHandle:
+    """Per-``IndexHandle`` search precomputation, built once and cached (never pickled).
+
+    - every node's member spd_ids as a Python-int bitmask (bit j = ``ids[j]``), so testing
+      whether a child still shares members with the path is a single AND;
+    - every node's children grouped by block, in stored order;
+    - node means, radii and sqrt(p), and the global node ids.
+    """
+
+    def __init__(self, index_handle):
+        nodes = index_handle.nodes
+        self.n_nodes = len(nodes)
+        ids = sorted({int(s) for n in nodes for s, _ in n.metadata.members})
+        self.ids = np.asarray(ids, dtype=np.int64)
+        pos = {s: j for j, s in enumerate(ids)}
+        self.nbytes = (len(ids) + 7) // 8
+        self.mask = []
+        for n in nodes:
+            bits = np.zeros(len(ids), dtype=bool)
+            bits[[pos[int(s)] for s, _ in n.metadata.members]] = True
+            self.mask.append(int.from_bytes(np.packbits(bits, bitorder="little").tobytes(), "little"))
+        self.global_id = [n.global_node_id for n in nodes]
+        self.block = [n.block_index for n in nodes]
+        self.mean = [n.metadata.mean for n in nodes]
+        self.radius = [n.metadata.radius for n in nodes]
+        self.sqrt_p = [np.sqrt(n.metadata.mean.shape[0]) for n in nodes]
+        self.children = []
+        for n in nodes:
+            by_block: Dict[int, List[int]] = {}
+            for c in n.children:
+                # By construction global_node_id equals the index in ``nodes``; guard anyway.
+                if 0 <= c < self.n_nodes:
+                    by_block.setdefault(nodes[c].block_index, []).append(c)
+            self.children.append(by_block)
+
+    def decode(self, m: int) -> List[int]:
+        """spd_ids in a member bitmask."""
+        bits = np.unpackbits(np.frombuffer(m.to_bytes(self.nbytes, "little"), dtype=np.uint8), bitorder="little")
+        return self.ids[np.flatnonzero(bits[:len(self.ids)])].tolist()
+
+    def distances(self, query_blocks_log, layer_of_block):
+        """Lazy per-query cache node -> (raw distance to mean, radius-adjusted lower bound).
+
+        Same arithmetic as the original traversal, so the values are bit-identical.
+        """
+        raw: List[Optional[float]] = [None] * self.n_nodes
+        lb: List[Optional[float]] = [None] * self.n_nodes
+        mean, radius, sqrt_p, block = self.mean, self.radius, self.sqrt_p, self.block
+
+        def dist(i):
+            if raw[i] is None:
+                diff = query_blocks_log[layer_of_block[block[i]]] - mean[i]
+                d = np.linalg.norm(diff, ord='fro') / sqrt_p[i]
+                raw[i] = d
+                # Triangle-inequality lower bound (distance to the cluster's mean minus its
+                # radius): the query's true nearest member can be up to `radius` closer than
+                # the mean, so pruning on the raw distance-to-mean would wrongly discard
+                # branches that contain it.
+                lb[i] = max(0.0, d - radius[i])
+            return raw[i], lb[i]
+        return dist
+
+
+_FAST_CACHE: Dict[int, Tuple[object, _FastHandle]] = {}
+
+
+def _fast_handle(index_handle) -> _FastHandle:
+    """The cached ``_FastHandle`` of ``index_handle`` (keyed by object identity)."""
+    key = id(index_handle)
+    hit = _FAST_CACHE.get(key)
+    if hit is not None:
+        ref, fh = hit
+        if (ref() if callable(ref) else ref) is index_handle and fh.n_nodes == len(index_handle.nodes):
+            return fh
+    fh = _FastHandle(index_handle)
+    try:
+        ref = weakref.ref(index_handle, lambda _r, k=key: _FAST_CACHE.pop(k, None))
+    except TypeError:
+        ref = index_handle
+    _FAST_CACHE[key] = (ref, fh)
+    return fh
+
+
 def search_index(
     index_handle: IndexHandle,
     query_spd: np.ndarray,
@@ -153,9 +319,16 @@ def search_index(
        in the leaf node's metadata are recorded as hits, together with
        the path of global node IDs and the total accumulated distance.
 
-    The function currently processes a *single* SPD (``query_spd`` with
-    its ``query_block_runs``) and returns a singleton list
-    ``[SearchResults]`` for compatibility with potential batching.
+    Distances used for ordering and pruning are radius-adjusted lower bounds
+    (distance to the node mean minus the node radius). Each returned path also
+    carries ``path_score`` -- the raw sum of distances to the node means -- and
+    ``member_ids``, the SPD IDs shared by every node on the path.
+
+    Implementation: node member sets are held as bitmasks and node distances are
+    computed at most once per query (see ``_FastHandle``); the visiting order,
+    pruning, limits and returned paths are those of the original set-based
+    traversal. The function returns ``SearchResults`` for a searchable query and
+    a singleton list ``[SearchResults(paths=[])]`` on its early exits.
     """
 
     if config is None:
@@ -165,356 +338,116 @@ def search_index(
 
     debug = config.debug
 
-    nodes: List[BlockClusterNode] = index_handle.nodes
-    block_to_nodes = index_handle.block_to_nodes
-
-    if not nodes or not block_to_nodes:
-        logger.info("Index is empty; returning no search results.")
+    aligned = _align_query(index_handle, query_spd, query_indices, query_block_runs)
+    if aligned is None:
         return [SearchResults(paths=[])]
-
-    # # Prepare and cache index views once (id_to_idx, block_to_node_indices, sorted_blocks)
-    # if len(index_handle.id_to_idx) == 0:
-    #     index_handle.id_to_idx = {n.node_id: i for i, n in enumerate(nodes)}  # type: ignore[attr-defined]
-    # if len(index_handle.block_to_node_indices) == 0:
-    #     index_handle.block_to_node_indices = {  # type: ignore[attr-defined]
-    #         b_idx: [index_handle.id_to_idx[nid] for nid in node_ids if nid in index_handle.id_to_idx]  # type: ignore[index]
-    #         for b_idx, node_ids in block_to_nodes.items()
-    #     }
-    # if len(index_handle.sorted_blocks) == 0:
-    #     index_handle.sorted_blocks = sorted(index_handle.block_to_node_indices.keys())  # type: ignore[attr-defined]
-
-    block_to_node_indices: Dict[int, List[int]] = index_handle.block_to_node_indices  # type: ignore[assignment]
-    sorted_blocks: List[int] = index_handle.sorted_blocks  # type: ignore[assignment]
-
-    if not sorted_blocks:
-        logger.info("Index has no block layers; returning no search results.")
-        return [SearchResults(paths=[])]
-
-    # True alignment: choose index layers that overlap query runs
-    # Normalize index block runs from index_handle
-    index_block_runs = index_handle.block_runs  # type: ignore[attr-defined]
-
-
-    if len(query_indices) == 0 and len(query_block_runs) == 0:
-        logger.info("No query indices or block runs provided; returning no search results.")
-        return [SearchResults(paths=[])]
-    
-    if len(query_block_runs) == 0:
-        logger.info("Using query_indices to align blocks.")
-        logger.warning("Not implemented: returning no search results.")
-        return [SearchResults(paths=[])]
-        # used_blocks = find_matching_blocks(query_indices, index_block_runs)
-    elif len(query_indices) == 0:
-        # first check if they are same 
-        if len(query_block_runs) == len(index_block_runs):
-            used_blocks = [b for b in sorted_blocks]
-        elif len(query_block_runs) > len(index_block_runs):
-            logger.warning("Query block runs longer than index block runs; using index block runs to align.")
-            logger.info("Not implemented: returning no search results.")
-            return [SearchResults(paths=[])]
-        else:
-            logger.info("Using query_block_runs to align blocks.")
-            used_blocks: List[int] = determine_active_blocks(query_block_runs, index_block_runs)
-    else:
-        logger.info("Both query_indices and query_block_runs provided; using indices to align blocks.")
-        used_blocks = find_matching_blocks(query_indices, index_block_runs)
-    # Intersect with available blocks
-    # Is this necessary given sorted_blocks should contain ALL blocks?
-    used_blocks = [b for b in used_blocks if b in sorted_blocks]
-    # Check if used blocks are contiguous
-    if any(used_blocks[i] + 1 != used_blocks[i + 1] for i in range(len(used_blocks) - 1)):
-        logger.warning("Non-contiguous blocks detected in used_blocks; search may be suboptimal.")
-        logger.info("Not implemented: returning no search results.")
-        return [SearchResults(paths=[])]
-
-    if not used_blocks:
-        logger.info("No overlapping blocks between query and index; returning no search results.")
-        return [SearchResults(paths=[])]
-
+    used_blocks, query_blocks = aligned
     num_layers = len(used_blocks)
 
     if debug:
-        logger.info(
-            "Starting search: budget=%.4f, num_layers=%d, blocks=%s",
-            budget,
-            num_layers,
-            used_blocks,
-        )
-
-    # Pre-extract aligned query blocks corresponding to each used index layer.
-    is_spd_matrix_full = query_spd.shape[0] == index_block_runs[sorted_blocks[0]][1]
-    query_blocks: List[np.ndarray] = []
-    offset_start = 0
-    for layer_idx in range(num_layers):
-        start, end = query_block_runs[layer_idx]
-        if is_spd_matrix_full:
-            query_blocks.append(query_spd[start:end, start:end])
-        else:
-            offset_size = end - start
-            query_blocks.append(query_spd[offset_start:offset_start+offset_size, offset_start:offset_start+offset_size])
-            offset_start += offset_size 
-
-    if not query_blocks:
-        logger.info("No query blocks align to index layers; returning no search results.")
-        return [SearchResults(paths=[])]
+        logger.info("Starting search: budget=%.4f, num_layers=%d, blocks=%s", budget, num_layers, used_blocks)
 
     query_blocks_log = [log_spd(qb) for qb in query_blocks]
 
-    first_block = used_blocks[0]
-    first_layer_nodes = block_to_node_indices.get(first_block, [])
+    first_layer_nodes = index_handle.block_to_node_indices.get(used_blocks[0], [])
     if not first_layer_nodes:
         logger.info("No nodes in first block; returning no search results.")
         return [SearchResults(paths=[])]
 
-    # Best path per leaf (keyed by leaf global_node_id).
-    best_paths: Dict[int, SearchPath] = {}
-    done: bool = False
-    failed_starts: int = 0
-    failed_paths: int = 0
-    total_paths_explored: int = 0
+    fh = _fast_handle(index_handle)
+    layer_of_block = {b: l for l, b in enumerate(used_blocks)}
+    dist = fh.distances(query_blocks_log, layer_of_block)
+    children, mask, gid = fh.children, fh.mask, fh.global_id
+    next_block = used_blocks[1:] + [None]
+    last = num_layers - 1
+    max_results = config.max_results
+    max_failed_paths = config.max_failed_paths
+    total_paths_limit = config.total_paths_limit
+
+    # Best path per leaf (keyed by the path of global node ids).
+    best_paths: Dict[Tuple[int, ...], SearchPath] = {}
+    done = False
+    failed_paths = 0
+    total_paths_explored = 0
 
     # Depth-first recursive traversal with budget-based backtracking.
-    def dfs(layer_idx: int, node_idx: int, remaining_budget: float, total_dist: float, path_indices: List[int], valid_spds: set) -> None:
-        nonlocal best_paths, done, failed_paths, total_paths_explored
-
+    def dfs(layer_idx, node_idx, remaining_budget, total_dist, raw_total, path_indices, valid):
+        nonlocal done, failed_paths, total_paths_explored
         if done:
             return
 
-        node = nodes[node_idx]
-
-        if debug:
-            logger.debug(
-                "DFS visit: layer=%d node_idx=%d global_id=%d total_dist=%.4f remaining_budget=%.4f",
-                layer_idx,
-                node_idx,
-                node.global_node_id,
-                total_dist,
-                remaining_budget,
-            )
-
         # If we've reached the last layer, record a single path for this leaf.
-        if layer_idx == num_layers - 1:
+        if layer_idx == last:
             total_paths_explored += 1
-            if debug:
-                logger.info(
-                    "Leaf node reached: layer=%d node_idx=%d global_id=%d total_paths_explored=%d",
-                    layer_idx,
-                    node_idx,
-                    node.global_node_id,
-                    total_paths_explored,
-                )
-            if (total_paths_explored >= config.total_paths_limit):
+            if total_paths_explored >= total_paths_limit:
                 if len(best_paths) == 0:
                     logger.info(
                         "Stopping search early after reaching total paths limit of %d. Increase budget or total_paths_limit to get any results.",
-                        config.total_paths_limit,
+                        total_paths_limit,
                     )
                 done = True
                 return
-            node_path_global = [nodes[i].global_node_id for i in path_indices]
-            path_key = tuple(node_path_global)
-
-            # If we've already recorded this exact path, we don't
-            # need to refine it.
+            path_key = tuple(gid[i] for i in path_indices)
+            # If we've already recorded this exact path, we don't need to refine it.
             if path_key in best_paths:
                 return
-
-            candidate = SearchPath(
-                node_path=node_path_global,
-                total_distance=total_dist,
-            )
-
-            best_paths[path_key] = candidate
-            if debug:
-                logger.info("Leaf reached: right now we have %d distinct leaf paths", len(best_paths))
-
+            best_paths[path_key] = SearchPath(node_path=list(path_key), total_distance=total_dist,
+                                              path_score=raw_total, _mask=valid, _decoder=fh)
             # If we've reached the requested number of leaf paths, signal completion.
-            if (config.max_results is not None and len(best_paths) >= config.max_results):
-                if debug and (total_paths_explored >= config.total_paths_limit):
-                    logger.info(
-                        "Stopping search early after reaching total paths limit of %d.",
-                        config.total_paths_limit,
-                    )
-    
+            if max_results is not None and len(best_paths) >= max_results:
                 done = True
-                return
-
-            if debug:
-                logger.info(
-                    "Leaf reached: path=%s total_dist=%.4f remaining_budget=%.4f len(spd_ids)=%s",
-                    node_path_global,
-                    total_dist,
-                    budget - total_dist,
-                    len(node.metadata.members),
-                )
-
             return
 
-        next_layer_idx = layer_idx + 1
-        if next_layer_idx >= num_layers:
-            return
-
-        next_block = used_blocks[next_layer_idx]
-        query_block_next = query_blocks[next_layer_idx]
-
-        # Collect children that belong to the next block and order them by distance.
-        child_dists: List[Tuple[int, float, set]] = []
-        for child_global_id in node.children:
-            # By construction, global_node_id is equal to the index in
-            # the ``nodes`` list, but guard against out-of-range values
-            # for robustness.
-            child_idx = child_global_id
-            if child_idx < 0 or child_idx >= len(nodes):
+        # Children in the next block that still share members with the path, closest first.
+        child_dists = []
+        for c in children[node_idx].get(next_block[layer_idx], ()):
+            m = valid & mask[c]
+            if not m:
                 continue
-            child = nodes[child_idx]
-            if child.block_index != next_block:
-                continue
-            
-            # --- NEW: Intersect members ---
-            child_spds = {int(spd_id) for spd_id, _ in child.metadata.members}
-            new_valid_spds = valid_spds.intersection(child_spds)
-            if not new_valid_spds:
-                continue
-            
-            # dist = log_euclidean_distance(query_block_next, child.metadata.mean, normalize=True)
-            # this is log distance
-            p = child.metadata.mean.shape[0]
-            L_block = query_blocks_log[next_layer_idx]
-            diff = L_block - child.metadata.mean
-            dist_to_mean = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
-            # Use a triangle-inequality lower bound (distance to the cluster's
-            # mean minus its radius) rather than the raw distance-to-mean for
-            # pruning/accumulation. The mean is only a representative point;
-            # the true member the query is closest to can be up to `radius`
-            # closer than the mean. Pruning on the raw distance-to-mean treats
-            # every cluster as a single point and incorrectly discards
-            # branches that actually contain the true nearest match whenever
-            # the cluster has non-trivial radius.
-            dist = max(0.0, dist_to_mean - child.metadata.radius)
-            child_dists.append((child_idx, dist, new_valid_spds))
-
-        # Explore children from closest to farthest.
+            r, d = dist(c)
+            child_dists.append((c, d, r, m))
         child_dists.sort(key=lambda x: x[1])
 
-        for child_idx, dist, new_valid_spds in child_dists:
-            new_total = total_dist + dist
-            new_remaining = remaining_budget - dist
+        for c, d, r, m in child_dists:
+            new_total = total_dist + d
+            new_remaining = remaining_budget - d
             if new_remaining < 0 or new_total > budget:
-                # Count this as a failed DFS branch (no leaf reached
-                # because budget is exhausted).
+                # Count this as a failed DFS branch (no leaf reached because budget is exhausted).
                 failed_paths += 1
-                if debug:
-                    logger.debug(
-                        "Prune child: layer=%d child_idx=%d dist=%.4f new_total=%.4f new_remaining=%.4f (failed_paths=%d)",
-                        next_layer_idx,
-                        child_idx,
-                        dist,
-                        new_total,
-                        new_remaining,
-                        failed_paths,
-                    )
-                if config.max_failed_paths is not None and failed_paths >= config.max_failed_paths:
+                if max_failed_paths is not None and failed_paths >= max_failed_paths:
                     if debug:
-                        logger.info(
-                            "Stopping search early after %d failed DFS branches.",
-                            failed_paths,
-                        )
+                        logger.info("Stopping search early after %d failed DFS branches.", failed_paths)
                     done = True
                     return
                 continue
-
-            if debug:
-                logger.debug(
-                    "Recurse to child: layer=%d child_idx=%d dist=%.4f new_total=%.4f new_remaining=%.4f",
-                    next_layer_idx,
-                    child_idx,
-                    dist,
-                    new_total,
-                    new_remaining,
-                )
-
-            dfs(next_layer_idx, child_idx, new_remaining, new_total, path_indices + [child_idx], new_valid_spds)
-
-            # Optional early stopping if we've already collected enough results.
+            dfs(layer_idx + 1, c, new_remaining, new_total, raw_total + r, path_indices + [c], m)
             if done:
                 return
 
     # --- Seed the DFS from the first layer ---
-
-    query_block_0 = query_blocks[0]
-    start_candidates: List[Tuple[int, float]] = []
-    if debug:
-        logger.info(
-            "Evaluating %d start candidates in first block %d",
-            len(first_layer_nodes),
-            first_block,
-        )
-
+    start_candidates = []
     for node_idx in first_layer_nodes:
-        node = nodes[node_idx]
-        # dist = log_euclidean_distance(query_block_0, node.metadata.mean, normalize=True)
-        p = node.metadata.mean.shape[0]
-        L_block = query_blocks_log[0]
-        diff = L_block - node.metadata.mean
-        dist_to_mean = np.linalg.norm(diff, ord='fro') / np.sqrt(p)
-        # See the matching comment in dfs(): use the radius-adjusted lower
-        # bound, not the raw distance-to-mean, so a start cluster isn't
-        # incorrectly skipped when its true nearest member is closer to the
-        # query than its mean is.
-        dist = max(0.0, dist_to_mean - node.metadata.radius)
-        start_candidates.append((node_idx, dist))
-
+        r, d = dist(node_idx)
+        start_candidates.append((node_idx, d, r))
     # Explore starting nodes in order of increasing distance.
     start_candidates.sort(key=lambda x: x[1])
 
-    if debug:
-        logger.info("Start candidates (node_idx, dist): %s", start_candidates)
-
-    for node_idx, dist in start_candidates:
-        if dist > budget:
-            if debug:
-                logger.debug(
-                    "Skip start node_idx=%d dist=%.4f > budget=%.4f",
-                    node_idx,
-                    dist,
-                    budget,
-                )
+    failed_starts = 0
+    for node_idx, d, r in start_candidates:
+        if d > budget:
             break
-        remaining = budget - dist
-        if debug:
-            logger.debug(
-                "Seed DFS from node_idx=%d dist=%.4f remaining_budget=%.4f",
-                node_idx,
-                dist,
-                remaining,
-            )
         before = len(best_paths)
-        
-        start_node = nodes[node_idx]
-        valid_spds = {int(spd_id) for spd_id, _ in start_node.metadata.members}
-        if valid_spds:
-            dfs(0, node_idx, remaining, dist, [node_idx], valid_spds)
-
-        # If this start contributed no new leaf paths, count it as a
-        # failed attempt. For hard / false-positive queries this
-        # provides a hard cap on search effort.
+        valid = mask[node_idx]
+        if valid:
+            dfs(0, node_idx, budget - d, d, r, [node_idx], valid)
+        # If this start contributed no new leaf paths, count it as a failed attempt. For
+        # hard / false-positive queries this provides a hard cap on search effort.
         if len(best_paths) == before:
             failed_starts += 1
-            if debug and config.max_failed_starts is not None:
-                logger.debug(
-                    "Start node_idx=%d produced no leaves; failed_starts=%d/%d",
-                    node_idx,
-                    failed_starts,
-                    config.max_failed_starts,
-                )
             if config.max_failed_starts is not None and failed_starts >= config.max_failed_starts:
                 if debug:
-                    logger.info(
-                        "Stopping search early after %d failed start candidates.",
-                        failed_starts,
-                    )
+                    logger.info("Stopping search early after %d failed start candidates.", failed_starts)
                 break
-
         if done:
             break
 
@@ -522,10 +455,80 @@ def search_index(
     paths_sorted = sorted(best_paths.values(), key=lambda p: p.total_distance)
     if debug:
         logger.info("Search complete: found %d hits within budget %.4f", len(paths_sorted), budget)
-    if config.max_results is not None:
-        paths_sorted = paths_sorted[: config.max_results]
+    if max_results is not None:
+        paths_sorted = paths_sorted[:max_results]
 
     return SearchResults(paths=paths_sorted)
+
+
+def search_top_c(
+    queries: List[Tuple[IndexHandle, np.ndarray, List[Tuple[int, int]]]],
+    c: int,
+    budgets: Optional[List[float]] = None,
+    return_query_logs: bool = False,
+):
+    """The ``c`` best SPD IDs across one or more indexes, by raw DAG path score.
+
+    ``queries`` holds one ``(index_handle, query_spd, query_block_runs)`` per index to search
+    (e.g. one per niche, each query already permuted into that niche's gene order). A path's
+    score is the sum over its blocks of the distance from the query block's log to the node
+    mean (no radius subtracted). One best-first search over every index pops partial paths in
+    order of their accumulated score; scores never decrease along a path, so leaves come out in
+    exact score order and the search stops as soon as ``c`` SPD IDs have been emitted.
+    ``budgets`` (optional, one per query) drops partial paths whose radius-adjusted lower bound
+    exceeds it, as ``search_index`` does. SPD IDs of one leaf share a score and are emitted in
+    id order.
+
+    Returns ``[(path_score, query_position, spd_id)]``, at most ``c`` entries, best first; with
+    ``return_query_logs=True`` also the per-query list of query block logs the search used
+    (``None`` for a query that could not be aligned), e.g. for an exact re-ranking.
+    """
+    heap = []
+    counter = 0
+    state = []
+    all_logs = []
+    for qpos, (index_handle, query_spd, query_block_runs) in enumerate(queries):
+        aligned = _align_query(index_handle, query_spd, [], query_block_runs)
+        if aligned is None:
+            state.append(None)
+            all_logs.append(None)
+            continue
+        used_blocks, query_blocks = aligned
+        query_blocks_log = [log_spd(qb) for qb in query_blocks]
+        all_logs.append(query_blocks_log)
+        fh = _fast_handle(index_handle)
+        dist = fh.distances(query_blocks_log, {b: l for l, b in enumerate(used_blocks)})
+        state.append((fh, dist, used_blocks[1:] + [None], len(used_blocks) - 1))
+        budget = None if budgets is None else budgets[qpos]
+        for node_idx in index_handle.block_to_node_indices.get(used_blocks[0], []):
+            if fh.mask[node_idx]:
+                r, d = dist(node_idx)
+                if budget is None or d <= budget:
+                    heap.append((r, counter, qpos, 0, node_idx, d, fh.mask[node_idx]))
+                    counter += 1
+    heapq.heapify(heap)
+
+    out: List[Tuple[float, int, int]] = []
+    seen = set()
+    while heap and len(out) < c:
+        score, _, qpos, layer_idx, node_idx, lb_total, m = heapq.heappop(heap)
+        fh, dist, next_block, last = state[qpos]
+        if layer_idx == last:
+            for sid in fh.decode(m):
+                if (qpos, sid) not in seen and len(out) < c:
+                    seen.add((qpos, sid))
+                    out.append((score, qpos, sid))
+            continue
+        budget = None if budgets is None else budgets[qpos]
+        mask = fh.mask
+        for ch in fh.children[node_idx].get(next_block[layer_idx], ()):
+            mc = m & mask[ch]
+            if mc:
+                r, d = dist(ch)
+                if budget is None or lb_total + d <= budget:
+                    heapq.heappush(heap, (score + r, counter, qpos, layer_idx + 1, ch, lb_total + d, mc))
+                    counter += 1
+    return (out, all_logs) if return_query_logs else out
 
 
 from bisect import bisect_right
