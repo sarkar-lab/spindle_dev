@@ -1,0 +1,2 @@
+Dataset,n_train,n_genes,n_niches,dag_mb,block_logs_mb,raw_blocks_mb,stage1_mb,stage1_2_mb,stage2_only_mb
+xenium_human_skin_melanoma,832,382,4,37.13,15.403,15.403,37.13,52.533,15.403

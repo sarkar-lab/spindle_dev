@@ -1,0 +1,2 @@
+Dataset,n_train,n_genes,n_niches,dag_mb,block_logs_mb,raw_blocks_mb,stage1_mb,stage1_2_mb,stage2_only_mb
+xenium_human_breast_cancer,1944,313,4,29.99,28.89,28.89,29.99,58.88,28.89

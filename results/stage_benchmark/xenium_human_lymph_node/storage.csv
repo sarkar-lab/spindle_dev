@@ -1,0 +1,2 @@
+Dataset,n_train,n_genes,n_niches,dag_mb,block_logs_mb,raw_blocks_mb,stage1_mb,stage1_2_mb,stage2_only_mb
+xenium_human_lymph_node,2515,377,6,47.74,42.724,42.724,47.74,90.464,42.724

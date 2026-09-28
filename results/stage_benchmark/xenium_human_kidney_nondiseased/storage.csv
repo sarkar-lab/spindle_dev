@@ -1,0 +1,2 @@
+Dataset,n_train,n_genes,n_niches,dag_mb,block_logs_mb,raw_blocks_mb,stage1_mb,stage1_2_mb,stage2_only_mb
+xenium_human_kidney_nondiseased,683,377,1,22.5,12.066,12.066,22.5,34.566,12.066

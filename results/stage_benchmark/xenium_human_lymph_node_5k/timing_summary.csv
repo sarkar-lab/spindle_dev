@@ -1,0 +1,2 @@
+Dataset,stage1_c10_ms,rerank_c10_ms,stage1_c20_ms,rerank_c20_ms,stage1_c50_ms,rerank_c50_ms,stage1_c100_ms,rerank_c100_ms,stage1_c200_ms,rerank_c200_ms,stage1_c400_ms,rerank_c400_ms,stage1_c1000_ms,rerank_c1000_ms,n_candidates_max,stage2_only_ms,stage2_only_top1_is_gt
+xenium_human_lymph_node_5k,548.268,1.44,553.546,1.584,568.012,2.157,572.461,2.987,582.619,4.516,596.453,7.462,628.242,15.85,1000.0,10796.042,1.0

@@ -1,0 +1,2 @@
+Dataset,stage1_c10_ms,rerank_c10_ms,stage1_c20_ms,rerank_c20_ms,stage1_c50_ms,rerank_c50_ms,stage1_c100_ms,rerank_c100_ms,stage1_c200_ms,rerank_c200_ms,stage1_c400_ms,rerank_c400_ms,stage1_c1000_ms,rerank_c1000_ms,n_candidates_max,stage2_only_ms,stage2_only_top1_is_gt
+xenium_human_lung_cancer,47.573,0.614,47.402,0.647,48.974,1.016,50.584,1.499,52.707,2.312,55.305,4.0,61.192,8.307,1000.0,1179.515,1.0

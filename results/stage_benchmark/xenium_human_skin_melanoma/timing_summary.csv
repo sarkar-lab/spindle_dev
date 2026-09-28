@@ -1,0 +1,2 @@
+Dataset,stage1_c10_ms,rerank_c10_ms,stage1_c20_ms,rerank_c20_ms,stage1_c50_ms,rerank_c50_ms,stage1_c100_ms,rerank_c100_ms,stage1_c200_ms,rerank_c200_ms,stage1_c400_ms,rerank_c400_ms,stage1_c1000_ms,rerank_c1000_ms,n_candidates_max,stage2_only_ms,stage2_only_top1_is_gt
+xenium_human_skin_melanoma,27.472,0.524,27.207,0.576,28.723,0.918,30.534,1.394,32.961,2.309,36.016,3.956,39.733,7.038,828.65,647.481,1.0

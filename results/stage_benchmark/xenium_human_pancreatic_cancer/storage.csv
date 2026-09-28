@@ -1,0 +1,2 @@
+Dataset,n_train,n_genes,n_niches,dag_mb,block_logs_mb,raw_blocks_mb,stage1_mb,stage1_2_mb,stage2_only_mb
+xenium_human_pancreatic_cancer,2190,474,4,50.8,43.833,43.833,50.8,94.633,43.833

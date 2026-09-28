@@ -1,0 +1,9 @@
+Dataset,n_train,n_genes,n_niches,dag_mb,block_logs_mb,raw_blocks_mb,stage1_mb,stage1_2_mb,stage2_only_mb
+xenium_human_brain_cancer,10520,480,15,130.8,224.163,224.163,130.8,354.963,224.163
+xenium_human_breast_cancer,1944,313,4,29.99,28.89,28.89,29.99,58.88,28.89
+xenium_human_kidney_nondiseased,683,377,1,22.5,12.066,12.066,22.5,34.566,12.066
+xenium_human_lung_cancer,1605,377,4,35.56,29.285,29.285,35.56,64.845,29.285
+xenium_human_lymph_node,2515,377,6,47.74,42.724,42.724,47.74,90.464,42.724
+xenium_human_lymph_node_5k,7646,800,13,199.7,245.269,245.269,199.7,444.969,245.269
+xenium_human_pancreatic_cancer,2190,474,4,50.8,43.833,43.833,50.8,94.633,43.833
+xenium_human_skin_melanoma,832,382,4,37.13,15.403,15.403,37.13,52.533,15.403

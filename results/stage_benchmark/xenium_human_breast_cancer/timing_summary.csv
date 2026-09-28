@@ -1,0 +1,2 @@
+Dataset,stage1_c10_ms,rerank_c10_ms,stage1_c20_ms,rerank_c20_ms,stage1_c50_ms,rerank_c50_ms,stage1_c100_ms,rerank_c100_ms,stage1_c200_ms,rerank_c200_ms,stage1_c400_ms,rerank_c400_ms,stage1_c1000_ms,rerank_c1000_ms,n_candidates_max,stage2_only_ms,stage2_only_top1_is_gt
+xenium_human_breast_cancer,38.705,0.471,38.356,0.451,40.057,0.737,42.031,1.154,44.482,1.89,48.365,3.249,56.319,7.033,1000.0,1194.887,1.0

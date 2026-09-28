@@ -1,0 +1,2 @@
+Dataset,stage1_c10_ms,rerank_c10_ms,stage1_c20_ms,rerank_c20_ms,stage1_c50_ms,rerank_c50_ms,stage1_c100_ms,rerank_c100_ms,stage1_c200_ms,rerank_c200_ms,stage1_c400_ms,rerank_c400_ms,stage1_c1000_ms,rerank_c1000_ms,n_candidates_max,stage2_only_ms,stage2_only_top1_is_gt
+xenium_human_brain_cancer,389.07,1.309,391.858,1.393,405.664,1.978,413.737,2.832,427.136,4.233,442.787,6.741,472.065,13.889,1000.0,7902.206,1.0

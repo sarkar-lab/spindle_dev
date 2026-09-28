@@ -1,0 +1,15 @@
+Dataset,mode,top_c,n_returned,best_rank,recall_at_eps_0.1,overlap_at_eps_0.1,recall_at_eps_0.25,overlap_at_eps_0.25,recall_at_eps_0.5,overlap_at_eps_0.5,recall_at_eps_1.0,overlap_at_eps_1.0,recall_at_1,recall_at_5,recall_at_10,recall_at_20,recall_at_50
+xenium_human_kidney_nondiseased,stage1,10,10.0,44.49,0.11,0.3947,0.13,0.3452,0.34,0.2609,0.77,0.1288,0.05,0.184,0.241,,
+xenium_human_kidney_nondiseased,stage1,20,20.0,44.49,0.11,0.5141,0.13,0.4766,0.34,0.3845,0.77,0.2208,0.05,0.184,0.241,0.3,
+xenium_human_kidney_nondiseased,stage1,50,50.0,44.49,0.11,0.7352,0.13,0.699,0.34,0.6193,0.77,0.4295,0.05,0.184,0.241,0.3,0.4384
+xenium_human_kidney_nondiseased,stage1,100,100.0,44.49,0.11,0.8918,0.13,0.874,0.34,0.7967,0.77,0.6366,0.05,0.184,0.241,0.3,0.4384
+xenium_human_kidney_nondiseased,stage1,200,200.0,44.49,0.11,0.9522,0.13,0.9495,0.34,0.9353,0.77,0.8526,0.05,0.184,0.241,0.3,0.4384
+xenium_human_kidney_nondiseased,stage1,400,400.0,44.49,0.11,1.0,0.13,0.9991,0.34,0.9951,0.77,0.9841,0.05,0.184,0.241,0.3,0.4384
+xenium_human_kidney_nondiseased,stage1,1000,683.0,44.49,0.11,1.0,0.13,1.0,0.34,1.0,0.77,1.0,0.05,0.184,0.241,0.3,0.4384
+xenium_human_kidney_nondiseased,stage1_2,10,10.0,2.9,0.52,0.3947,0.73,0.3452,0.95,0.2609,1.0,0.1288,0.41,0.302,0.241,,
+xenium_human_kidney_nondiseased,stage1_2,20,20.0,2.07,0.65,0.5141,0.81,0.4766,0.98,0.3845,1.0,0.2208,0.55,0.434,0.365,0.3,
+xenium_human_kidney_nondiseased,stage1_2,50,50.0,1.38,0.86,0.7352,0.92,0.699,1.0,0.6193,1.0,0.4295,0.74,0.666,0.612,0.547,0.4384
+xenium_human_kidney_nondiseased,stage1_2,100,100.0,1.13,0.97,0.8918,1.0,0.874,1.0,0.7967,1.0,0.6366,0.89,0.83,0.795,0.751,0.6622
+xenium_human_kidney_nondiseased,stage1_2,200,200.0,1.04,0.99,0.9522,1.0,0.9495,1.0,0.9353,1.0,0.8526,0.96,0.932,0.926,0.92,0.8772
+xenium_human_kidney_nondiseased,stage1_2,400,400.0,1.0,1.0,1.0,1.0,0.9991,1.0,0.9951,1.0,0.9841,1.0,0.998,0.992,0.993,0.9884
+xenium_human_kidney_nondiseased,stage1_2,1000,683.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.9995,1.0

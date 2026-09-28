@@ -1,0 +1,15 @@
+Dataset,mode,top_c,n_returned,best_rank,recall_at_eps_0.1,overlap_at_eps_0.1,recall_at_eps_0.25,overlap_at_eps_0.25,recall_at_eps_0.5,overlap_at_eps_0.5,recall_at_eps_1.0,overlap_at_eps_1.0,recall_at_1,recall_at_5,recall_at_10,recall_at_20,recall_at_50
+xenium_human_pancreatic_cancer,stage1,10,10.0,22.58,0.27,0.6702,0.3,0.6172,0.46,0.5134,0.71,0.2906,0.22,0.294,0.327,,
+xenium_human_pancreatic_cancer,stage1,20,20.0,22.58,0.27,0.7772,0.3,0.7388,0.46,0.6617,0.71,0.4265,0.22,0.294,0.327,0.3965,
+xenium_human_pancreatic_cancer,stage1,50,50.0,22.58,0.27,0.8958,0.3,0.8769,0.46,0.8291,0.71,0.6392,0.22,0.294,0.327,0.3965,0.4734
+xenium_human_pancreatic_cancer,stage1,100,100.0,22.58,0.27,0.9692,0.3,0.9643,0.46,0.9178,0.71,0.7896,0.22,0.294,0.327,0.3965,0.4734
+xenium_human_pancreatic_cancer,stage1,200,200.0,22.58,0.27,0.9975,0.3,0.9907,0.46,0.9711,0.71,0.912,0.22,0.294,0.327,0.3965,0.4734
+xenium_human_pancreatic_cancer,stage1,400,400.0,22.58,0.27,1.0,0.3,0.9983,0.46,0.9968,0.71,0.9816,0.22,0.294,0.327,0.3965,0.4734
+xenium_human_pancreatic_cancer,stage1,1000,1000.0,22.58,0.27,1.0,0.3,1.0,0.46,1.0,0.71,1.0,0.22,0.294,0.327,0.3965,0.4734
+xenium_human_pancreatic_cancer,stage1_2,10,10.0,1.97,0.73,0.6702,0.79,0.6172,0.93,0.5134,0.99,0.2906,0.69,0.42,0.327,,
+xenium_human_pancreatic_cancer,stage1_2,20,20.0,1.31,0.84,0.7772,0.91,0.7388,0.99,0.6617,0.99,0.4265,0.8,0.584,0.493,0.3965,
+xenium_human_pancreatic_cancer,stage1_2,50,50.0,1.14,0.94,0.8958,0.97,0.8769,0.99,0.8291,1.0,0.6392,0.89,0.794,0.72,0.6295,0.4734
+xenium_human_pancreatic_cancer,stage1_2,100,100.0,1.04,0.98,0.9692,1.0,0.9643,1.0,0.9178,1.0,0.7896,0.97,0.914,0.859,0.8015,0.6794
+xenium_human_pancreatic_cancer,stage1_2,200,200.0,1.0,1.0,0.9975,1.0,0.9907,1.0,0.9711,1.0,0.912,1.0,0.974,0.948,0.9235,0.865
+xenium_human_pancreatic_cancer,stage1_2,400,400.0,1.0,1.0,1.0,1.0,0.9983,1.0,0.9968,1.0,0.9816,1.0,0.996,0.991,0.99,0.9712
+xenium_human_pancreatic_cancer,stage1_2,1000,1000.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.9998
