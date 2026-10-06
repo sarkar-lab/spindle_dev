@@ -30,25 +30,16 @@ import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
+sys.path.insert(0, str(PROJECT_ROOT / "benchmarks"))
 
 from spindle_dev.preprocessing import build_quadtree_tiles, _low_density_tile_mask  # noqa: E402
+import paths  # noqa: E402  (dataset paths: datasets.yaml)
 
 INDEX_DIR = PROJECT_ROOT / "results" / "indexes"
 GT_DIR = PROJECT_ROOT / "results" / "ground_truth_cache"
 OUT_DIR = PROJECT_ROOT / "results" / "figure_data"
-DATA_DIR = Path("/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium")
-CROSS_MODAL_DIR = PROJECT_ROOT / "dataset" / "cross_modal"
 
-DATASETS = {
-    "skin_melanoma": "xenium_human_skin_melanoma",
-    "kidney_nondiseased": "xenium_human_kidney_nondiseased",
-    "breast_cancer": "xenium_human_breast_cancer",
-    "lung_cancer": "xenium_human_lung_cancer",
-    "pancreatic_cancer": "xenium_human_pancreatic_cancer",
-    "lymph_node": "xenium_human_lymph_node",
-    "lymph_node_5k": "xenium_human_lymph_node_5k",
-    "brain_cancer": "xenium_human_brain_cancer",
-}
+DATASETS = {k: paths.dataset_path(k).stem for k in paths.indexed_keys()}
 SEEDS = [0, 1, 2, 3, 4, 73]
 PRODUCTION_SEED = 73
 
@@ -60,7 +51,7 @@ def index_path(stem, seed):
 
 def load_coords(stem):
     """Cell coordinates after the index build's 'Unlabeled' filter (build_indexes.load_and_split_data)."""
-    a = ad.read_h5ad(DATA_DIR / f"{stem}.h5ad", backed="r")
+    a = ad.read_h5ad(paths.dataset_path(stem), backed="r")
     coords = np.asarray(a.obsm["spatial"])[:, :2]
     if "Cluster" in a.obs.columns:
         coords = coords[(a.obs["Cluster"] != "Unlabeled").to_numpy()]
@@ -136,8 +127,8 @@ def cross_modal_cells():
         "Unlabeled": "Unlabeled",
     }
     frames = []
-    for mod, fname, n in (("Xenium", "xenium_rotated.h5ad", 30000), ("Visium", "visium_rotated.h5ad", None)):
-        a = ad.read_h5ad(CROSS_MODAL_DIR / fname, backed="r")
+    for mod, key, n in (("Xenium", "cross_modal_xenium", 30000), ("Visium", "cross_modal_visium", None)):
+        a = ad.read_h5ad(paths.dataset_path(key), backed="r")
         xy = np.asarray(a.obsm["spatial"])[:, :2]
         cl = a.obs["Cluster"].astype(str).to_numpy()
         sel = np.arange(len(xy)) if n is None else np.random.default_rng(0).choice(len(xy), n, replace=False)

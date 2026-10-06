@@ -3,11 +3,12 @@ import sys
 import importlib
 from pathlib import Path
 
-project_root = '/data/sarkar_lab/Projects/spindle_dev'
-src_path = Path(project_root) / 'src'
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
+project_root = Path(__file__).resolve().parents[1]
+for p in (project_root / 'src', project_root / 'benchmarks'):
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 
+import paths  # dataset paths: datasets.yaml
 import spindle_dev
 import spindle_dev.metrics as metrics
 import spindle_dev.index as index
@@ -103,7 +104,7 @@ def process_file(h5ad_file, resolution=0.5, min_final_size=15, top_genes=800, al
         return h5ad_file, False, str(e)
 
 
-h5ad_files = glob.glob("/data/sarkar_lab/insitupy_demo_data_xenium/*.h5ad")
+h5ad_files = [str(paths.dataset_path(k)) for k in paths.indexed_keys()]  # datasets.yaml
 # Process files in parallel using threads
 max_workers = min(len(h5ad_files), 4)  # Adjust based on your system resources
 # with ThreadPoolExecutor(max_workers=max_workers) as executor:

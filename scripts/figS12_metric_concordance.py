@@ -1,82 +1,100 @@
-"""Fig. S12 -- Block vs whole-matrix LE neighbours against biology (E14).
+"""Fig. S12 -- Block vs whole-matrix distance: biology of the exact neighbours (validates the metric).
 
-A  breast, seeds 0-4 (mean +- s.d.): expression r, composition JSD and majority-type match
-   of each metric's exact top-k neighbours, vs k; random tiles as reference
-B  all datasets, seed 73: expression r of the exact top-10, block vs whole (y = x)
-C  all datasets, seed 73: per-query Spearman rho between distance and expression
-   dissimilarity over all training tiles, block vs whole (y = x) -- the global-ordering caveat
+For every held-out query (seeds 0-4), the exact top 10 under the block distance d_B (Spindle-Exact) and
+under the whole-matrix log-Euclidean distance d_W (same shrinkage, floor and float32 storage) are compared
+with the query tile on readouts that neither distance uses directly:
+A  pseudo-bulk expression r (query vs mean of the 10 tiles; index genes z-scored over training tiles), all 8
+   datasets: whole-matrix (x) vs block (y), mean over queries, +/- s.d. over seeds; above y = x: block better
+B  cell-type composition JSD (base 2; query vs mean composition of the 10 tiles), all 8 datasets (breast:
+   obs['Cluster']; the others: 10x graph-based clusters from the Xenium analysis output); below y = x: block better
+C  share of queries on which the block neighbours are better (higher r / lower JSD); paired Wilcoxon over the
+   pooled queries in results/neighbour_biology/tests.csv (all p < 1e-4)
 
-Readouts enter neither distance. Input: results/metric_concordance/summary.csv
+Input: results/neighbour_biology/{summary,tests}.csv (benchmarks/neighbour_biology.py).
 """
 
 import numpy as np
 import pandas as pd
-from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
+from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
 
 import figstyle as fs
 
-KIND_COLORS = {"block": "#1A1A1A", "whole": "#DDAA33", "random": "#9E9E9E"}
-KIND_LABELS = {"block": "Block LE", "whole": "Whole-matrix LE", "random": "Random tiles"}
-READOUTS = [("expr_r", "Expression r ↑"), ("comp_jsd", "Composition JSD ↓"), ("majority_match", "Majority-type match ↑")]
-KS = ["1", "5", "10", "50"]
+ORDER = fs.DATASET_ORDER
+K = 10
+READOUTS = [("expr_r", "Expression r (k = 10)"), ("comp_jsd", "Composition JSD (k = 10)")]
 
 
-def scatter_block_whole(ax, s, readout, k, lo, hi, label):
-    d = s[(s["seed"] == 73) & (s["readout"] == readout) & (s["k"] == k)]
-    for r in d.itertuples():
-        key = fs.stem_to_key(r.dataset)
-        ax.scatter(r.whole, r.block, s=14, color=fs.DATASET_COLORS[key], marker=fs.DATASET_MARKERS[key], lw=0,
-                   zorder=3)
-        if key == "kidney_nondiseased":
-            ax.annotate("Kidney (1 niche)", (r.whole, r.block), xytext=(4, -8), textcoords="offset points",
-                        fontsize=fs.TICK_PT)
-    fs.identity_line(ax, lo, hi)
-    ax.set_xlabel(f"{label}, whole-matrix LE")
-    ax.set_ylabel(f"{label}, block LE")
+def load():
+    s = pd.read_csv(fs.RESULTS / "neighbour_biology" / "summary.csv")
+    t = pd.read_csv(fs.RESULTS / "neighbour_biology" / "tests.csv")
+    for d in (s, t):
+        d["key"] = d["dataset"].map(fs.STEMS)
+    return s[s["k"] == K], t[(t["k"] == K) & (t["a"] == "exact") & (t["b"] == "whole")]
+
+
+def scatter(ax, s, readout, label):
+    vals = []
+    for k in ORDER:
+        d = s[s["key"] == k].set_index("method")
+        if "exact" not in d.index or pd.isna(d.loc["exact", f"{readout}_mean"]):
+            continue
+        x, y = d.loc["whole", f"{readout}_mean"], d.loc["exact", f"{readout}_mean"]
+        ax.errorbar(x, y, xerr=d.loc["whole", f"{readout}_std"], yerr=d.loc["exact", f"{readout}_std"],
+                    fmt=fs.DATASET_MARKERS[k], color=fs.DATASET_COLORS[k], ms=4, elinewidth=0.5, capsize=0,
+                    mec="white", mew=0.3, zorder=3)
+        vals += [x, y]
+    lo, hi = min(vals), max(vals)
+    pad = 0.08 * (hi - lo)
+    lo, hi = lo - pad, hi + pad
+    ax.plot([lo, hi], [lo, hi], color=fs.MUTED, lw=0.6, ls="--", zorder=1)
+    ax.set_xlim(lo, hi)
+    ax.set_ylim(lo, hi)
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlabel(f"Whole-matrix distance\n{label}")
+    ax.set_ylabel(f"Block distance (Spindle-Exact)\n{label}")
+    better = "above" if readout == "expr_r" else "below"
+    ax.text(0.03 if better == "above" else 0.97, 0.97 if better == "above" else 0.03, f"block better {better} y = x",
+            transform=ax.transAxes, ha="left" if better == "above" else "right",
+            va="top" if better == "above" else "bottom", fontsize=fs.TICK_PT, color=fs.MUTED)
+
+
+def share(ax, t):
+    keys = [k for k in ORDER if k in set(t["key"])]
+    w = 0.38
+    for j, (readout, label) in enumerate(READOUTS):
+        d = t[t["readout"] == readout].set_index("key")
+        for i, k in enumerate(keys):
+            if k not in d.index:
+                continue
+            ax.bar(i + (j - 0.5) * w, 100 * d.loc[k, "a_better_frac"], width=w, color=fs.DATASET_COLORS[k],
+                   alpha=1.0 if j == 0 else 0.45, lw=0)
+    ax.axhline(50, color=fs.MUTED, lw=0.6, ls="--")
+    ax.set_xticks(range(len(keys)))
+    ax.set_xticklabels([fs.DATASET_SHORT[k] for k in keys], rotation=45, ha="right")
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("Queries where block\nneighbours are better (%)")
+    ax.legend(handles=[Line2D([], [], color=fs.INK, lw=5, label="expression r"),
+                       Line2D([], [], color=fs.INK, lw=5, alpha=0.45, label="composition JSD")],
+              loc="lower right", bbox_to_anchor=(1.0, 1.0), ncol=2, fontsize=fs.TICK_PT)
 
 
 def main():
-    s = pd.read_csv(fs.RESULTS / "metric_concordance" / "summary.csv")
-    s["k"] = s["k"].astype(str)
-    breast = s[(s["dataset"] == "xenium_human_breast_cancer") & s["seed"].between(0, 4)]
-
-    fig = fs.figure(fs.DOUBLE, 110)
-    outer = GridSpec(2, 1, figure=fig, hspace=0.5, left=0.07, right=0.99, top=0.94, bottom=0.08)
-    top = GridSpecFromSubplotSpec(1, 4, subplot_spec=outer[0], width_ratios=[1, 1, 1, 0.8], wspace=0.45)
-    bot = GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[1], width_ratios=[1, 1, 0.9], wspace=0.5)
-
-    axes_a = []
-    x = np.arange(len(KS))
-    for j, (readout, label) in enumerate(READOUTS):
-        ax = fig.add_subplot(top[j])
-        d = breast[breast["readout"] == readout]
-        for kind, c in KIND_COLORS.items():
-            g = d.groupby("k")[kind].agg(["mean", "std"]).reindex(KS)
-            ax.errorbar(x, g["mean"], yerr=g["std"], color=c, marker="o", ms=2.8, mew=0, lw=0.9, elinewidth=0.6)
-        ax.set_xticks(x, KS)
-        ax.set_xlabel("Neighbours, k")
-        ax.set_title(label, fontsize=fs.TEXT_PT)
-        ax.set_ylim(0, None)
-        axes_a.append(ax)
-    axes_a[0].set_ylabel("Breast, mean over queries")
-    leg = fig.add_subplot(top[3])
-    leg.set_axis_off()
-    leg.legend(handles=[Line2D([], [], color=c, marker="o", ms=2.8, lw=0.9, label=KIND_LABELS[k])
-                        for k, c in KIND_COLORS.items()], loc="center left")
-
-    ax_b = fig.add_subplot(bot[0])
-    scatter_block_whole(ax_b, s, "expr_r", "10", 0.0, 0.75, "Top-10 expression r")
-    ax_c = fig.add_subplot(bot[1])
-    scatter_block_whole(ax_c, s, "rho_expr", "all", 0.0, 0.75, r"Global $\rho$")
-    leg2 = fig.add_subplot(bot[2])
-    leg2.set_axis_off()
-    leg2.legend(handles=fs.dataset_handles(), loc="center left")
-
-    fig.canvas.draw()
-    fs.label_panel(fig, axes_a[0], "A", dx_mm=-11)
-    fs.label_panel(fig, ax_b, "B", dx_mm=-11)
-    fs.label_panel(fig, ax_c, "C", dx_mm=-11)
+    s, t = load()
+    fig = fs.figure(fs.DOUBLE, 75)
+    gs = GridSpec(1, 3, figure=fig, width_ratios=[1, 1, 1.25], wspace=0.6, left=0.08, right=0.99, top=0.92,
+                  bottom=0.3)
+    a, b, c = (fig.add_subplot(gs[i]) for i in range(3))
+    scatter(a, s, *READOUTS[0])
+    scatter(b, s, *READOUTS[1])
+    share(c, t)
+    fs.label_panel(fig, a, "A", -14, 2)
+    fs.label_panel(fig, b, "B", -14, 2)
+    fs.label_panel(fig, c, "C", -14, 2)
+    top = max(t.get_position()[1] for t in fig._fs_letters.values())
+    for t in fig._fs_letters.values():  # one baseline for all letters (A and B are square, C is not)
+        t.set_y(top)
+    fs.legend_below(fig, fs.dataset_handles(ORDER), ncol=8, y=0.07)
     fs.save(fig, "figS12_metric_concordance")
 
 

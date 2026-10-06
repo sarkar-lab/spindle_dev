@@ -44,8 +44,8 @@ def vectorize(logs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--xenium-path", default=str(cms.DEFAULT_DATA_DIR / "xenium_rotated.h5ad"))
-    parser.add_argument("--visium-path", default=str(cms.DEFAULT_DATA_DIR / "visium_rotated.h5ad"))
+    parser.add_argument("--xenium-path", default=str(cms.XENIUM_PATH))
+    parser.add_argument("--visium-path", default=str(cms.VISIUM_PATH))
     args = parser.parse_args()
 
     adata_vi = sc.read_h5ad(args.visium_path)

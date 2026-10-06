@@ -35,6 +35,21 @@ def is_spd(matrix: ArrayLike, *, atol: float = 1e-8) -> bool:
     return np.all(eigvals > atol)
 
 
+# Covariance shrinkage toward a scaled identity, S -> (1 - a) S + a (tr S / p) I. Every tile and query
+# covariance passes through shrink_cov before any matrix log in the search tiers (tiers.prepare_cov).
+# The single switch: set to 0.0 to turn shrinkage off everywhere. Chosen in Part 1.1 (results/metric_check/).
+SHRINK_ALPHA = 0.1
+
+
+def shrink_cov(S: ArrayLike, alpha: float | None = None) -> NDArray[np.float64]:
+    """(1 - alpha) S + alpha * mean(diag S) * I; alpha defaults to SHRINK_ALPHA (0 returns S unchanged)."""
+    S = _as_array(S)
+    a = SHRINK_ALPHA if alpha is None else alpha
+    if a == 0:
+        return S
+    return (1.0 - a) * S + a * (np.trace(S) / S.shape[0]) * np.eye(S.shape[0])
+
+
 def log_spd(A: np.ndarray, eps: float = 1e-8) -> np.ndarray:
     """SPD matrix logarithm via eigendecomposition (fast + stable for SPD)."""
     A = 0.5 * (A + A.T)

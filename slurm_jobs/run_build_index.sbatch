@@ -37,7 +37,6 @@ conda activate spindle_env
 
 cd $SLURM_SUBMIT_DIR
 
-DATASET_DIR="/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium"
 if [ -z "$1" ]; then
     echo "Usage: sbatch run_build_index.sbatch <dataset.h5ad> [train_test_ratio] [seed] [n_holdout]"
     exit 1
@@ -46,7 +45,7 @@ DATASET_NAME=$1
 TRAIN_TEST_RATIO=${2:-0.05}
 SEED=${3:-73}
 N_HOLDOUT=${4:-100}
-DATASET_PATH="$DATASET_DIR/$DATASET_NAME"
+DATASET_PATH=$(python benchmarks/paths.py "$DATASET_NAME")  # datasets.yaml
 
 echo "============================================================"
 echo "Index build: $(basename "$DATASET_PATH") (seed=$SEED, n_holdout=$N_HOLDOUT, train-test-ratio=$TRAIN_TEST_RATIO)"

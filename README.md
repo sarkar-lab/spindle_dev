@@ -55,20 +55,23 @@ pip install -r requirements.txt
 
 Run everything from the project root, through SLURM (see `slurm_jobs/README.md` for the order):
 
+**Dataset paths** live only in `datasets.yaml` (repository root). Python code reads them through
+`benchmarks/paths.py` (`dataset_path(key)`), and slurm scripts through `python benchmarks/paths.py <key | stem | file>`.
+To move the data, or add a dataset, edit that file only.
+
+
 1. `benchmarks/build_indexes.py` builds one index per dataset into `results/indexes/`
    (production build: seed 73, 100 held-out tiles; `slurm_jobs/submit_build_indexes.sh`).
 2. Each experiment script writes `results/<script name>/`:
 
    | Script | Experiment |
    |---|---|
-   | `holdout_search.py` (core: `holdout_core.py`) | whole-tile held-out search, seeds 0–4 (E5) |
-   | `budget_sweep.py` | recall vs search budget (E1) |
-   | `ann_baselines.py` | FAISS / HNSW / PCA+HNSW / φ-kNN baselines (E4) |
-   | `noise_robustness.py` | perturbed queries (E7) |
-   | `scalability_sweep.py` | synthetic 10³–10⁶-cell build scaling (E6) |
+   | `dag_holdout.py` | Spindle-DAG retrieval vs Spindle-Exact, c90, K sweep (Fig 3B–C) |
+   | `exact_vs_whole.py` | query time: whole-matrix exact vs Spindle-Exact vs Spindle-DAG (Fig 3A) |
+   | `whole_cov_baselines.py` | HNSW / PCA + flat / PCA + PQ on whole-matrix logs: memory vs fidelity (Fig 3D) |
+   | `neighbour_biology.py` | block vs whole-matrix neighbours against biology (Fig S12) |
    | `partial_panel_search.py` (core: `partial_panel_core.py`) | gene-subset queries, seeds 0–4 (E11) |
    | `cross_modal_search.py`, `aggregate_cross_modal_seeds.py`, `cross_modal_bias_pca.py` | Xenium ↔ Visium search (E12) |
-   | `metric_concordance.py` | block vs whole-matrix distance against biology (E14) |
    | `niche_concordance.py`, `composition_concordance.py`, `gene_signature_search.py` | breast biology (E10-lite, E13, E9-lite) |
 
 3. `scripts/extract_*.py`, `collect_index_stats.py` and `bio_modules.py` turn pickles into small CSVs;

@@ -38,7 +38,6 @@ conda activate spindle_env
 
 cd $SLURM_SUBMIT_DIR
 
-DATASET_DIR="/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium"
 if [ -z "$1" ] || [ -z "$2" ]; then
     echo "Usage: sbatch run_holdout_search.sbatch <dataset.h5ad> <seed> [train_test_ratio]"
     exit 1
@@ -46,7 +45,7 @@ fi
 DATASET_NAME=$1
 SEED=$2
 TRAIN_TEST_RATIO=${3:-0.10}
-DATASET_PATH="$DATASET_DIR/$DATASET_NAME"
+DATASET_PATH=$(python benchmarks/paths.py "$DATASET_NAME")  # datasets.yaml
 
 echo "============================================================"
 echo "Multiseed holdout unit: $(basename "$DATASET_PATH") (seed=$SEED, train-test-ratio=$TRAIN_TEST_RATIO)"

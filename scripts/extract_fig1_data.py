@@ -126,7 +126,7 @@ def main():
     niches = sorted(set(labels.tolist()))
 
     # ---- tiles + cells (same tiling call as experiment_common.rebuild_tiles)
-    a = ad.read_h5ad(ec.DATASET_DIR / f"{STEM}.h5ad", backed="r")
+    a = ad.read_h5ad(ec.paths.dataset_path(STEM), backed="r")
     coords = np.asarray(a.obsm["spatial"])[:, :2]
     if "Cluster" in a.obs.columns:
         coords = coords[(a.obs["Cluster"] != "Unlabeled").to_numpy()]

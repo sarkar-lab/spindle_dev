@@ -33,12 +33,11 @@ conda activate spindle_env
 
 cd $SLURM_SUBMIT_DIR
 
-DATASET_DIR="/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium"
 if [ -z "$1" ]; then
     echo "Usage: sbatch run_stage_benchmark.sbatch <dataset.h5ad> [extra args]"
     exit 1
 fi
-DATASET_PATH="$DATASET_DIR/$1"
+DATASET_PATH=$(python benchmarks/paths.py "$1")  # datasets.yaml
 shift
 
 echo "Stage benchmark: $(basename "$DATASET_PATH") $*"

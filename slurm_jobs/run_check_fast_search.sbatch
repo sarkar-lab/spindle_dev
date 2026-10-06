@@ -30,10 +30,9 @@ conda activate spindle_env
 
 cd $SLURM_SUBMIT_DIR
 
-DATASET_DIR="/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium"
 PATHS=()
 while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
-    PATHS+=("$DATASET_DIR/$1")
+    PATHS+=("$(python benchmarks/paths.py "$1")")  # datasets.yaml
     shift
 done
 if [ ${#PATHS[@]} -eq 0 ]; then

@@ -213,10 +213,12 @@ class ProcessedData:
                         res += resolution_step
                     else:
                         logger.warning(
-                            "Could not bring max niche size under %d after %d tries; "
-                            "using last result (max=%d, resolution=%.2f).",
+                            "Could not bring max niche size under %d after %d tries (max=%d, resolution=%.2f); "
+                            "splitting the oversized niches with k-means.",
                             target_max, max_resolution_tries, sizes.max(), res
                         )
+                        labels = split_oversized_niches(latent_feat, labels, target_max, random_state)
+                        sizes = np.bincount(labels)
                     logger.info(
                         "Adaptive Leiden: chose resolution=%.2f giving %d niches, sizes=%s",
                         res, len(sizes), sorted(sizes.tolist(), reverse=True)
@@ -426,6 +428,29 @@ class ProcessedData:
         # subset if required.
 
         return subset
+
+def split_oversized_niches(latent_feat: np.ndarray, labels: np.ndarray, cap: int, random_state: int = 0) -> np.ndarray:
+    """Split every niche larger than ``cap`` by k-means on its members' latent features
+    (k = ceil(size / cap)), repeating until no niche exceeds the cap; labels are renumbered 0..K-1."""
+    from sklearn.cluster import KMeans  # type: ignore
+
+    labels = np.asarray(labels).astype(int).copy()
+    while True:
+        sizes = np.bincount(labels)
+        over = np.flatnonzero(sizes > cap)
+        if len(over) == 0:
+            break
+        nxt = labels.max() + 1
+        for k in over:
+            members = np.flatnonzero(labels == k)
+            n_parts = int(np.ceil(len(members) / cap))
+            parts = KMeans(n_clusters=n_parts, n_init=10, random_state=random_state).fit_predict(latent_feat[members])
+            for j in range(1, n_parts):
+                labels[members[parts == j]] = nxt
+                nxt += 1
+            logger.info("Split niche %d (%d tiles) into %s", k, len(members), np.bincount(parts).tolist())
+    return np.unique(labels, return_inverse=True)[1]
+
 
 def _apply_permutation(mat: np.ndarray, perm: np.ndarray) -> np.ndarray:
     return mat[np.ix_(perm, perm)]

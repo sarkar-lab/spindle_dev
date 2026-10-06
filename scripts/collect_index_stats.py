@@ -4,7 +4,8 @@ Sources, per (dataset, seed):
   * results/indexes/<stem>[_seed<n>]_spindle_index.pkl
       training tiles, niche sizes, blocks per niche, DAG node count, genes,
       cells, index-only build time and index_size_mb (the DatasetIndex bundle
-      size used everywhere else, e.g. E6 and index_scalability_summary.csv).
+      size of the production DAG, alpha = 0.05 / k_min = 8; Fig 2 uses Spindle-DAG
+      sizes from results/dag_size_table/ instead).
   * file sizes of the matching *_raw_covariances.pkl / *_interval_index.pkl
       (the raw file holds all tiles; compression uses dense float32 storage of the training tiles, n_train * G^2 * 4 bytes, over index_size_mb).
   * results/index_stats/build_run_logs/<stem>[_seed<n>]_index_build_run_log.json

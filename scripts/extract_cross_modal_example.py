@@ -43,8 +43,8 @@ def main():
     parser.add_argument("--out", type=Path, default=OUT)
     args = parser.parse_args()
 
-    adata_vi = sc.read_h5ad(cms.DEFAULT_DATA_DIR / "visium_rotated.h5ad")
-    adata_xe = sc.read_h5ad(cms.DEFAULT_DATA_DIR / "xenium_rotated.h5ad")
+    adata_vi = sc.read_h5ad(cms.VISIUM_PATH)
+    adata_xe = sc.read_h5ad(cms.XENIUM_PATH)
     adata_vi.var_names_make_unique()
     adata_xe.var_names_make_unique()
     genes = sorted(set(adata_vi.var_names).intersection(adata_xe.var_names))

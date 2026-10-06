@@ -27,6 +27,7 @@ src_path = project_root / 'src'
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+import paths
 import spindle_dev
 import spindle_dev.index as index
 import spindle_dev.preprocessing as preprocessing
@@ -37,14 +38,14 @@ INDEX_DIR = project_root / "results" / "indexes"
 RUN_LOG_DIR = project_root / "results" / "index_stats" / "build_run_logs"
 
 
-def prepare_to_index(adata):
+def prepare_to_index(adata, max_genes=paths.DEFAULT_MAX_GENES):
     """
-    Prepare standard data object for indexing.
+    Prepare standard data object for indexing (the top min(max_genes, n_genes) variable genes).
     """
     coords = adata.obsm["spatial"]
     tiles = preprocessing.build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=40)
     num_genes = adata.n_vars
-    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=min(800, num_genes))
+    genes_work, gene_idx = spindle_dev.preprocessing.topvar_genes(adata, G=min(max_genes, num_genes))
     tile_covs = spindle_dev.preprocessing.build_tile_covs_full(adata, tiles, gene_idx, n_jobs=8, eps=1e-6)
 
     return tiles, tile_covs, genes_work
@@ -79,8 +80,9 @@ def load_and_split_data(adata_path, test_ratio=0.05, seed=42, n_holdout=None):
     if 'Cluster' in adata.obs.columns:
         adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
 
-    print("Preparing data for indexing...")
-    tiles, tile_covs, genes_work = prepare_to_index(adata)
+    max_genes = paths.dataset_max_genes(str(adata_path))  # datasets.yaml
+    print(f"Preparing data for indexing (top {min(max_genes, adata.n_vars)} genes)...")
+    tiles, tile_covs, genes_work = prepare_to_index(adata, max_genes=max_genes)
 
     np.random.seed(seed)
     num_total_tiles = len(tiles)

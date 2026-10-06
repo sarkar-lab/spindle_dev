@@ -31,6 +31,8 @@ Use the `spindle_env` conda env; heavy compute goes through `sbatch` (the shell 
 (plus one file per panel in `figures/{pdf,png}/panels/<figure>/`). The manuscript is a separate Overleaf project (local copy `Spindle/`,
 gitignored); no code writes into it. Plan and status: `paper/PLAN.md` (gitignored).
 
+Dataset paths are written only in `datasets.yaml` (repo root); code reads them via `benchmarks/paths.py` (`dataset_path(key)`; shell: `python benchmarks/paths.py <key>`). Never hard-code a dataset path; add new datasets there.
+
 No formal test suite exists; sanity testing is done via `spindle_dev.test.run_sanity_search()`.
 
 ## Architecture

@@ -50,7 +50,10 @@ from spindle_dev.utils import log_spd, exp_spd  # noqa: E402
 import holdout_core as hv  # type: ignore  # noqa: E402
 import build_indexes  # type: ignore  # noqa: E402
 
-DEFAULT_DATA_DIR = project_root / "dataset" / "cross_modal"
+import paths  # noqa: E402  (dataset paths: datasets.yaml)
+
+XENIUM_PATH = paths.dataset_path("cross_modal_xenium")
+VISIUM_PATH = paths.dataset_path("cross_modal_visium")
 RESULTS_DIR = project_root / "results" / "cross_modal_search"
 DATASET_TAG = "cross_modal_brca"
 
@@ -314,8 +317,8 @@ def write_overlay_csvs(tiles_xe, tiles_vi):
 def main():
     parser = argparse.ArgumentParser(description="Cross-modal (Xenium<->Visium) all-niche Spindle search")
     parser.add_argument("--direction", choices=["x2v", "v2x", "both"], default="both")
-    parser.add_argument("--xenium-path", type=Path, default=DEFAULT_DATA_DIR / "xenium_rotated.h5ad")
-    parser.add_argument("--visium-path", type=Path, default=DEFAULT_DATA_DIR / "visium_rotated.h5ad")
+    parser.add_argument("--xenium-path", type=Path, default=XENIUM_PATH)
+    parser.add_argument("--visium-path", type=Path, default=VISIUM_PATH)
     parser.add_argument("--seed", type=int, default=0,
                         help="Seeds the query subsample and the index build's PCA/UMAP/Leiden random_state.")
     parser.add_argument("--n-queries", type=int, default=50,

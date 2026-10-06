@@ -170,7 +170,21 @@ METHOD_COLORS = {
 }
 METHOD_MARKERS = {"spindle": "o", "brute_force": "s", "flat": "D", "hnsw": "^", "pca_hnsw": "v", "phi_knn": "P"}
 
+# Fig 3D-E: indexes over whole covariances (benchmarks/whole_cov_baselines.py), keyed by method family.
+COMPETITOR_ORDER = ["hnsw", "pca_flat", "pca_pq"]
+COMPETITOR_LABELS = {"hnsw": "HNSW (whole)", "pca_flat": "PCA + flat (whole)", "pca_pq": "PCA-256 + PQ (whole)"}
+COMPETITOR_COLORS = {"hnsw": "#AA3377", "pca_flat": "#4477AA", "pca_pq": "#DDAA33"}
+COMPETITOR_MARKERS = {"hnsw": "^", "pca_flat": "v", "pca_pq": "P"}
+
 PLATFORM_COLORS = {"Xenium": "#0077BB", "Visium": "#EE7733"}
+
+# What is stored / searched: whole covariances (reference grey), Spindle-Exact (block logs) and
+# Spindle-DAG (Tol high-contrast blue / red). Machado CVD + OKLab: normal-vision min dE 17.7,
+# protan 16.2, deutan 11.6, tritan 20.0.
+TIER_ORDER = ["whole", "exact", "dag"]
+TIER_LABELS = {"whole": "Whole covariances", "exact": "Spindle-Exact (block logs)", "dag": "Spindle-DAG"}
+TIER_COLORS = {"whole": "#9E9E9E", "exact": "#004488", "dag": "#BB5566"}
+TIER_MARKERS = {"whole": "s", "exact": "o", "dag": "D"}
 
 # Exact vs noisy / reference comparisons (e.g. the E7 exact-noisy ceiling).
 REFERENCE_COLOR = "#9E9E9E"

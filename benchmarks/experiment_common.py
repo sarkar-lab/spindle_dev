@@ -29,21 +29,14 @@ for p in (PROJECT_ROOT / "src", BENCH_DIR):
 
 import spindle_dev.preprocessing as preprocessing  # noqa: E402
 
-DATASET_DIR = Path("/home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium")
+import paths  # noqa: E402  (dataset paths: datasets.yaml)
+
+DATASET_DIR = paths.data_dir("xenium")  # also holds the 10x analysis bundles (metric_check)
 INDEX_DIR = PROJECT_ROOT / "results" / "indexes"
 GT_CACHE_DIR = PROJECT_ROOT / "results" / "ground_truth_cache"
 
-# Short key -> file stem, ordered by cell count (the figure order).
-DATASETS = {
-    "skin_melanoma": "xenium_human_skin_melanoma",
-    "kidney_nondiseased": "xenium_human_kidney_nondiseased",
-    "breast_cancer": "xenium_human_breast_cancer",
-    "lung_cancer": "xenium_human_lung_cancer",
-    "pancreatic_cancer": "xenium_human_pancreatic_cancer",
-    "lymph_node": "xenium_human_lymph_node",
-    "lymph_node_5k": "xenium_human_lymph_node_5k",
-    "brain_cancer": "xenium_human_brain_cancer",
-}
+# Short key -> file stem of the 8 indexed sections, ordered by cell count (the figure order).
+DATASETS = {k: paths.dataset_path(k).stem for k in paths.indexed_keys()}
 PRODUCTION_SEED = 73
 MULTISEED = [0, 1, 2, 3, 4]
 
@@ -79,14 +72,23 @@ def raw_cov(entry) -> np.ndarray:
     return entry if not isinstance(entry, dict) else entry.get("cov", entry.get("matrix", entry))
 
 
-def load_adata(stem: str):
-    """The AnnData exactly as build_indexes.load_and_split_data filtered it."""
+def load_adata(stem_or_path):
+    """The AnnData exactly as build_indexes.load_and_split_data filtered it (a key or stem in datasets.yaml, or a path)."""
     import scanpy as sc
 
-    adata = sc.read_h5ad(DATASET_DIR / f"{stem}.h5ad")
+    path = stem_or_path if isinstance(stem_or_path, Path) else paths.dataset_path(stem_or_path)
+    adata = sc.read_h5ad(path)
     if "Cluster" in adata.obs.columns:
         adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
     return adata
+
+
+def subsample_adata(adata, n_cells: int, seed: int):
+    """``n_cells`` cells drawn WITHOUT replacement (rng ``seed``); never bootstraps."""
+    if n_cells > adata.n_obs:
+        raise ValueError(f"target {n_cells} exceeds the {adata.n_obs} available cells; no bootstrap")
+    idx = np.random.default_rng(seed).choice(adata.n_obs, size=n_cells, replace=False)
+    return adata[idx].copy()
 
 
 def rebuild_tiles(adata):
