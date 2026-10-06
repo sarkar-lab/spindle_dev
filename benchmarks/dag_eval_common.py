@@ -109,6 +109,31 @@ def retrieval_rows(d_exact, order, cs, deltas=DELTAS):
     return out
 
 
+def retrieval_rows_tied(d_exact, scores, cs, deltas=DELTAS):
+    """retrieval_rows for a method that scores every tile (``scores``, lower = better; np.inf = not returned)
+    and may tie: the top c holds every tile below the c-th score and a random share of the tiles tied with it,
+    so each readout is its expected value under random tie-breaking. Overlap(delta, c), hit and recall of
+    the exact top 10 per c."""
+    scores = np.asarray(scores, dtype=np.float64)
+    n = len(d_exact)
+    eo = np.argsort(d_exact, kind="stable")
+    near = {dl: np.flatnonzero(d_exact <= (1 + dl) * d_exact[eo[0]]) for dl in deltas}
+    sets = {"hit": eo[:1], f"recall_top{K_TOP}": eo[:K_TOP]} | {f"overlap_{dl}": m for dl, m in near.items()}
+    srt = np.sort(scores)
+    cs = np.asarray(cs)
+    thr = srt[cs - 1]
+    below = np.searchsorted(srt, thr, side="left")
+    tied = np.searchsorted(srt, thr, side="right") - below
+    share = (cs - below) / tied  # chance that a tile tied at the c-th score is in the top c
+    out = [{"c": int(c), "c_frac": c / n} for c in cs]
+    for name, members in sets.items():
+        s = scores[members][:, None]
+        prob = (s < thr[None, :]) + (s == thr[None, :]) * share[None, :]
+        for rec, v in zip(out, prob.mean(0)):
+            rec[name] = float(v)
+    return out
+
+
 def c_needed(d_exact, order, frac=C_TARGET, delta=0.05):
     """Per query: the smallest c whose first c rows hold >= frac of the exact delta-near set, and of the
     exact top 10 (NaN if the order never gets there)."""

@@ -6,7 +6,7 @@ job, see ``slurm_jobs/run_cross_modal_search.sbatch``), which writes
 script reduces each seed/direction to its own mean over queries, then reports
 the mean +/- s.d. (ddof=1) of those per-seed values across seeds in
 ``results/cross_modal_search/summary.csv`` -- the same convention as
-``holdout_search.py`` / ``partial_panel_search.py``. Cheap; runs
+``holdout_search.py``. Cheap; runs
 on the login node once every seed's job has finished.
 """
 

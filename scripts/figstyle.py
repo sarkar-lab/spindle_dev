@@ -186,6 +186,18 @@ TIER_LABELS = {"whole": "Whole covariances", "exact": "Spindle-Exact (block logs
 TIER_COLORS = {"whole": "#9E9E9E", "exact": "#004488", "dag": "#BB5566"}
 TIER_MARKERS = {"whole": "s", "exact": "o", "dag": "D"}
 
+# Fig 4 / S8: partial (gene-set) search. Exact partial = Spindle-Exact blue, interval index = Spindle-DAG red
+# (the compressed index), the index-free limit dashed in the same red; padding / imputation (whole-tile
+# Spindle-Exact after filling the missing genes) in Tol yellow / green.
+PARTIAL_ORDER = ["exact_partial", "interval", "limit", "imputation", "padding"]
+PARTIAL_LABELS = {"exact_partial": "Spindle-Exact (ground truth)", "interval": "Interval index",
+                  "limit": "Interval decomposition, own logs (no index)", "imputation": "Imputation + Spindle-Exact",
+                  "padding": "Padding + Spindle-Exact"}
+PARTIAL_COLORS = {"exact_partial": "#004488", "interval": "#BB5566", "limit": "#BB5566", "imputation": "#228833",
+                  "padding": "#DDAA33"}
+PARTIAL_MARKERS = {"exact_partial": "o", "interval": "D", "limit": "d", "imputation": "s", "padding": "^"}
+PARTIAL_LS = {"exact_partial": "-", "interval": "-", "limit": "--", "imputation": "-", "padding": "-"}
+
 # Exact vs noisy / reference comparisons (e.g. the E7 exact-noisy ceiling).
 REFERENCE_COLOR = "#9E9E9E"
 LIGHT = "#D9D9D9"      # background tiles / individual queries

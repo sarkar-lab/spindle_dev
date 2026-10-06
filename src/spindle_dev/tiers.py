@@ -354,6 +354,14 @@ class ExactTier(_Tier):
         obj.X = X
         return obj
 
+    @classmethod
+    def from_exact_partial(cls, ep, data):
+        """Build from an ExactPartialTier's float32 block logs (same layout, rows and triangle order), so the
+        block logs are not computed twice. Equal to ExactTier(data, train_covs) up to float32 rounding."""
+        return cls.from_block_vectors(data, {k: np.ascontiguousarray(np.concatenate(ep.logs[k], axis=1)
+                                                                    / np.float32(np.sqrt(ep.p)))
+                                             for k in ep.niches})
+
     def nbytes(self):
         return int(sum(x.nbytes for x in self.X.values()))
 
@@ -413,19 +421,25 @@ class ExactPartialTier(_Tier):
     kind = "exact_partial"
     partial = True
 
-    def __init__(self, data, train_covs):
+    def __init__(self, data, train_covs, keep_niche_means=False):
         labels = self.labels = np.asarray(data.labels).astype(int)
         self.p = len(data.perm_list[labels[0]])
         self.niches = sorted(set(labels.tolist()))
         self.rows = {k: np.flatnonzero(labels == k) for k in self.niches}
         self.blocks = {k: [np.asarray(data.perm_list[k])[s:e] for s, e in data.block_dict[k]] for k in self.niches}
         self.covs, self.logs = {}, {}
+        self._niche_means = {} if keep_niche_means else None
         for k in self.niches:
             stacks = [np.empty((len(self.rows[k]), len(g), len(g))) for g in self.blocks[k]]
+            total = np.zeros((self.p, self.p)) if keep_niche_means else None
             for i, r in enumerate(self.rows[k]):
                 cov = prepare_cov(train_covs[r])
+                if total is not None:
+                    total += cov
                 for stack, g in zip(stacks, self.blocks[k]):
                     stack[i] = cov[np.ix_(g, g)]
+            if total is not None:
+                self._niche_means[k] = total / len(self.rows[k])
             self.covs[k] = stacks
             self.logs[k] = [ivd.sym_to_vec(ivd.batched_log_spd(s, LOG_FLOOR)).astype(np.float32) for s in stacks]
         self.n = len(labels)
@@ -440,6 +454,16 @@ class ExactPartialTier(_Tier):
 
     def block_covs(self):
         return self.covs
+
+    def niche_means(self):
+        """{niche: mean prepared (shrunk) p x p covariance of its training tiles} (needs keep_niche_means=True)."""
+        if self._niche_means is None:
+            raise ValueError("build the tier with keep_niche_means=True")
+        return self._niche_means
+
+    def niche_means_nbytes(self):
+        """float32 upper triangles of the niche means."""
+        return 4 * len(self.niches) * self.p * (self.p + 1) // 2
 
     def distances(self, cov_s, genes):
         """d_B^S to every training tile; ``cov_s`` is the prepared |S| x |S| query in ``genes`` order."""

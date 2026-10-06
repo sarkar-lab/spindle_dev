@@ -70,7 +70,7 @@ To move the data, or add a dataset, edit that file only.
    | `exact_vs_whole.py` | query time: whole-matrix exact vs Spindle-Exact vs Spindle-DAG (Fig 3A) |
    | `whole_cov_baselines.py` | HNSW / PCA + flat / PCA + PQ on whole-matrix logs: memory vs fidelity (Fig 3D) |
    | `neighbour_biology.py` | block vs whole-matrix neighbours against biology (Fig S12) |
-   | `partial_panel_search.py` (core: `partial_panel_core.py`) | gene-subset queries, seeds 0–4 (E11) |
+   | `partial_search_final.py` | gene-set queries: interval index, padding, imputation vs Spindle-Exact on S (Fig 4, S8) |
    | `cross_modal_search.py`, `aggregate_cross_modal_seeds.py`, `cross_modal_bias_pca.py` | Xenium ↔ Visium search (E12) |
    | `niche_concordance.py`, `composition_concordance.py`, `gene_signature_search.py` | breast biology (E10-lite, E13, E9-lite) |
 

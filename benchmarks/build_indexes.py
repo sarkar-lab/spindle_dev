@@ -8,7 +8,7 @@ clustering, block detection, adaptive epsilons and the block DAG. Writes
 peak RSS) to results/index_stats/build_run_logs/. Existing indexes are skipped.
 The production build is seed 73 with 100 held-out tiles
 (slurm_jobs/submit_build_indexes.sh); the per-seed builds come from
-holdout_search.py / partial_panel_search.py.
+holdout_search.py.
 """
 
 import argparse

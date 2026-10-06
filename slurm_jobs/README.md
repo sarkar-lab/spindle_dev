@@ -13,7 +13,6 @@ Run order:
 
    | Exp. | Submit | Unit job | Then |
    |---|---|---|---|
-   | E11 partial-panel search, seeds 0–4 | `submit_partial_panel_search.sh` | `run_partial_panel_search.sbatch` | `python benchmarks/partial_panel_search.py --aggregate` |
    | E4 ANN baselines (old; superseded by Fig 3D, results kept for `extract_fig1_data.py`) | `submit_ann_baselines.sh` | `run_ann_baselines.sbatch` | – |
    | E12 cross-platform search | `submit_cross_modal_search.sh` | `run_cross_modal_search.sbatch` | `python benchmarks/aggregate_cross_modal_seeds.py`, then `sbatch run_cross_modal_bias_pca.sbatch` |
    | E10-lite / E13 (breast) | – | `run_breast_concordance.sbatch` | – |
@@ -30,7 +29,7 @@ Run order:
    | Fig 3A query time (one timing job at a time) | `submit_exact_vs_whole.sh [datasets]` | `run_exact_vs_whole.sbatch <dataset> <seed>` | aggregate job submitted by the script |
    | Fig 3D indexes over whole covariances | `submit_whole_cov_baselines.sh [datasets]` | `run_whole_cov_baselines.sbatch <dataset> <seed>` | aggregate job submitted by the script |
    | Fig 3E neighbour biology (after Fig 3D) | `submit_neighbour_biology.sh [datasets]` | `run_neighbour_biology.sbatch <dataset> <seed>` | aggregate job submitted by the script |
-   | Partial queries: interval index vs exact tier (seed 73; replaces E11) | – | `run_interval_index_final.sbatch <dataset>` (`--mem=128G` for `brain_cancer`, `lymph_node_5k`) | – |
+   | Fig 4 / S8 partial search: interval index, padding, imputation vs Spindle-Exact on S, seeds 0–4 (timing one job at a time) | `submit_partial_search_final.sh [accuracy\|timing\|all] [datasets]` | `run_partial_search_final.sbatch <dataset> <seed> [--timing]`; Fig 4A example: `run_partial_search_final.sbatch breast_cancer 73 --schematic` | aggregate job submitted by the script |
 
 3. **Figure inputs**: `run_collect_index_stats.sbatch`, `run_extract_figure_data.sbatch`,
    `run_extract_fig1_data.sbatch`, `run_bio_modules.sbatch`.

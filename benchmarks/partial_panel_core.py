@@ -9,8 +9,11 @@ reuses the Stage-1 search.
 As a script it loads an already-built index (results/indexes/, from
 build_indexes.py), builds or loads that index's dyadic interval index, draws
 --num-queries gene-subset queries per length bin from the held-out tiles, and
-writes ``<out-dir>/<dataset>_query_metrics.csv``; partial_panel_search.py drives
-it per seed.
+writes ``<out-dir>/<dataset>_query_metrics.csv``.
+
+Retired pipeline (old Fig 4; its driver partial_panel_search.py was removed in the Fig 4 session, replaced by
+partial_search_final.py). Kept only because gene_signature_search.py (Fig 6F-G) imports the Stage-1 search;
+delete with interval_index.py when Fig 6 is ported to tiers (Part 4).
 """
 
 import argparse

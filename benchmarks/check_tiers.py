@@ -6,6 +6,8 @@
 2. Shrinkage on (the configured SHRINK_ALPHA): ExactTier equals ExactScorer on shrunk covariances; the
    partial tiers give the same answer for a p x p and an |S| x |S| (cut from the shrunk p x p) query;
    DAG Overlap(5%, 5%) and the interval index's Overlap(5%, 5%) on gene programs are printed.
+   Partial-query baselines (Fig 4): ExactTier.from_exact_partial equals ExactTier; padding and conditional
+   imputation with S = all genes reproduce the Exact d_B; the imputed query is PSD for a 16-gene set.
 3. WholeTier (the whole-matrix baseline) equals metrics.log_euclidean_distance_for_SPD on shrunk covariances
    (eigenvalue floor 1e-6) on 20 query-tile pairs; its top 10 is compared with ExactTier's.
 
@@ -18,7 +20,7 @@ import numpy as np
 
 import dag_eval_common as de
 import experiment_common as ec
-from spindle_dev import metrics, tiers
+from spindle_dev import metrics, partial_search, tiers
 
 
 def max_rel(a, b):
@@ -80,7 +82,29 @@ def main():
     print(f"[on]  DAG Overlap(5%, 5%) = {np.mean(ov):.3f}; exact {ex.nbytes() / 2**20:.1f} MB, "
           f"DAG {dag.nbytes() / 2**20:.2f} MB; last query {ex.last_timing} / {dag.last_timing}", flush=True)
 
-    ep = tiers.build_tier("exact_partial", data, train)
+    ep = tiers.build_tier("exact_partial", data, train, keep_niche_means=True)
+    ex2 = tiers.ExactTier.from_exact_partial(ep, data)
+    means = ep.niche_means()
+    err_fp = err_pad = err_imp = 0.0
+    min_eig = np.inf
+    for q in tests[:5]:
+        cov = tiers.prepare_cov(q)
+        d_ref = ex.distances(ex.query_vectors(cov))
+        err_fp = max(err_fp, max_rel(ex2.distances(ex2.query_vectors(cov)), d_ref))
+        allg = np.arange(ep.p)
+        err_pad = max(err_pad, max_rel(ex.distances(ex.query_vectors(
+            partial_search.pad_query_scaled_identity(cov, allg, ep.p))), d_ref))
+        k_hat, _ = partial_search.predict_niche(cov, allg, means, ep.blocks)
+        err_imp = max(err_imp, max_rel(ex.distances(ex.query_vectors(
+            partial_search.impute_query_conditional(cov, allg, means[k_hat]))), d_ref))
+        g16 = np.sort(np.random.default_rng(1).choice(ep.p, 16, replace=False))
+        k_hat, _ = partial_search.predict_niche(cov[np.ix_(g16, g16)], g16, means, ep.blocks)
+        imp = partial_search.impute_query_conditional(cov[np.ix_(g16, g16)], g16, means[k_hat])
+        min_eig = min(min_eig, float(np.linalg.eigvalsh(imp).min()))
+    print(f"[on]  ExactTier.from_exact_partial vs ExactTier: max rel diff {err_fp:.2e}", flush=True)
+    print(f"[on]  padding / imputation with S = all genes vs exact d_B: max rel diff {err_pad:.2e} / {err_imp:.2e}; "
+          f"smallest eigenvalue of an imputed 16-gene query {min_eig:.3e}", flush=True)
+    del ex2, means
     iv = tiers.build_tier("interval", data, exact_partial=ep)
     k0 = sorted(data.block_dict)[0]
     s, e = max(data.block_dict[k0], key=lambda r: r[1] - r[0])
