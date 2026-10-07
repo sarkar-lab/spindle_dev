@@ -27,7 +27,7 @@ python examples/run_single_dataset.py path/to/sample.h5ad
 Use the `spindle_env` conda env; heavy compute goes through `sbatch` (the shell is a login node).
 `slurm_jobs/README.md` gives the run order (index build → experiments → figure data → figures),
 `results/README.md` maps each results folder to its script and paper figure/table, and
-`bash slurm_jobs/run_make_figures.sbatch` redraws every figure twice, as `figures/pdf/<figure>.pdf` and `figures/png/<figure>.png`
+`bash slurm_jobs/figures/run_make_figures.sbatch` redraws every figure twice, as `figures/pdf/<figure>.pdf` and `figures/png/<figure>.png`
 (plus one file per panel in `figures/{pdf,png}/panels/<figure>/`). The manuscript is a separate Overleaf project (local copy `Spindle/`,
 gitignored); no code writes into it. Plan and status: `paper/PLAN.md` (gitignored).
 

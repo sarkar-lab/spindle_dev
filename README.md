@@ -10,10 +10,21 @@
 spindle_dev/
 ├── src/spindle_dev/   # Core Python package (index, search, metrics, preprocessing)
 ├── benchmarks/        # Paper experiments; each writes results/<same name>/
-├── scripts/           # Figure-data extraction + one script per paper figure (CSV in, PDF out)
-├── slurm_jobs/        # One SLURM job per experiment; README.md gives the run order
+│   ├── paths.py       #   dataset paths (datasets.yaml) + sys.path setup for every benchmarks/ folder
+│   ├── common/        #   shared helpers (loaders, tiers glue, ground truth, retrieval metrics)
+│   ├── index/         #   index builds and Fig 2 (storage, build cost, cell/gene ladders)
+│   ├── whole_tile/    #   Fig 3 (whole-tile search)
+│   ├── partial/       #   Fig 4 (partial gene-set search)
+│   ├── cross_platform/#   Fig 5 (Xenium <-> Visium)
+│   ├── biology/       #   Figs 6–7 inputs (breast niches, composition, gene signatures)
+│   ├── checks/        #   one-off checks behind recorded decisions
+│   └── legacy/        #   old E4 ANN baselines (until Fig 1 is redrawn)
+├── scripts/
+│   ├── figure_data/   #   pickles -> small CSVs for the figures (+ bio_configs/)
+│   └── figures/       #   one script per paper figure (CSV in, PDF/PNG out) + figstyle.py
+├── slurm_jobs/        # Same topic folders as benchmarks/; README.md gives the run order
 ├── results/           # Result CSVs (README.md maps folder -> experiment -> figure); index pickles not committed
-├── figures/           # Figures from scripts/fig*.py: pdf/ and png/ copies, each with panels/<figure>/<panel>.*
+├── figures/           # Figures from scripts/figures/: pdf/ and png/ copies, each with panels/<figure>/<panel>.*
 ├── examples/          # End-to-end runnable examples
 └── dataset/           # Cross-platform .h5ad pair (gitignored)
 ```
@@ -60,22 +71,23 @@ Run everything from the project root, through SLURM (see `slurm_jobs/README.md` 
 To move the data, or add a dataset, edit that file only.
 
 
-1. `benchmarks/build_indexes.py` builds one index per dataset into `results/indexes/`
-   (production build: seed 73, 100 held-out tiles; `slurm_jobs/submit_build_indexes.sh`).
-2. Each experiment script writes `results/<script name>/`:
+1. `benchmarks/index/build_indexes.py` builds one index per dataset into `results/indexes/`
+   (production build: seed 73, 100 held-out tiles; `slurm_jobs/index/submit_build_indexes.sh`).
+2. Each experiment script writes `results/<script name>/` (paths under `benchmarks/`):
 
    | Script | Experiment |
    |---|---|
-   | `dag_holdout.py` | Spindle-DAG retrieval vs Spindle-Exact, c90, K sweep (Fig 3B–C) |
-   | `exact_vs_whole.py` | query time: whole-matrix exact vs Spindle-Exact vs Spindle-DAG (Fig 3A) |
-   | `whole_cov_baselines.py` | HNSW / PCA + flat / PCA + PQ on whole-matrix logs: memory vs fidelity (Fig 3D) |
-   | `neighbour_biology.py` | block vs whole-matrix neighbours against biology (Fig S12) |
-   | `partial_search_final.py` | gene-set queries: interval index, padding, imputation vs Spindle-Exact on S (Fig 4, S8) |
-   | `cross_platform_tiers.py` | Xenium ↔ Visium search on the tiers: tissue agreement, co-located tile, correction ablation, bias PCA (Fig 5, S9) |
-   | `niche_concordance.py`, `composition_concordance.py`, `gene_signature_search.py` | breast biology (E10-lite, E13, E9-lite) |
+   | `index/dag_size_table.py`, `tier_build_stats.py`, `dag_cell_ladder.py`, `dag_gene_ladder.py` | storage, build cost, cell and gene ladders (Fig 2) |
+   | `whole_tile/dag_holdout.py` | Spindle-DAG retrieval vs Spindle-Exact, c90, K sweep (Fig 3B–C) |
+   | `whole_tile/exact_vs_whole.py` | query time: whole-matrix exact vs Spindle-Exact vs Spindle-DAG (Fig 3A) |
+   | `whole_tile/whole_cov_baselines.py` | HNSW / PCA + flat / PCA + PQ on whole-matrix logs: memory vs fidelity (Fig 3D) |
+   | `whole_tile/neighbour_biology.py` | block vs whole-matrix neighbours against biology (Fig S12) |
+   | `partial/partial_search_final.py` | gene-set queries: interval index, padding, imputation vs Spindle-Exact on S (Fig 4, S8) |
+   | `cross_platform/cross_platform_tiers.py` | Xenium ↔ Visium search on the tiers: tissue agreement, co-located tile, correction ablation, bias PCA (Fig 5, S9) |
+   | `biology/niche_concordance.py`, `composition_concordance.py`, `gene_signature_search.py` | breast biology (E10-lite, E13, E9-lite) |
 
-3. `scripts/extract_*.py`, `collect_index_stats.py` and `bio_modules.py` turn pickles into small CSVs;
-   `slurm_jobs/run_make_figures.sbatch` then draws every figure into `figures/`.
+3. `scripts/figure_data/` (`extract_*.py`, `collect_index_stats.py`, `bio_modules.py`) turns pickles into small CSVs;
+   `slurm_jobs/figures/run_make_figures.sbatch` then draws every figure into `figures/`.
 
 ---
 

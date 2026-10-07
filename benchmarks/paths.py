@@ -6,20 +6,33 @@
   data_dir("xenium")
 
 Shell (slurm scripts): ``python benchmarks/paths.py <key | stem | file name>`` prints the full path;
-``python benchmarks/paths.py --dir <name>`` prints a folder.
+``python benchmarks/paths.py --dir <name>`` prints a folder;
+``python benchmarks/paths.py <name> --seed-symlink <n>`` prints the seed-n symlink (``make_seed_symlink``).
+
+Importing this module also puts ``src/``, ``benchmarks/`` and every ``benchmarks/<topic>/`` folder on
+``sys.path``, so benchmark modules import each other by name (``import experiment_common``) from any
+subfolder. A script in ``benchmarks/<topic>/`` starts with
+``sys.path.insert(0, str(Path(__file__).resolve().parents[1]))`` and ``import paths``.
 """
 
 from __future__ import annotations
 
 import argparse
 import re
+import sys
 from functools import lru_cache
 from pathlib import Path
 
 import yaml
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+BENCH_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BENCH_DIR.parent
 CONFIG = PROJECT_ROOT / "datasets.yaml"
+
+for _p in (PROJECT_ROOT / "src", BENCH_DIR,
+           *sorted(d for d in BENCH_DIR.iterdir() if d.is_dir() and not d.name.startswith(("_", ".")))):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 
 @lru_cache(maxsize=1)
@@ -68,12 +81,40 @@ def dataset_max_genes(name: str) -> int:
     return DEFAULT_MAX_GENES
 
 
+SYMLINK_DIR = PROJECT_ROOT / "results" / "indexes" / "_seed_symlinks"
+
+
+def make_seed_symlink(dataset_path: Path, seed: int) -> Path:
+    """Return a symlink named ``{stem}_seed{n}.h5ad`` pointing at ``dataset_path``.
+
+    ``build_indexes.py`` and ``holdout_core.py`` derive ``dataset_name`` from the path stem, so a
+    seed-suffixed symlink is all it takes to give each seed (0-4) its own index, covariances,
+    run log and ground-truth cache.
+    """
+    SYMLINK_DIR.mkdir(parents=True, exist_ok=True)
+    link_path = SYMLINK_DIR / f"{dataset_path.stem}_seed{seed}.h5ad"
+    if link_path.is_symlink() or link_path.exists():
+        if link_path.resolve() != dataset_path.resolve():
+            link_path.unlink()
+            link_path.symlink_to(dataset_path)
+    else:
+        link_path.symlink_to(dataset_path)
+    return link_path
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("name", nargs="?", help="dataset key, file stem or file name")
     parser.add_argument("--dir", help="print a folder from dirs instead")
+    parser.add_argument("--seed-symlink", type=int, metavar="SEED",
+                        help="print (and create) the seed-suffixed symlink to the dataset instead")
     args = parser.parse_args()
-    print(data_dir(args.dir) if args.dir else dataset_path(args.name))
+    if args.dir:
+        print(data_dir(args.dir))
+    elif args.seed_symlink is not None:
+        print(make_seed_symlink(dataset_path(args.name), args.seed_symlink))
+    else:
+        print(dataset_path(args.name))
 
 
 if __name__ == "__main__":

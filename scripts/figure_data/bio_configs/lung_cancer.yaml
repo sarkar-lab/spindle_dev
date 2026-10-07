@@ -1,0 +1,11 @@
+# Fig. S10 row 2: the smooth-muscle / TGF-beta module (lung_modules.pdf, module 1).
+# (niche, layer, node) are 0-based and follow the selection rule in scripts/figure_data/bio_modules.py.
+dataset: lung_cancer
+niche: 0
+layer: 11
+node: 709
+library: GO_Biological_Process_2023
+reference:
+  source: lung_modules.pdf, module 1 (notebook hlung_01202025, cluster 3 / block 19)
+  genes: [ACTA2, ADAMTS1, AMY2A, CNN1, CRISPLD2, DPT, DST, GEM, GPC1, LTBP2, MEDAG, MYH11, MYLK, NTN4,
+          PDGFRB, SLC26A2, TBX3]
