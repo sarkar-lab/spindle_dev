@@ -14,7 +14,7 @@ Run order:
    | Exp. | Submit | Unit job | Then |
    |---|---|---|---|
    | E4 ANN baselines (old; superseded by Fig 3D, results kept for `extract_fig1_data.py`) | `submit_ann_baselines.sh` | `run_ann_baselines.sbatch` | – |
-   | E12 cross-platform search | `submit_cross_modal_search.sh` | `run_cross_modal_search.sbatch` | `python benchmarks/aggregate_cross_modal_seeds.py`, then `sbatch run_cross_modal_bias_pca.sbatch` |
+   | Fig 5 / S9 cross-platform search (tile caches, seeds 0–4 × tiles 2000/1000, aggregate, bias PCA, example) | `submit_cross_platform_tiers.sh` | `run_cross_platform_tiers.sbatch <seed> <max_pts>` (or `--overlay`, `--check`, `--bias-pca`, `--example`) | aggregate, bias PCA and example jobs submitted by the script |
    | E10-lite / E13 (breast) | – | `run_breast_concordance.sbatch` | – |
    | E9-lite gene signatures | – | `run_gene_signature_search.sbatch` | – |
    | Niche-cap check of every saved index (Part 1.3) | – | `run_index_cap_check.sbatch` | – |

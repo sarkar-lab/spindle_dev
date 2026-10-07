@@ -1,15 +1,19 @@
-"""Fig. 5 -- Cross-platform search, Xenium <-> Visium serial breast sections (E12).
+"""Fig. 5 -- Cross-platform search, Xenium <-> Visium serial breast sections.
 
 A  both sections, cells / spots coloured by annotated cell type (coarse shared classes), tile boxes
-B  PC1/PC2 of tile log-covariances before and after the global correction (v2x: Xenium index)
-C  Recall/Overlap@eps in both directions, mean +- s.d. over 5 seeds
-D  correction ablation (seed 0): none, per-niche, global
-E  one Visium query tile and its top-5 Spindle matches in the Xenium index (seed 0); the
-   all-niche vs routed comparison was dropped from the figure (user decision, 2026-09-25)
+B  PC1/PC2 of shrunk tile log-covariances before and after the global correction (v2x: Xenium index)
+C  Spindle-Exact, global correction. Left: tissue agreement, the tumour fraction of each query tile (its own
+   platform's annotation) vs the mean of its top-10 tiles on the other platform (seed 0; r = mean +- s.d.
+   over seeds 0-4). Right: fraction of queries whose co-located tile is within rank r, with a
+   tumour-fraction oracle and random
+D  correction ablation (none, per niche, global): tissue-agreement r, mean +- s.d. over seeds
+E  a DCIS-rich Visium query tile and its top-5 Xenium tiles (seed 0): both sections, then each tile enlarged
+   with its share of the query's class
+Sections are drawn rotated by ~2 degrees so the tissue is square to the axes (class Frame).
 
-Inputs: results/cross_modal_search/{summary.csv, seed_*/, correction_ablation_seed0/,
-bias_pca.csv, tile_overlay_boxes.csv}, results/figure_data/{cross_modal_cells.csv,
-cross_modal_v2x_seed0_topk.csv}.
+Inputs: results/cross_platform_tiers/{summary.csv, rank_cdf.csv, oracle_rank_cdf.csv,
+tissue_per_query_seed0.csv, bias_pca*.csv, tile_boxes_tiles2000.csv,
+cross_modal_cells.csv, example_v2x.csv}.
 """
 
 import numpy as np
@@ -17,31 +21,86 @@ import pandas as pd
 from matplotlib.collections import PatchCollection
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
-from matplotlib.patches import Patch, Rectangle
+from matplotlib.patches import Patch, Polygon
+from scipy.spatial import cKDTree
+
+import matplotlib.patheffects as pe
 
 import figstyle as fs
 
-CM = fs.RESULTS / "cross_modal_search"
+RES = fs.RESULTS / "cross_platform_tiers"
+MAX_PTS = 2000
 DIRS = ["x2v", "v2x"]
 DIR_LABELS = {"x2v": "Xenium → Visium", "v2x": "Visium → Xenium"}
 # a direction is drawn in its query platform's colour
 DIR_COLORS = {"x2v": fs.PLATFORM_COLORS["Xenium"], "v2x": fs.PLATFORM_COLORS["Visium"]}
+ARMS = [("none", "None"), ("per_niche", "Per\nniche"), ("global", "Global")]
 CLASSES = ["Invasive tumour", "DCIS", "Myoepithelial", "Stroma", "Immune", "Adipocytes", "Mixed"]
 CLASS_COLORS = dict(zip(CLASSES, ["#CC6677", "#882255", "#DDCC77", "#44AA99", "#332288", "#E69F00", "#AAAAAA"]))
 CLASS_COLORS["Unlabeled"] = "#E6E6E6"
-METRICS = [("recall_at_eps_0.1", r"Recall@0.1$\varepsilon$"), ("recall_at_eps_0.5", r"Recall@0.5$\varepsilon$"),
-           ("overlap_at_eps_0.5", r"Overlap@0.5$\varepsilon$"), ("overlap_at_eps_1.0", r"Overlap@1$\varepsilon$")]
+
+
+class Frame:
+    """Display rotation that squares the sections to the axes.
+
+    The registered frame is rotated: the Visium spot grid (hexagonal, neighbours every 60 degrees) sits at
+    about -2 degrees. Cells, spots and tile corners are all rotated by the opposite angle about the Visium
+    centre for display only, and each overview map is cropped to the largest straight rectangle inside its
+    section. Tiles were cut in the original frame, so their boxes keep the small tilt.
+    """
+
+    def __init__(self, cells):
+        v = cells.loc[cells["modality"] == "Visium", ["x", "y"]].to_numpy()
+        d, i = cKDTree(v).query(v, k=7)
+        nb = (v[i[:, 1:]] - v[:, None, :]).reshape(-1, 2)
+        nb = nb[np.hypot(*nb.T) < 1.2 * np.median(d[:, 1])]
+        a = 6 * np.arctan2(nb[:, 1], nb[:, 0])  # 60-degree period -> full circle
+        self.angle = -np.arctan2(np.sin(a).mean(), np.cos(a).mean()) / 6
+        self.centre = v.mean(0)
+        c, s = np.cos(self.angle), np.sin(self.angle)
+        self.R = np.array([[c, -s], [s, c]])
+
+        # crop per section: the largest axis-aligned rectangle (display frame) inside its rotated area (the
+        # Xenium imaging area; the Visium spot area, half a spot pitch in from the outer spots)
+        self.lims = {}
+        for mod, inset in (("Xenium", 0.0), ("Visium", 0.5 * np.median(d[:, 1]))):
+            xy = cells.loc[cells["modality"] == mod, ["x", "y"]].to_numpy()
+            (x0, y0), (x1, y1) = xy.min(0) + inset, xy.max(0) - inset
+            k = self([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])  # corners: tl, tr, br, bl (y down)
+            self.lims[mod] = ((max(k[0, 0], k[3, 0]), min(k[1, 0], k[2, 0])),
+                              (min(k[2, 1], k[3, 1]), max(k[0, 1], k[1, 1])))  # y inverted: bottom first
+
+    def frame(self, ax, mod):
+        ax.set_xlim(*self.lims[mod][0])
+        ax.set_ylim(*self.lims[mod][1])
+
+    def __call__(self, xy):
+        return (np.asarray(xy, float) - self.centre) @ self.R.T + self.centre
+
+    def cells(self, cells):
+        out = cells.copy()
+        out[["x", "y"]] = self(cells[["x", "y"]].to_numpy())
+        return out
+
+    def corners(self, r):
+        return self([(r.x0, r.y0), (r.x1, r.y0), (r.x1, r.y1), (r.x0, r.y1)])
+
+
+FRAME = None  # set in main()
 
 
 def boxes(ax, b, **kw):
-    rects = [Rectangle((r.x0, r.y0), r.x1 - r.x0, r.y1 - r.y0) for r in b.itertuples()]
-    ax.add_collection(PatchCollection(rects, **kw))
+    ax.add_collection(PatchCollection([Polygon(FRAME.corners(r), closed=True) for r in b.itertuples()], **kw))
 
 
-def section(ax, cells, mod, title, colour=True, s=0.4):
+OVERVIEW_XENIUM = 30000  # cells drawn on a whole-section map (all cells in the enlarged tiles)
+
+
+def section(ax, cells, mod, title, s=0.4):
     c = cells[cells["modality"] == mod]
-    col = c["coarse"].map(CLASS_COLORS) if colour else fs.LIGHT
-    ax.scatter(c["x"], c["y"], s=s, c=col, lw=0, rasterized=True, zorder=1)
+    if len(c) > OVERVIEW_XENIUM:
+        c = c.sample(OVERVIEW_XENIUM, random_state=0)
+    ax.scatter(c["x"], c["y"], s=s, c=c["coarse"].map(CLASS_COLORS), lw=0, rasterized=True, zorder=1)
     ax.set_aspect("equal")
     ax.invert_yaxis()
     ax.set_axis_off()
@@ -51,16 +110,13 @@ def section(ax, cells, mod, title, colour=True, s=0.4):
 def panel_sections(fig, spec, cells, tile_boxes):
     gs = GridSpecFromSubplotSpec(1, 3, subplot_spec=spec, width_ratios=[1, 1, 0.55], wspace=0.05)
     axes = []
-    for j, (mod, n_label) in enumerate((("Xenium", "cells"), ("Visium", "spots"))):
+    for j, mod in enumerate(("Xenium", "Visium")):
         ax = fig.add_subplot(gs[j])
-        s = 0.25 if mod == "Xenium" else 1.6
         n_tiles = (tile_boxes["modality"] == mod).sum()
-        section(ax, cells, mod, f"{mod} ({n_tiles} tiles)", s=s)
+        section(ax, cells, mod, f"{mod} ({n_tiles} tiles)", s=0.25 if mod == "Xenium" else 1.6)
         boxes(ax, tile_boxes[tile_boxes["modality"] == mod], facecolor="none", edgecolor=fs.INK, lw=0.2, zorder=2)
+        FRAME.frame(ax, mod)
         axes.append(ax)
-    ylim = (max(a.get_ylim()[0] for a in axes), min(a.get_ylim()[1] for a in axes))
-    for a in axes:
-        a.set_ylim(*ylim)
     leg = fig.add_subplot(gs[2])
     leg.set_axis_off()
     leg.legend(handles=[Patch(color=CLASS_COLORS[k], label=k) for k in CLASSES + ["Unlabeled"]],
@@ -69,22 +125,21 @@ def panel_sections(fig, spec, cells, tile_boxes):
 
 
 def panel_pca(fig, spec):
-    p = pd.read_csv(CM / "bias_pca.csv")
+    p = pd.read_csv(RES / "bias_pca.csv")
     p = p[p["direction"] == "v2x"]
-    summ = pd.read_csv(CM / "bias_pca_summary.csv").set_index(["direction", "corrected"])
+    summ = pd.read_csv(RES / "bias_pca_summary.csv").set_index(["direction", "corrected"])
     gs = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, wspace=0.12)
+    pad_x, pad_y = 0.05 * np.ptp(p["PC1"]), 0.05 * np.ptp(p["PC2"])
     axes = []
-    lim_x = (p["PC1"].min() - 1, p["PC1"].max() + 1)
-    lim_y = (p["PC2"].min() - 1, p["PC2"].max() + 1)
     for j, corrected in enumerate((False, True)):
         ax = fig.add_subplot(gs[j])
         # index tiles are never corrected, so they are stored once (corrected == False)
         d = pd.concat([p[p["role"] == "index"], p[(p["role"] == "query") & (p["corrected"] == corrected)]])
         for mod in ("Xenium", "Visium"):
             m = d[d["modality"] == mod]
-            ax.scatter(m["PC1"], m["PC2"], s=4, color=fs.PLATFORM_COLORS[mod], lw=0, alpha=0.8, label=mod)
-        ax.set_xlim(*lim_x)
-        ax.set_ylim(*lim_y)
+            ax.scatter(m["PC1"], m["PC2"], s=4, color=fs.PLATFORM_COLORS[mod], lw=0, alpha=0.8)
+        ax.set_xlim(p["PC1"].min() - pad_x, p["PC1"].max() + pad_x)
+        ax.set_ylim(p["PC2"].min() - pad_y, p["PC2"].max() + pad_y)
         ax.set_xlabel("PC1")
         if j == 0:
             ax.set_ylabel("PC2")
@@ -94,138 +149,161 @@ def panel_pca(fig, spec):
         ax.set_title(("Corrected" if corrected else "Uncorrected") + f" (silhouette {sil:.2f})", fontsize=fs.TICK_PT)
         axes.append(ax)
     axes[1].legend(handles=[Line2D([], [], ls="none", marker="o", ms=3, color=fs.PLATFORM_COLORS[m], label=m)
-                            for m in ("Xenium", "Visium")], loc="lower right")
+                            for m in ("Xenium", "Visium")], loc="upper right")
     return axes
 
 
-def panel_metrics(ax):
-    summ = pd.read_csv(CM / "summary.csv").set_index("direction")
-    per_seed = pd.concat([pd.read_csv(CM / f"seed_{s}" / f"{d}_summary.csv") for s in range(5) for d in DIRS])
-    x = np.arange(len(METRICS))
-    for k, d in enumerate(DIRS):
-        off = (k - 0.5) * 0.3
-        for i, (col, _) in enumerate(METRICS):
-            v = per_seed.loc[per_seed["direction"] == d, col]
-            ax.scatter(np.full(len(v), i + off) + np.linspace(-0.06, 0.06, len(v)), v, s=3, color=DIR_COLORS[d],
-                       alpha=0.4, lw=0, zorder=2)
-        ax.errorbar(x + off, [summ.loc[d, f"mean_{c}"] for c, _ in METRICS],
-                    yerr=[summ.loc[d, f"sd_{c}"] for c, _ in METRICS], fmt="o", ms=3.2, mew=0,
-                    color=DIR_COLORS[d], elinewidth=0.7, zorder=3, label=DIR_LABELS[d])
-    ax.set_xticks(x, [m for _, m in METRICS], rotation=30, ha="right", rotation_mode="anchor")
-    ax.set_ylim(0.85, 1.01)
-    ax.set_ylabel("Score")
-    ax.legend(loc="lower left", handletextpad=0.1)
+def sel(df, **kw):
+    for k, v in kw.items():
+        df = df[df[k] == v]
+    return df
 
 
-def seed0_summary(direction, variant="all_niche", correction="global"):
-    tag = "" if variant == "all_niche" else "_single_niche_baseline"
-    if correction == "per_niche":
-        f = CM / "correction_ablation_seed0" / f"{direction}{tag}_summary_corr-per_niche.csv"
-    else:
-        f = CM / "correction_ablation_seed0" / f"{direction}{tag}_corr-{correction}_summary.csv"
-    return pd.read_csv(f).iloc[0]
+def panel_tissue(ax, summ):
+    """Query box's tumour fraction (own platform) vs the mean of its top-10 hits (other platform), seed 0."""
+    t = sel(pd.read_csv(RES / "tissue_per_query_seed0.csv"), max_pts=MAX_PTS, arm="global")
+    for j, d in enumerate(DIRS):
+        v = t[t["direction"] == d]
+        r = sel(summ, direction=d, arm="global", tier="exact").iloc[0]
+        ax.scatter(v["query_tumour"], v["hits_tumour"], s=4, color=DIR_COLORS[d], lw=0, alpha=0.7)
+        ax.text(0.98, 0.04 + 0.09 * (1 - j), f"r = {r['tissue_r_mean']:.2f} ± {r['tissue_r_std']:.2f}",
+                color=DIR_COLORS[d], transform=ax.transAxes, ha="right", va="bottom", fontsize=fs.TICK_PT)
+    ax.plot([0, 1], [0, 1], color=fs.MUTED, lw=0.6, ls="--", zorder=1)
+    ax.set_xlim(-0.03, 1.03)
+    ax.set_ylim(-0.03, 1.03)
+    ax.set_xticks([0, 0.5, 1])
+    ax.set_yticks([0, 0.5, 1])
+    ax.set_xlabel("Tumour fraction, query tile")
+    ax.set_ylabel("Tumour fraction, top-10 tiles")
+    ax.legend(handles=[Line2D([], [], ls="none", marker="o", ms=3, color=DIR_COLORS[d], label=DIR_LABELS[d])
+                       for d in DIRS], loc="upper left", handletextpad=0.1)
 
 
-def grouped_bars(ax, groups, values, ylabel):
-    """values[direction] = list aligned with groups; bars start at 0 (full axis)."""
-    x = np.arange(len(groups))
+def panel_rank_cdf(ax, summ):
+    cdf = sel(pd.read_csv(RES / "rank_cdf.csv"), max_pts=MAX_PTS, arm="global", tier="exact")
+    oracle = sel(pd.read_csv(RES / "oracle_rank_cdf.csv"), max_pts=MAX_PTS)
+    for d in DIRS:
+        c = cdf[cdf["direction"] == d]
+        ax.plot(c["r"], c["frac_mean"], color=DIR_COLORS[d], lw=1.0, zorder=3)
+        ax.fill_between(c["r"], c["frac_mean"] - c["frac_std"], c["frac_mean"] + c["frac_std"],
+                        color=DIR_COLORS[d], alpha=0.25, lw=0, zorder=2)
+        o = oracle[oracle["direction"] == d]
+        ax.plot(o["r"], o["frac"], color=DIR_COLORS[d], lw=0.7, ls="--", zorder=2)
+        n = sel(summ, direction=d, arm="global", tier="exact")["n_index_mean"].iloc[0]
+        ax.plot(c["r"], np.minimum(1, c["r"] / n), color=DIR_COLORS[d], lw=0.6, ls=":", zorder=1)
+    ax.set_xlim(1, cdf["r"].max())
+    ax.set_ylim(0, 0.6)
+    ax.set_xlabel("Rank r of the co-located tile")
+    ax.set_ylabel("Queries with rank ≤ r", labelpad=1)
+    ax.legend(handles=[Line2D([], [], color=fs.INK, lw=1.0, label="Spindle-Exact"),
+                       Line2D([], [], color=fs.INK, lw=0.7, ls="--", label="Tumour-fraction oracle"),
+                       Line2D([], [], color=fs.INK, lw=0.6, ls=":", label="Random")], loc="upper left")
+
+
+def panel_ablation(ax, summ):
+    x = np.arange(len(ARMS))
     w = 0.36
     for k, d in enumerate(DIRS):
-        v = values[d]
-        ax.bar(x + (k - 0.5) * w, v, width=w * 0.92, color=DIR_COLORS[d], lw=0, label=DIR_LABELS[d])
-        for xi, vi in zip(x + (k - 0.5) * w, v):
-            ax.text(xi, vi + 0.02, f"{vi:.2f}".replace("1.00", "1").replace("0.00", "0"), ha="center",
-                    va="bottom", fontsize=fs.TICK_PT)
-    ax.set_xticks(x, groups)
-    ax.set_ylim(0, 1.12)
+        rows = [sel(summ, direction=d, arm=a, tier="exact").iloc[0] for a, _ in ARMS]
+        ax.bar(x + (k - 0.5) * w, [r["tissue_r_mean"] for r in rows], yerr=[r["tissue_r_std"] for r in rows],
+               width=w * 0.92, color=DIR_COLORS[d], lw=0, error_kw=dict(elinewidth=0.6, capsize=0),
+               label=DIR_LABELS[d])
+    ax.set_xticks(x, [g for _, g in ARMS])
+    ax.set_ylim(0, 1.0)
     ax.set_yticks([0, 0.5, 1.0])
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel("Tumour-fraction r,\nquery vs top-10 tiles")
+    ax.set_xlabel("Platform correction")
     ax.tick_params(axis="x", length=0)
 
 
-def panel_ablation(ax):
-    groups = [("none", "None"), ("per_niche", "Per niche"), ("global", "Global")]
-    vals = {d: [seed0_summary(d, correction=c)["recall_at_eps_0.1"] for c, _ in groups] for d in DIRS}
-    grouped_bars(ax, [g for _, g in groups], vals, r"Recall@0.1$\varepsilon$")
-    ax.set_xlabel("Bias correction")
-
-
-def pick_example(topk, tile_boxes):
-    """Query whose Spindle top-5 equals the exact top-5 and lies closest to the query's own location.
-
-    Visium tiles reuse the Xenium quadtree boxes, so distances are between tile centres in the
-    shared (co-registered) coordinate frame. Across the 50 seed-0 queries the co-located Xenium
-    tile is in the top-5 for 10; this picks the clearest of those cases (state it in the caption).
-    """
-    vb = tile_boxes[tile_boxes["modality"] == "Visium"].set_index("id")
-    xb = tile_boxes[tile_boxes["modality"] == "Xenium"].set_index("id")
-    cx, cy = (xb["x0"] + xb["x1"]) / 2, (xb["y0"] + xb["y1"]) / 2
-    best, best_d = None, np.inf
-    for q, d in topk[topk["rank"] <= 5].groupby("query_tile_id"):
-        hits = d.loc[d["method"] == "spindle", "index_tile_id"]
-        if set(hits) != set(d.loc[d["method"] == "exact", "index_tile_id"]):
-            continue
-        qx, qy = (vb.loc[q, "x0"] + vb.loc[q, "x1"]) / 2, (vb.loc[q, "y0"] + vb.loc[q, "y1"]) / 2
-        dist = np.hypot(cx[hits] - qx, cy[hits] - qy).mean()
-        if dist < best_d:
-            best, best_d = q, dist
-    return best
+def zoom(ax, cells, mod, corners, title, s, edge, ls="-"):
+    """One tile at full size: its cells / spots, its box, a title."""
+    c = cells[cells["modality"] == mod]
+    lo, hi = corners.min(0), corners.max(0)
+    pad = 0.04 * (hi - lo).max()
+    inside = c[(c["x"] >= lo[0] - pad) & (c["x"] <= hi[0] + pad) & (c["y"] >= lo[1] - pad) & (c["y"] <= hi[1] + pad)]
+    ax.scatter(inside["x"], inside["y"], s=s, c=inside["coarse"].map(CLASS_COLORS), lw=0, rasterized=True)
+    ax.add_patch(Polygon(corners, closed=True, fill=False, ec=edge, lw=1.0, ls=ls))
+    side = (hi - lo).max() / 2 + pad
+    mid = (lo + hi) / 2
+    ax.set_xlim(mid[0] - side, mid[0] + side)
+    ax.set_ylim(mid[1] + side, mid[1] - side)
+    ax.set_aspect("equal")
+    ax.set_axis_off()
+    ax.set_title(title, fontsize=fs.TICK_PT, pad=1.5)
 
 
 def panel_example(fig, spec, cells, tile_boxes):
-    topk = pd.read_csv(fs.FIG_DATA / "cross_modal_v2x_seed0_topk.csv")
-    q = pick_example(topk, tile_boxes)
-    hits = topk[(topk["query_tile_id"] == q) & (topk["method"] == "spindle") & (topk["rank"] <= 5)]
+    ex = pd.read_csv(RES / "example_v2x.csv")
+    q = int(ex["query"].iloc[0])
+    hits = ex[ex["rank"] <= 5]
     vb = tile_boxes[tile_boxes["modality"] == "Visium"].set_index("id")
     xb = tile_boxes[tile_boxes["modality"] == "Xenium"].set_index("id")
-    gs = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, wspace=0.05)
-    ax_v = fig.add_subplot(gs[0])
-    section(ax_v, cells, "Visium", "Visium query tile", s=1.2)
-    boxes(ax_v, vb.loc[[q]], facecolor="none", edgecolor=fs.INK, lw=1.0, zorder=3)
-    ax_x = fig.add_subplot(gs[1])
-    section(ax_x, cells, "Xenium", "Top-5 Xenium matches", s=0.2)
-    b = vb.loc[q]
-    ax_x.add_patch(Rectangle((b.x0, b.y0), b.x1 - b.x0, b.y1 - b.y0, fill=False, ls=(0, (2, 1.5)),
-                             ec=fs.PLATFORM_COLORS["Visium"], lw=1.0, zorder=4))
-    boxes(ax_x, xb.loc[hits["index_tile_id"]], facecolor="none", edgecolor=fs.INK, lw=0.9, zorder=3)
+    gs = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, width_ratios=[1.05, 1.0], wspace=0.08)
+    over = GridSpecFromSubplotSpec(1, 2, subplot_spec=gs[0], wspace=0.04)
+    ax_v = fig.add_subplot(over[0])
+    section(ax_v, cells, "Visium", "Visium, query tile", s=1.6)
+    boxes(ax_v, vb.loc[[q]], facecolor="none", edgecolor=fs.INK, lw=1.2, zorder=3)
+    ax_x = fig.add_subplot(over[1])
+    section(ax_x, cells, "Xenium", f"Xenium, top 5 (section: {100 * ex['section_frac'].iloc[0]:.0f}% "
+                                   f"{ex['focal_class'].iloc[0]})", s=0.3)
+    ax_x.add_patch(Polygon(FRAME.corners(vb.loc[q]), closed=True, fill=False, ls=(0, (2, 1.5)),
+                           ec=fs.PLATFORM_COLORS["Visium"], lw=1.2, zorder=4))
+    boxes(ax_x, xb.loc[hits["index_tile"]], facecolor="none", edgecolor=fs.INK, lw=1.0, zorder=3)
     for r in hits.itertuples():
-        b = xb.loc[r.index_tile_id]
-        ax_x.text(b.x1, b.y0, str(r.rank), fontsize=fs.TICK_PT, ha="left", va="bottom", zorder=4)
-    ylim = (max(ax_v.get_ylim()[0], ax_x.get_ylim()[0]), min(ax_v.get_ylim()[1], ax_x.get_ylim()[1]))
-    for a in (ax_v, ax_x):
-        a.set_ylim(*ylim)
-    ax_x.legend(handles=[Patch(fc="none", ec=fs.INK, lw=0.9, label="Top-5 match (rank)"),
+        x, y = FRAME.corners(xb.loc[r.index_tile])[2]
+        ax_x.text(x, y, str(r.rank), fontsize=fs.TICK_PT, ha="left", va="top", zorder=4,
+                  path_effects=[pe.withStroke(linewidth=1.5, foreground="white")])
+    FRAME.frame(ax_v, "Visium")
+    FRAME.frame(ax_x, "Xenium")
+    ax_x.legend(handles=[Patch(fc="none", ec=fs.INK, lw=1.0, label="Top-5 tile (rank)"),
                          Patch(fc="none", ec=fs.PLATFORM_COLORS["Visium"], lw=1.0, ls=(0, (2, 1.5)),
                                label="Query location")],
-                loc="upper center", bbox_to_anchor=(0.0, -0.02), ncol=2, handlelength=1.0)
-    return ax_v, int(q)
+                loc="upper center", bbox_to_anchor=(0.0, -0.05), ncol=2, handlelength=1.0)
+    tiles = GridSpecFromSubplotSpec(2, 3, subplot_spec=gs[1], wspace=0.08, hspace=0.25)
+    cls = ex["focal_class"].iloc[0]
+    zoom(fig.add_subplot(tiles[0, 0]), cells, "Visium", FRAME.corners(vb.loc[q]),
+         f"Query (Visium): {100 * ex['query_frac'].iloc[0]:.0f}% {cls}", 14, fs.PLATFORM_COLORS["Visium"])
+    for k, r in enumerate(hits.itertuples(), start=1):
+        b = xb.loc[r.index_tile]
+        title = f"{r.rank}{' (co-located)' if r.matched else ''}: {100 * r.hit_frac:.0f}% {cls}"
+        zoom(fig.add_subplot(tiles[k // 3, k % 3]), cells, "Xenium", FRAME.corners(b), title, 0.8, fs.INK,
+             ls=(0, (2, 1.5)) if r.matched else "-")
+    return ax_v, q
 
 
 def main():
-    cells = pd.read_csv(fs.FIG_DATA / "cross_modal_cells.csv")
-    tile_boxes = pd.read_csv(CM / "tile_overlay_boxes.csv")
+    global FRAME
+    raw = pd.read_csv(RES / "cross_modal_cells.csv")
+    FRAME = Frame(raw)
+    cells = FRAME.cells(raw)
+    tile_boxes = pd.read_csv(RES / f"tile_boxes_tiles{MAX_PTS}.csv")
+    summ = sel(pd.read_csv(RES / "summary.csv"), max_pts=MAX_PTS)
+    print(f"display rotation {np.degrees(FRAME.angle):+.2f} degrees")
 
-    fig = fs.figure(fs.DOUBLE, 135)
-    outer = GridSpec(2, 1, figure=fig, height_ratios=[1.0, 1.15], hspace=0.3, left=0.06, right=0.99,
-                     top=0.95, bottom=0.1)
+    fig = fs.figure(fs.DOUBLE, 185)
+    outer = GridSpec(3, 1, figure=fig, height_ratios=[1.0, 0.78, 1.05], hspace=0.42, left=0.06, right=0.99,
+                     top=0.965, bottom=0.06)
     top = GridSpecFromSubplotSpec(1, 2, subplot_spec=outer[0], width_ratios=[1.25, 1], wspace=0.12)
-    bot = GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[1], width_ratios=[1.0, 1.0, 2.3], wspace=0.4)
+    mid = GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[1], width_ratios=[1.0, 1.0, 0.9], wspace=0.45)
 
     ax_a = panel_sections(fig, top[0], cells, tile_boxes)
     ax_b = panel_pca(fig, top[1])
-    ax_c = fig.add_subplot(bot[0])
-    panel_metrics(ax_c)
-    ax_d = fig.add_subplot(bot[1])
-    panel_ablation(ax_d)
-    ax_e, q = panel_example(fig, bot[2], cells, tile_boxes)
+    ax_c = fig.add_subplot(mid[0])
+    panel_tissue(ax_c, summ)
+    ax_c2 = fig.add_subplot(mid[1])
+    panel_rank_cdf(ax_c2, summ)
+    ax_d = fig.add_subplot(mid[2])
+    panel_ablation(ax_d, summ)
+    ax_e, q = panel_example(fig, outer[2], cells, tile_boxes)
     print(f"Fig. 5E example: Visium query tile {q}")
 
     fig.canvas.draw()
     fs.label_panel(fig, ax_a[0], "A", dx_mm=-4)
     fs.label_panel(fig, ax_b[0], "B", dx_mm=-9)
-    fs.label_panel(fig, ax_c, "C", dx_mm=-10)
+    fs.label_panel(fig, ax_c, "C", dx_mm=-10, panel=(ax_c2,))
     fs.label_panel(fig, ax_d, "D", dx_mm=-9)
-    fs.label_panel(fig, ax_e, "E", dx_mm=-3)
+    fs.label_panel(fig, ax_e, "E", dx_mm=-4)
     fs.save(fig, "fig5_cross_platform")
 
 

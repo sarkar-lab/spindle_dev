@@ -29,7 +29,7 @@ Example choices (rules, not hand picks; printed when run):
   * tile for B: the tile of that niche nearest its mean in phi-space.
 
 Inputs: results/figure_data/fig1/ (scripts/extract_fig1_data.py) and
-results/figure_data/cross_modal_cells.csv (Visium spots for the glyph).
+results/cross_platform_tiers/cross_modal_cells.csv (Visium spots for the glyph).
 """
 
 import os
@@ -474,7 +474,7 @@ def glyphs(R40, d):
     glyph_frame(fig, "Gene panel", W)
     save(fig, "f_glyph_partial_panel")
     # Visium spots: a real window of the Visium section (Fig. 5)
-    v = pd.read_csv(fs.FIG_DATA / "cross_modal_cells.csv").query("modality == 'Visium'")
+    v = pd.read_csv(fs.RESULTS / "cross_platform_tiers" / "cross_modal_cells.csv").query("modality == 'Visium'")
     cx, cy = v.x.median(), v.y.median()
     pitch = np.median(np.sort(np.hypot(v.x.to_numpy()[:200, None] - v.x.to_numpy()[None], v.y.to_numpy()[:200, None]
                                        - v.y.to_numpy()[None]), axis=1)[:, 1])

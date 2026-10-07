@@ -71,7 +71,7 @@ To move the data, or add a dataset, edit that file only.
    | `whole_cov_baselines.py` | HNSW / PCA + flat / PCA + PQ on whole-matrix logs: memory vs fidelity (Fig 3D) |
    | `neighbour_biology.py` | block vs whole-matrix neighbours against biology (Fig S12) |
    | `partial_search_final.py` | gene-set queries: interval index, padding, imputation vs Spindle-Exact on S (Fig 4, S8) |
-   | `cross_modal_search.py`, `aggregate_cross_modal_seeds.py`, `cross_modal_bias_pca.py` | Xenium ↔ Visium search (E12) |
+   | `cross_platform_tiers.py` | Xenium ↔ Visium search on the tiers: tissue agreement, co-located tile, correction ablation, bias PCA (Fig 5, S9) |
    | `niche_concordance.py`, `composition_concordance.py`, `gene_signature_search.py` | breast biology (E10-lite, E13, E9-lite) |
 
 3. `scripts/extract_*.py`, `collect_index_stats.py` and `bio_modules.py` turn pickles into small CSVs;

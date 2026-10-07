@@ -214,8 +214,8 @@ def compute_ground_truth(test_tile_covs, train_tile_covs, data, query_blocks_log
     ``query_blocks_log_override`` (optional): a list aligned with
     ``test_tile_covs`` whose i-th entry is a ``{niche: [block log matrices]}``
     dict to use as query i's per-niche block logs instead of recomputing them
-    from the raw query covariance. Used by cross_modal_search.py, whose
-    queries are bias-corrected differently per niche. Default (None) is the
+    from the raw query covariance. Was used by the retired cross_modal_search.py
+    (per-niche bias-corrected queries). Default (None) is the
     unchanged holdout behaviour.
     """
     tile_niche = {idx: int(lab) for idx, lab in enumerate(data.labels)}

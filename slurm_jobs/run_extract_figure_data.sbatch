@@ -11,7 +11,7 @@
 #SBATCH --mail-user=ghoss18@vanderbilt.edu
 
 # Writes the pickle/h5ad-derived figure inputs to results/figure_data/
-# (see scripts/extract_figure_data.py and scripts/extract_cross_modal_example.py).
+# (see scripts/extract_figure_data.py).
 # The figure scripts themselves (scripts/fig*.py) read CSVs only.
 
 mkdir -p logs
@@ -25,5 +25,4 @@ conda activate spindle_env
 cd $SLURM_SUBMIT_DIR
 
 python scripts/extract_figure_data.py "$@" || exit 1
-python scripts/extract_cross_modal_example.py || exit 1
 echo "Done."

@@ -11,8 +11,6 @@ is not already a benchmark CSV is written here, once, to results/figure_data/:
   block_sizes.csv             genes per block, per (dataset, seed, niche) -> Fig. S2
   niche_epsilons.csv          per-niche epsilon of the seed-73 builds -> Fig. S5b
   within_niche_distances.csv  sampled within-niche block LE distances, seed 73 -> Fig. S5b
-  cross_modal_cells.csv       Xenium cells (30k sample) and all Visium spots with
-                              their annotated Cluster -> Fig. 5A
 
 Loads index pickles (<= 330 MB) and block ground-truth caches (<= 610 MB), so
 run it through SLURM:  sbatch slurm_jobs/run_extract_figure_data.sbatch
@@ -110,41 +108,14 @@ def sample_within_niche_distances(niche_train_cache, block_dict, n_pairs=3000, s
     return rows
 
 
-def cross_modal_cells():
-    coarse = {
-        # Visium annotations
-        "invasive": "Invasive tumour", "mixed/invasive": "Invasive tumour",
-        "DCIS #1": "DCIS", "DCIS #2": "DCIS",
-        "stromal": "Stroma", "stromal/endothelial": "Stroma",
-        "immune": "Immune", "stromal/endothelial/immune": "Immune",
-        "myoepithelial/stromal/immune": "Myoepithelial",
-        "adipocytes": "Adipocytes", "mixed": "Mixed",
-        # Xenium annotations
-        "Invasive_Tumor": "Invasive tumour", "Prolif_Invasive_Tumor": "Invasive tumour",
-        "DCIS_1": "DCIS", "DCIS_2": "DCIS",
-        "Stromal": "Stroma", "Endothelial": "Stroma", "Perivascular-Like": "Stroma",
-        "Myoepi_ACTA2+": "Myoepithelial", "Myoepi_KRT15+": "Myoepithelial",
-        "Unlabeled": "Unlabeled",
-    }
-    frames = []
-    for mod, key, n in (("Xenium", "cross_modal_xenium", 30000), ("Visium", "cross_modal_visium", None)):
-        a = ad.read_h5ad(paths.dataset_path(key), backed="r")
-        xy = np.asarray(a.obsm["spatial"])[:, :2]
-        cl = a.obs["Cluster"].astype(str).to_numpy()
-        sel = np.arange(len(xy)) if n is None else np.random.default_rng(0).choice(len(xy), n, replace=False)
-        frames.append(pd.DataFrame({"modality": mod, "x": xy[sel, 0], "y": xy[sel, 1], "cluster": cl[sel],
-                                    "coarse": [coarse.get(c, "Immune") for c in cl[sel]]}))
-    return pd.concat(frames, ignore_index=True)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--only", nargs="*", default=None,
-                        help="Subset of: tiles blocks distances cross_modal (default: all)")
+                        help="Subset of: tiles blocks distances (default: all)")
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    parts = set(args.only or ["tiles", "blocks", "distances", "cross_modal"])
+    parts = set(args.only or ["tiles", "blocks", "distances"])
 
     tile_rows, cell_frames, block_rows, eps_rows, dist_rows = [], [], [], [], []
     for key, stem in DATASETS.items():
@@ -191,8 +162,6 @@ def main():
     if eps_rows:
         pd.DataFrame(eps_rows).to_csv(args.out_dir / "niche_epsilons.csv", index=False)
         pd.DataFrame(dist_rows).to_csv(args.out_dir / "within_niche_distances.csv", index=False)
-    if "cross_modal" in parts:
-        cross_modal_cells().to_csv(args.out_dir / "cross_modal_cells.csv", index=False)
     print(f"Wrote figure inputs to {args.out_dir}")
 
 

@@ -57,7 +57,7 @@ def run_index(tiles, tile_covs, genes_work, adata, resolution=0.2, min_final_siz
     Run indexing workflow.
 
     ``random_state`` seeds PCA/UMAP and Leiden clustering (default 0 keeps the
-    production behaviour; cross_modal_search.py varies it per seed).
+    production behaviour; cross_platform_tiers.py varies it per seed).
     """
     data = index.ProcessedData(tiles, tile_covs, genes_work, adata.n_obs)
     num_pca = min(30, len(tiles) - 1)
