@@ -62,11 +62,6 @@ def load_raw_covs(stem: str, seed: int) -> dict:
         return pickle.load(fh)
 
 
-def load_interval_index(stem: str, seed: int):
-    with open(INDEX_DIR / f"{index_tag(stem, seed)}_interval_index.pkl", "rb") as fh:
-        return pickle.load(fh)
-
-
 def raw_cov(entry) -> np.ndarray:
     return entry if not isinstance(entry, dict) else entry.get("cov", entry.get("matrix", entry))
 

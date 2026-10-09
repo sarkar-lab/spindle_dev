@@ -39,15 +39,17 @@ Run order:
    | Fig 3E neighbour biology (after Fig 3D) | `whole_tile/submit_neighbour_biology.sh [datasets]` | `whole_tile/run_neighbour_biology.sbatch <dataset> <seed>` | aggregate job submitted by the script |
    | Fig 4 / S8 partial search: interval index, padding, imputation vs Spindle-Exact on S, seeds 0–4 (timing one job at a time) | `partial/submit_partial_search_final.sh [accuracy\|timing\|all] [datasets]` | `partial/run_partial_search_final.sbatch <dataset> <seed> [--timing]`; Fig 4A example: `partial/run_partial_search_final.sbatch breast_cancer 73 --schematic` | aggregate job submitted by the script |
    | Fig 5 / S9 cross-platform search (tile caches, seeds 0–4 × tiles 2000/1000, aggregate, bias PCA, example) | `cross_platform/submit_cross_platform_tiers.sh` | `cross_platform/run_cross_platform_tiers.sbatch <seed> <max_pts>` (or `--overlay`, `--check`, `--bias-pca`, `--example`) | aggregate, bias PCA and example jobs submitted by the script |
-   | E10-lite / E13 (breast niches, composition) | – | `biology/run_breast_concordance.sbatch` | – |
-   | E9-lite gene signatures | – | `biology/run_gene_signature_search.sbatch` | – |
+   | Figs 6–7 niches vs cell types, all datasets | – | `biology/run_niche_concordance.sbatch [--datasets ...] [--seeds ...]` (more memory for `lymph_node_5k`, `brain_cancer`: `--mem=128G`) | – |
+   | Figs 6–7, S10 block programs (seeds 73 + 0–4) | – | `biology/run_block_programs.sbatch --datasets <key> --seeds 73 0 1 2 3 4` (one job per dataset; `--mem` 48G, 64G pancreas / lymph node, 96G LN5k, 160G brain) | – |
+   | Figs 6–7, S11 signature queries (seeds 73 + 0–4) | – | `biology/run_signature_queries.sbatch --datasets <key> --interval --maps` (one job per dataset; up to 200G for brain) | – |
+   | Fig 6E worked whole-tile query | – | `biology/run_query_example.sbatch` | – |
    | Metric check: raw vs shrunk covariances (Part 1.1, seed 73) | – | `checks/run_metric_check.sbatch <dataset>` | `sbatch slurm_jobs/checks/run_metric_check.sbatch --aggregate` |
    | Sanity check of `src/spindle_dev/tiers.py` | – | `checks/run_check_tiers.sbatch [dataset]` | – |
    | Niche-cap check of every saved index (Part 1.3) | – | `checks/run_index_cap_check.sbatch` | – |
    | E4 ANN baselines (old; superseded by Fig 3D, results kept for `extract_fig1_data.py`) | `legacy/submit_ann_baselines.sh` | `legacy/run_ann_baselines.sbatch` | – |
 
 3. **Figure inputs**: `figures/run_collect_index_stats.sbatch`, `figures/run_extract_figure_data.sbatch`,
-   `figures/run_extract_fig1_data.sbatch`, `figures/run_bio_modules.sbatch`.
+   `figures/run_extract_fig1_data.sbatch`.
 4. **Figures**: `bash slurm_jobs/figures/run_make_figures.sbatch [script ...]` draws every figure twice, into `figures/pdf/` and
    `figures/png/` (one file per figure, plus one per panel in `panels/<figure>/`). Copy the ones you need into the
    Overleaf project by hand.

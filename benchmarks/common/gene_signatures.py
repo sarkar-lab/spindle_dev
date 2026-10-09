@@ -2,7 +2,7 @@
 
 TISSUE_MODULES: per-tissue signatures; every gene was checked against that tissue's Xenium panel.
 GENERIC_MODULES: cross-tissue pathway signatures (genes missing from a panel are dropped).
-gene_signature_search.py uses TISSUE_MODULES["breast"].
+benchmarks/biology/signature_queries.py uses TISSUE_MODULES (one entry per tissue).
 """
 
 # Tissue-specific curated gene signatures. Every gene listed here was verified to be

@@ -20,7 +20,7 @@ spindle_dev/
 │   ├── checks/        #   one-off checks behind recorded decisions
 │   └── legacy/        #   old E4 ANN baselines (until Fig 1 is redrawn)
 ├── scripts/
-│   ├── figure_data/   #   pickles -> small CSVs for the figures (+ bio_configs/)
+│   ├── figure_data/   #   pickles -> small CSVs for the figures
 │   └── figures/       #   one script per paper figure (CSV in, PDF/PNG out) + figstyle.py
 ├── slurm_jobs/        # Same topic folders as benchmarks/; README.md gives the run order
 ├── results/           # Result CSVs (README.md maps folder -> experiment -> figure); index pickles not committed
@@ -84,9 +84,9 @@ To move the data, or add a dataset, edit that file only.
    | `whole_tile/neighbour_biology.py` | block vs whole-matrix neighbours against biology (Fig S12) |
    | `partial/partial_search_final.py` | gene-set queries: interval index, padding, imputation vs Spindle-Exact on S (Fig 4, S8) |
    | `cross_platform/cross_platform_tiers.py` | Xenium ↔ Visium search on the tiers: tissue agreement, co-located tile, correction ablation, bias PCA (Fig 5, S9) |
-   | `biology/niche_concordance.py`, `composition_concordance.py`, `gene_signature_search.py` | breast biology (E10-lite, E13, E9-lite) |
+   | `biology/niche_concordance.py`, `block_programs.py`, `signature_queries.py`, `query_example.py` | niches vs cell types, niche × block gene programs, gene-signature queries, a worked whole-tile query (Figs 6–7, S10–S11) |
 
-3. `scripts/figure_data/` (`extract_*.py`, `collect_index_stats.py`, `bio_modules.py`) turns pickles into small CSVs;
+3. `scripts/figure_data/` (`extract_*.py`, `collect_index_stats.py`) turns pickles into small CSVs;
    `slurm_jobs/figures/run_make_figures.sbatch` then draws every figure into `figures/`.
 
 ---
