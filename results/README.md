@@ -6,13 +6,20 @@ extractors in `scripts/figure_data/` write them.
 Each folder has the same name as the script that writes it. New runs go to new folders;
 never append to or overwrite a published one.
 
+**What git tracks (since 9 Oct 2026):** only the files the figure scripts read, listed in
+`results/.gitignore` (written by `scripts/figures/list_figure_inputs.py`, which runs every figure
+script and records what it opens). A clone can therefore redraw every figure. Per-seed and
+per-query outputs, caches and indexes stay on disk only; rerun the experiment (`slurm_jobs/`)
+to regenerate them. After changing what a figure reads, rerun `list_figure_inputs.py` and
+commit the new `results/.gitignore` with the files it adds.
+
 Datasets: 8 Xenium sections (`xenium_human_<tissue>`). Seed 73 is the single production
 build (100 held-out tiles); `_seed0` … `_seed4` are the five builds (10 % held out) that give
 the mean ± s.d. error bars.
 
 | Folder | Exp. | Written by (`benchmarks/` unless noted) | Slurm job (`slurm_jobs/`) | Key files | Used in |
 |---|---|---|---|---|---|
-| `indexes/` (not in git) | – | `index/build_indexes.py` (genes: top min(`max_genes`, n) by variance; `max_genes` per dataset in `datasets.yaml`, default 800, lymph node 5K 400) | `index/submit_build_indexes.sh` (seed 73); `index/run_rebuild_capped_index.sbatch <stem> <seed>` (seeds 0–4) | `<ds>[_seedN]_spindle_index.pkl` (index), `_raw_covariances.pkl` (train/test covariances + split), `_interval_index.pkl` (old dyadic index of `interval_index.py`; read only by `common/partial_panel_core.py` → `biology/gene_signature_search.py`, Fig 6F–G; Fig 4 builds `interval_dp` indexes in memory) | input to every experiment |
+| `indexes/` (not in git) | – | `index/build_indexes.py` (genes: top min(`max_genes`, n) by variance; `max_genes` per dataset in `datasets.yaml`, default 800, lymph node 5K 400) | `index/submit_build_indexes.sh` (seed 73); `index/run_rebuild_capped_index.sbatch <stem> <seed>` (seeds 0–4) | `<ds>[_seedN]_spindle_index.pkl` (index), `_raw_covariances.pkl` (train/test covariances + split), `_interval_index.pkl` (old dyadic index of `interval_index.py`; no script reads it since 9 Oct 2026, to delete in Part 4 after asking; Fig 4 and S11 build `interval_dp` indexes in memory) | input to every experiment |
 | `ground_truth_cache/` (38 GB, not in git) | – | `common/holdout_core.load_or_compute_ground_truth` | – | `<ds>_ground_truth_{block,whole}.pkl`: exact rankings, validated against the split | cache; recomputed if missing (slow) |
 | `index_stats/` | – | `scripts/figure_data/collect_index_stats.py` | `figures/run_collect_index_stats` | `index_stats.csv` (per dataset × seed), `index_stats_summary.csv`; inputs `build_run_logs/*.json` (wall time, peak RSS per build) and `log_index_stats.csv` (values from deleted build logs). Its DAG columns (`n_dag_nodes`, `index_size_mb`) are the production DAG (α = 0.05, k_min = 8), not Spindle-DAG (K = 32) | Fig 2A (cells), S1, S2, Table S1 |
 | `dag_size_table/` | Fig 2 | `index/dag_size_table.py` (→ `spindle_dev.tiers`) | `index/run_dag_size_table` | `summary.csv` (per dataset, seed 73: tiles, genes, niches, blocks, DAG nodes; whole-covariance, block-log (Spindle-Exact) and Spindle-DAG MB, float32 upper triangles; folds) | Fig 2A–B |
@@ -28,11 +35,12 @@ the mean ± s.d. error bars.
 | `metric_check/` | Part 1.1 | `checks/metric_check.py` | `checks/run_metric_check` | `summary.csv` (one row per dataset × covariance variant); `<ds>_query.csv` (d_B² shares, rhos, DAG Overlap per query), `<ds>_bio.csv` (expr r, composition JSD of the exact top-k), `<ds>_dag.csv` | the shrinkage decision (α = 0.1); Fig S3 |
 | `index_cap_check/` | Part 1.3 | `checks/index_cap_check.py` | `checks/run_index_cap_check` | `summary.csv` (per dataset × seed: tiles, niches, largest niche, niches over the 1,000 cap, blocks) | check that every index respects the niche cap |
 | `cross_platform_tiers/` | Fig 5 | `cross_platform/cross_platform_tiers.py` | `cross_platform/submit_cross_platform_tiers.sh` | per tile size (`tiles2000`, `tiles1000`) × seed 0–4: `<tag>_{per_query,top10,dag_curves,index}.csv`; aggregates `summary.csv` (co-located hit@k / rank, distance ratio, tissue r / MAE per direction × arm × tier), `rank_cdf.csv`, `oracle_rank_cdf.csv`, `tissue_per_query_seed0.csv`, `dag_curves.csv`, `index_summary.csv`; `tile_boxes_tiles<m>.csv` (with per-tile composition), `registration_tiles<m>.csv`, `cross_modal_cells.csv` (also Fig 1), `bias_pca*.csv`, `example_v2x.csv`; `cache/` (tiles + raw covariances) | Fig 5, S9 |
-| `composition_concordance/` | E13 | `biology/composition_concordance.py` | `biology/run_breast_concordance` | `summary.csv`, `breast_jsd.csv` | Fig 6H |
-| `niche_concordance/` | E10-lite | `biology/niche_concordance.py` | `biology/run_breast_concordance` | `breast_ari_nmi.csv`, `breast_niche_composition.csv`, `breast_tile_labels.csv` | Fig 6A |
-| `gene_signature_search/` | E9-lite | `biology/gene_signature_search.py` (signatures in `common/gene_signatures.py`) | `biology/run_gene_signature_search` | `breast/signature_stats.csv`, `*_top_matches.csv`, `*_spatial_cells.csv` | Fig 6F–G, Table S4 |
-| `biology/` | – | `scripts/figure_data/bio_modules.py` (configs in `scripts/figure_data/bio_configs/`) | `figures/run_bio_modules` | `<ds>/{selection,modules,corr,enrichment,node_scores,tile_scores}.csv`; `genesets/*.gmt` are inputs | Fig 6B–E, 7, S3, S11 |
-| `figure_data/` | – | `scripts/figure_data/extract_figure_data.py`, `extract_fig1_data.py` | `figures/run_extract_figure_data`, `figures/run_extract_fig1_data` | `tiles_seed73.csv`, `cells_sample.csv`, `block_sizes.csv`, `niche_epsilons.csv`, `within_niche_distances.csv`, `fig1/` | Fig 1, 6, 7, S1–S3, S5 |
+| `niche_concordance/` | Figs 6A–B, 7A | `biology/niche_concordance.py` (cell types: breast `obs['Cluster']`, else 10x graphclust via `checks/metric_check.cell_type_codes`) | `biology/run_niche_concordance` | per dataset key: `<key>_ari_nmi.csv`, `<key>_niche_composition.csv`, `<key>_tile_labels.csv`, `<key>_cell_types.csv` (code, name, top markers) | Fig 6A–B, 7A |
+| `block_programs/` | Figs 6C–D, 7B, D–E, S10 | `biology/block_programs.py` | `biology/run_block_programs` | per dataset × seed (73, 0–4): `seed<s>_{blocks,enrichment,null,rewiring,genes}.csv`, `seed<s>_corr_niche<k>.npy` (niche-mean correlation in the niche's gene order); per dataset `recurrence.csv`, `rewiring_null.csv` | Fig 6C–D, 7B, D–E, S10 |
+| `signature_queries/` | Figs 6F–G, 7C, F–G, S11 | `biology/signature_queries.py` (signatures in `common/gene_signatures.py`) | `biology/run_signature_queries` | per dataset: `stats.csv` (seed × construction × signature × K × method), `top_matches.csv`, `cells_seed73.csv` (per-cell scores, `--maps`) | Fig 6F–G, 7C, F–G, S11 |
+| `query_example/` | Fig 6E, S11 | `biology/query_example.py` | `biology/run_query_example` | `breast_example.csv`, `breast_example_comp.csv`, `breast_all_queries.csv` | Fig 6E, S11C–D |
+| `biology/genesets/` | – | – (inputs) | – | `GO_Biological_Process_2023.gmt`, `MSigDB_Hallmark_2020.gmt` (read by `block_programs.py`) | – |
+| `figure_data/` | – | `scripts/figure_data/extract_figure_data.py`, `extract_fig1_data.py` | `figures/run_extract_figure_data`, `figures/run_extract_fig1_data` | `tiles_seed73.csv`, `cells_sample.csv`, `block_sizes.csv`, `niche_epsilons.csv`, `within_niche_distances.csv`, `fig1/` | Fig 1, 6, 7, S1, S2, S5 |
 
 Retrieval metrics (Fig 3 onward, `benchmarks/common/dag_eval_common.retrieval_rows`): Overlap(δ, c) = fraction of
 the exact near set {t : d ≤ (1 + δ) d*} among the c returned tiles; c90 = the c where the mean Overlap(5 %, c)
