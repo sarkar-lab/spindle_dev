@@ -5,7 +5,7 @@ Every tile is scored in its own niche's gene order and blocks; scores are pooled
     d_B(q, t)   = sqrt(sum_b ||log q_b - log t_b||_F^2) / sqrt(p)
     d_B^S(q, t) = sqrt(sum_b ||log q[S cap b] - log t[S cap b]||_F^2) / sqrt(|S|)
 
-Covariances are shrunk (``metrics.prepare_cov``) before the log. ``Spindle`` stores the float32 upper
+Covariances arrive shrunk (preprocessing) and are used as given. ``Spindle`` stores the float32 upper
 triangles of every training tile's block logs; ``SpindlePartial`` also stores the block covariances and
 eigendecomposes the sub-blocks S cap b at query time.
 
@@ -20,7 +20,7 @@ from typing import Optional
 
 import numpy as np
 
-from .metrics import LOG_FLOOR, batched_log_spd, log_spd, prepare_cov, query_cov_s, sym_to_vec
+from .metrics import LOG_FLOOR, as_cov, batched_log_spd, log_spd, query_cov_s, sym_to_vec
 
 
 class BlockVectorizer:
@@ -50,7 +50,7 @@ def niche_layouts(data):
 
 
 def block_cov_stacks(data, train_covs):
-    """{niche: [(n_niche, b, b) prepared covariances of its tiles on each block's genes]}, rows in niche order."""
+    """{niche: [(n_niche, b, b) covariances of its tiles on each block's genes]}, rows in niche order."""
     labels = np.asarray(data.labels).astype(int)
     out = {}
     for k in sorted(set(labels.tolist())):
@@ -58,7 +58,7 @@ def block_cov_stacks(data, train_covs):
         blocks = [np.asarray(data.perm_list[k])[s:e] for s, e in data.block_dict[k]]
         stacks = [np.empty((len(rows), len(g), len(g))) for g in blocks]
         for i, r in enumerate(rows):
-            cov = prepare_cov(train_covs[r])
+            cov = as_cov(train_covs[r])
             for stack, g in zip(stacks, blocks):
                 stack[i] = cov[np.ix_(g, g)]
         out[k] = stacks
@@ -76,15 +76,15 @@ class Spindle:
     def __init__(self, data, train_covs):
         self.layouts = niche_layouts(data)
         self.n = len(data.labels)
-        self.X = {k: np.stack([vec.vector(prepare_cov(train_covs[t]), np.float32) for t in idx])
+        self.X = {k: np.stack([vec.vector(as_cov(train_covs[t]), np.float32) for t in idx])
                   for k, (idx, vec) in self.layouts.items()}
 
     def nbytes(self):
         return int(sum(x.nbytes for x in self.X.values()))
 
     def query_vectors(self, query_cov):
-        """Per-niche float32 block-log vectors of a (raw) query covariance."""
-        cov = prepare_cov(query_cov)
+        """Per-niche float32 block-log vectors of a query covariance."""
+        cov = as_cov(query_cov)
         return {k: vec.vector(cov, np.float32) for k, (_, vec) in self.layouts.items()}
 
     def distances(self, qv):
@@ -125,7 +125,7 @@ class SpindlePartial:
         return 8 * tri
 
     def distances(self, cov_s, genes):
-        """d_B^S to every training tile; ``cov_s`` is the prepared |S| x |S| query in ``genes`` order."""
+        """d_B^S to every training tile; ``cov_s`` is the |S| x |S| query in ``genes`` order."""
         genes = np.asarray(genes)
         col = np.full(self.p, -1, dtype=np.int64)
         col[genes] = np.arange(len(genes))

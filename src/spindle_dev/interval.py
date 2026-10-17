@@ -10,7 +10,7 @@ nearest-centre assignment, clusters that break the bound re-covered at eps/2). e
 that a length-s interval has about K_s = k_target * s^k_alpha nodes. The index stores, per interval, the
 float32 node means and one node code per tile.
 
-Distances are unnormalised Frobenius distances between matrix logarithms; symmetric matrices are stored
+Clustering uses unnormalised Frobenius distances between matrix logarithms; symmetric matrices are stored
 as upper-triangle vectors with off-diagonals scaled by sqrt 2.
 
 Search
@@ -19,9 +19,10 @@ A gene set S is cut, in every niche, into segments (maximal runs of consecutive 
 and each segment into the fewest dyadic pieces (from each position, the longest indexed interval that
 fits). A tile's score is
 
-    sqrt( sum over pieces I of ||Q^I - mu_{node of the tile on I}||_F^2 ),
+    sqrt( sum over pieces I of ||Q^I - mu_{node of the tile on I}||_F^2 ) / sqrt(|S|),
 
-which differs from the same sum over the tile's own interval logs by at most sqrt(sum_I eps^2)
+in the units of Spindle's d_B^S (which also keeps the covariances between pieces of one block). It
+differs from the same sum over the tile's own interval logs by at most sqrt(sum_I eps^2) / sqrt(|S|)
 (``error_bound``). Tiles of all niches are ranked by the score.
 """
 
@@ -169,7 +170,7 @@ def dyadic_intervals(n: int, max_len: Optional[int] = None) -> List[Tuple[int, i
 
 
 def _build_block(block_covs: np.ndarray, genes: np.ndarray, k_target, k_alpha, max_len) -> BlockIntervals:
-    """block_covs: (n_niche, b, b) prepared covariances of the niche's tiles on the block's genes."""
+    """block_covs: (n_niche, b, b) covariances of the niche's tiles on the block's genes."""
     by_len: Dict[int, List[int]] = {}
     for s, a in dyadic_intervals(len(genes), max_len):
         by_len.setdefault(s, []).append(a)
@@ -201,7 +202,7 @@ def build_interval_index(data, train_covs=None, *, block_covs=None, k_target: in
                          max_len: Optional[int] = 16) -> IntervalIndex:
     """The interval index of every niche of ``data``.
 
-    Pass the raw training covariances (``data.labels`` order), or ``block_covs`` from
+    Pass the training covariances (``data.labels`` order), or ``block_covs`` from
     ``spindle.block_cov_stacks`` / ``SpindlePartial.covs`` to reuse them.
     """
     t0 = time.perf_counter()
@@ -292,7 +293,7 @@ def search_interval_index(index: IntervalIndex, query_cov, genes: Sequence[int],
                 iv = blk.intervals[key]
                 sq += ((iv.means.astype(np.float64) - q[key]) ** 2).sum(1)[iv.codes]
         rows.append(ni.rows)
-        scores.append(np.sqrt(sq))
+        scores.append(np.sqrt(sq / len(genes)))
     rows = np.concatenate(rows)
     scores = np.concatenate(scores)
     order = np.argsort(scores, kind="stable")
@@ -302,12 +303,12 @@ def search_interval_index(index: IntervalIndex, query_cov, genes: Sequence[int],
 
 
 def error_bound(index: IntervalIndex, genes: Sequence[int]) -> Dict[int, float]:
-    """Per niche, sqrt(sum of eps_{beta,s}^2 over the pieces): |mean score - exact score| <= this for every tile."""
+    """Per niche, sqrt(sum of eps_{beta,s}^2 over the pieces / |S|): |mean score - exact score| <= this per tile."""
     out = {}
     for k, ni in index.niches.items():
         tot = 0.0
         for seg in query_segments(ni, genes):
             blk = ni.blocks[seg.block]
             tot += sum(blk.eps[s] ** 2 for s, _ in coarsest_decomposition(blk, seg))
-        out[k] = float(np.sqrt(tot))
+        out[k] = float(np.sqrt(tot / len(genes)))
     return out

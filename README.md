@@ -20,7 +20,7 @@ spindle_dev/
 │   ├── interval.py      #   interval index
 │   ├── metrics.py       #   shrinkage, matrix logs, correlation
 │   └── utils.py         #   logging
-├── examples/run_single_dataset.py
+├── examples/            # run_single_dataset.py (usage), check_indexes.py (sanity checks)
 ├── paths.py             # dataset paths, read from datasets.yaml
 └── datasets.yaml        # the only place a dataset path is written
 ```
@@ -54,5 +54,7 @@ interval = sd.build_interval_index(data, block_covs=partial.covs)
 rows, scores, seconds = sd.search_interval_index(interval, covs[test[0]], gene_idx, c=10)
 ```
 
+Every tile covariance is shrunk once when it is computed (`metrics.SHRINK_ALPHA` = 0.1), and every
+distance is d_B (d_B^S for gene sets). Queries built elsewhere must be shrunk first (`metrics.shrink_cov`).
 Rows are positions of the training tiles (`data.labels` order). `python examples/run_single_dataset.py
 skin_melanoma` runs all three on one dataset.

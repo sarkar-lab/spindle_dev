@@ -1,19 +1,23 @@
 """Spindle-lite: a layered block DAG per niche with budgeted depth-first search.
 
-Build. In every niche, layer b holds the tiles' block-b logs (raw covariances, niche gene order). Each
-layer is covered by an epsilon-net (farthest-first centres from tile 0 until every tile is within the
-block's epsilon, d(A, B) = ||A - B||_F / sqrt(p_b)); each tile joins its nearest centre. A node stores its
-centre (``mean``), its members' mean log (``representative_mean``), its members and its radius (largest
-member distance to the centre). Node u in layer b points to node v in layer b+1 when they share a tile.
-Per-block epsilons are the farthest-first cover radius at k = max(64, 0.05 n) centres
-(``choose_adaptive_epsilons``); each niche's budget epsilon is the RMS of the blocks' elbow radii,
-floored at the median over niches.
+Distances are Spindle's: block b contributes d_b(A, B) = ||log A_b - log B_b||_F / sqrt(p) (p = all genes,
+shrunk covariances, eigenvalue floor metrics.LOG_FLOOR), and a path adds them in L2, so the full path
+distance to a tile is d_B.
 
-Search. Every niche is searched with budget = epsilon_niche * n_blocks * budget_multiplier * f
+Build. In every niche, layer b holds the tiles' block-b logs (niche gene order). Each layer is covered by an
+epsilon-net (farthest-first centres from tile 0 until every tile is within the block's epsilon under d_b);
+each tile joins its nearest centre. A node stores its centre (``mean``), its members' mean log
+(``representative_mean``), its members and its radius (largest member d_b to the centre). Node u in layer b
+points to node v in layer b+1 when they share a tile. Per-block epsilons are the farthest-first cover radius
+at k = max(64, 0.05 n) centres (``choose_adaptive_epsilons``); each niche's budget epsilon is the L2 sum of
+the blocks' elbow radii, floored at the median over niches.
+
+Search. Every niche is searched with budget = epsilon_niche * budget_multiplier * f
 (f = clip(sqrt(n_niche / 500), 1, 6)). From the first-layer nodes, closest first, the DFS follows children
-that still share tiles with the path, closest first, paying max(0, d(query block, node centre) - radius)
-per layer and pruning when the budget is spent. Each leaf reached returns the tiles shared by every node
-on its path.
+that still share tiles with the path, closest first. Each layer adds lb_b = max(0, d_b(query, centre) - radius)
+and a path is pruned when sqrt(sum_b lb_b^2) exceeds the budget. By the triangle inequality lb_b <= d_b(query,
+tile) for every member, so no tile with d_B(query, tile) <= budget is pruned by the budget (the effort caps
+can still stop the search). Each leaf reached returns the tiles shared by every node on its path.
 """
 
 from __future__ import annotations
@@ -27,7 +31,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .metrics import log_spd, raw_cov
+from .metrics import as_cov, log_spd
 from .utils import get_logger
 
 logger = get_logger(__name__)
@@ -70,7 +74,8 @@ class LiteIndex:
 
 
 # ---------------------------------------------------------------------------------------------- epsilons
-def _fro_dist_norm(A, B, p):
+def _block_dist(A, B, p):
+    """d_b in d_B units: ||A - B||_F / sqrt(p), p = all genes."""
     return float(np.linalg.norm(A - B, ord="fro") / np.sqrt(p))
 
 
@@ -81,7 +86,7 @@ def farthest_first_eps_for_k(L_list, p, k_target, seed=0):
         return 0.0, []
     first = int(np.random.default_rng(seed).integers(0, n))
     n_centres = 1
-    delta = np.array([_fro_dist_norm(L_list[i], L_list[first], p) for i in range(n)], dtype=float)
+    delta = np.array([_block_dist(L_list[i], L_list[first], p) for i in range(n)], dtype=float)
     delta[first] = 0.0
     deltas_max = [float(delta.max())]
     while n_centres < min(k_target, n):
@@ -90,7 +95,7 @@ def farthest_first_eps_for_k(L_list, p, k_target, seed=0):
             break
         n_centres += 1
         for i in range(n):
-            d = _fro_dist_norm(L_list[i], L_list[i_star], p)
+            d = _block_dist(L_list[i], L_list[i_star], p)
             if d < delta[i]:
                 delta[i] = d
         deltas_max.append(float(delta.max()))
@@ -116,30 +121,27 @@ def choose_adaptive_epsilons(data, cluster_id, k_target_per_block, alpha=0.05, k
     """(eps_per_block, eps_elbow_per_block, eps) of one niche.
 
     eps_per_block: farthest-first cover radius at k = _effective_k_target (drives the epsilon-net);
-    eps: RMS over genes of the elbow radii (sizes the search budget).
+    eps: sqrt of the sum of the squared elbow radii (sizes the search budget). All in d_B units.
     """
     indices = np.where(data.labels == cluster_id)[0]
     block_runs = data.block_dict[cluster_id]
     permutation = data.perm_list[cluster_id]
-    spd_matrices = np.stack([data.spd_matrices[i] for i in indices])
+    p = len(permutation)
     block_log = defaultdict(list)
-    block_p = {}
-    for spd_i in spd_matrices:
+    for i in indices:
+        spd_i = as_cov(data.spd_matrices[i])
         for block_idx, (start, end) in enumerate(block_runs):
             idx = permutation[start:end]
-            block_p[block_idx] = len(idx)
             block_log[block_idx].append(log_spd(spd_i[np.ix_(idx, idx)]))
 
     eps_per_block, eps_elbow_per_block = {}, {}
     for block_idx, L_list in block_log.items():
         k = _effective_k_target(len(L_list), base=k_target_per_block, alpha=alpha, k_min=k_min, k_max=k_max)
-        eps_hat, deltas_max = farthest_first_eps_for_k(L_list, block_p[block_idx], k_target=k, seed=42)
+        eps_hat, deltas_max = farthest_first_eps_for_k(L_list, p, k_target=k, seed=42)
         eps_per_block[block_idx] = eps_hat
         eps_elbow_per_block[block_idx] = choose_eps_from_curve(deltas_max)
-    total = 0.0
-    for b in range(len(block_runs)):  # plain accumulation (Python's sum() of floats is compensated)
-        total += (eps_elbow_per_block[b] ** 2) * block_p[b]
-    return eps_per_block, eps_elbow_per_block, np.sqrt(total / sum(block_p.values()))
+    eps = float(np.sqrt(sum(eps_elbow_per_block[b] ** 2 for b in range(len(block_runs)))))
+    return eps_per_block, eps_elbow_per_block, eps
 
 
 # ---------------------------------------------------------------------------------------------- build
@@ -147,14 +149,14 @@ def _epsilon_net_layer(L_list, spd_ids, epsilon, p):
     """Epsilon-net clusters of one layer: [{'spd_ids', 'mean', 'representative_mean', 'radius'}]."""
     n = len(L_list)
     centres = [0]
-    delta = np.array([_fro_dist_norm(L_list[i], L_list[0], p) for i in range(n)], dtype=float)
+    delta = np.array([_block_dist(L_list[i], L_list[0], p) for i in range(n)], dtype=float)
     while True:
         i_star = int(np.argmax(delta))
         if delta[i_star] <= epsilon:
             break
         centres.append(i_star)
         for i in range(n):
-            d = _fro_dist_norm(L_list[i], L_list[i_star], p)
+            d = _block_dist(L_list[i], L_list[i_star], p)
             if d < delta[i]:
                 delta[i] = d
 
@@ -162,7 +164,7 @@ def _epsilon_net_layer(L_list, spd_ids, epsilon, p):
     for i in range(n):
         best_k, best_d = None, float("inf")
         for k, ci in enumerate(centres):
-            d = _fro_dist_norm(L_list[i], L_list[ci], p)
+            d = _block_dist(L_list[i], L_list[ci], p)
             if d < best_d:
                 best_d, best_k = d, k
         cl = clusters[best_k]
@@ -181,11 +183,11 @@ def _epsilon_net_layer(L_list, spd_ids, epsilon, p):
 
 def index_spds(data, epsilon_dict, epsilon_block_wise_dict) -> Dict[int, IndexHandle]:
     """One DAG per niche (block-wise epsilons; a missing block keeps the previous epsilon)."""
-    spd_matrices = np.asarray(data.spd_matrices)
     dag_dict: Dict[int, IndexHandle] = {}
     for cluster_id in sorted(set(int(c) for c in data.labels)):
-        in_niche = data.labels == cluster_id
-        mats, ids = spd_matrices[in_niche], np.array(data.spd_ids)[in_niche]
+        rows = np.flatnonzero(data.labels == cluster_id)
+        mats = [as_cov(data.spd_matrices[r]) for r in rows]
+        ids = np.array(data.spd_ids)[rows]
         perm, block_runs = data.perm_list[cluster_id], data.block_dict[cluster_id]
         epsilon = epsilon_dict[cluster_id]
         layers = []
@@ -193,7 +195,7 @@ def index_spds(data, epsilon_dict, epsilon_block_wise_dict) -> Dict[int, IndexHa
             epsilon = epsilon_block_wise_dict.get(cluster_id, {}).get(block_index, epsilon)
             g = perm[start:end]
             L_list = [log_spd(C[np.ix_(g, g)]) for C in mats]
-            layers.append(_epsilon_net_layer(L_list, ids, epsilon, end - start))
+            layers.append(_epsilon_net_layer(L_list, ids, epsilon, len(perm)))
             logger.info("Niche %d block %d: %d nodes", cluster_id, block_index, len(layers[-1]))
 
         first_id = np.cumsum([0] + [len(layer) for layer in layers])
@@ -217,7 +219,7 @@ def index_spds(data, epsilon_dict, epsilon_block_wise_dict) -> Dict[int, IndexHa
 
 
 def build_lite(data, k_target_per_block: int = 64) -> LiteIndex:
-    """Spindle-lite over ``data``'s layout and raw training covariances (``data.spd_matrices``)."""
+    """Spindle-lite over ``data``'s layout and training covariances (``data.spd_matrices``)."""
     epsilon_block_wise_dict, epsilon_dict = {}, {}
     for cluster_id in sorted(set(int(c) for c in data.labels)):
         eps_per_block, _, eps = choose_adaptive_epsilons(data, cluster_id, k_target_per_block=k_target_per_block)
@@ -239,14 +241,14 @@ class SearchConfig:
     max_results: int | None = None        # stop after this many leaf paths
     max_failed_starts: int | None = None  # stop after this many first-layer nodes give no new leaf
     max_failed_paths: int | None = None   # stop after this many branches pruned by the budget
-    total_paths_limit: int = 1000         # stop after this many leaves reached
+    total_paths_limit: int | None = 1000  # stop after this many leaves reached
 
 
 @dataclass
 class SearchPath:
     node_path: List[int]
-    total_distance: float                 # sum of radius-adjusted lower bounds (orders and prunes)
-    path_score: Optional[float] = None    # sum of raw distances to the node centres
+    total_distance: float                 # sqrt(sum_b lb_b^2): lower bound on d_B to every path tile (prunes)
+    path_score: Optional[float] = None    # sqrt(sum_b d_b^2) to the node centres
     _mask: Optional[int] = field(default=None, repr=False, compare=False)
     _decoder: Optional[object] = field(default=None, repr=False, compare=False)
 
@@ -265,7 +267,7 @@ class SearchResults:
 
 class _FastHandle:
     """Per-DAG search precomputation (cached, never pickled): member bitmasks, children by block,
-    node centres, radii and sqrt(p)."""
+    node centres, radii and sqrt(p) (p = all genes)."""
 
     def __init__(self, index_handle):
         nodes = index_handle.nodes
@@ -283,7 +285,7 @@ class _FastHandle:
         self.block = [n.block_index for n in nodes]
         self.mean = [n.metadata.mean for n in nodes]
         self.radius = [n.metadata.radius for n in nodes]
-        self.sqrt_p = [np.sqrt(n.metadata.mean.shape[0]) for n in nodes]
+        self.sqrt_p = np.sqrt(len(index_handle.perm))
         self.children = []
         for n in nodes:
             by_block: Dict[int, List[int]] = {}
@@ -297,14 +299,14 @@ class _FastHandle:
         return self.ids[np.flatnonzero(bits[:len(self.ids)])].tolist()
 
     def distances(self, query_blocks_log):
-        """Lazy per-query node -> (distance to the centre, max(0, distance - radius))."""
+        """Lazy per-query node -> (d_b to the centre, max(0, d_b - radius))."""
         raw: List[Optional[float]] = [None] * self.n_nodes
         lb: List[Optional[float]] = [None] * self.n_nodes
         mean, radius, sqrt_p, block = self.mean, self.radius, self.sqrt_p, self.block
 
         def dist(i):
             if raw[i] is None:
-                d = np.linalg.norm(query_blocks_log[block[i]] - mean[i], ord="fro") / sqrt_p[i]
+                d = np.linalg.norm(query_blocks_log[block[i]] - mean[i], ord="fro") / sqrt_p
                 raw[i] = d
                 lb[i] = max(0.0, d - radius[i])
             return raw[i], lb[i]
@@ -339,6 +341,7 @@ def search_index(index_handle: IndexHandle, query_spd: np.ndarray, budget: float
     if not first_layer_nodes:
         return SearchResults(paths=[])
     query_blocks_log = [log_spd(query_spd[s:e, s:e]) for s, e in index_handle.block_runs]
+    budget_sq = budget * budget
 
     fh = _fast_handle(index_handle)
     dist = fh.distances(query_blocks_log)
@@ -351,20 +354,20 @@ def search_index(index_handle: IndexHandle, query_spd: np.ndarray, budget: float
     failed_paths = 0
     total_paths_explored = 0
 
-    def dfs(layer_idx, node_idx, remaining_budget, total_dist, raw_total, path_indices, valid):
+    def dfs(layer_idx, node_idx, total_sq, raw_sq, path_indices, valid):
         nonlocal done, failed_paths, total_paths_explored
         if done:
             return
         if layer_idx == last:
             total_paths_explored += 1
-            if total_paths_explored >= total_paths_limit:
+            if total_paths_limit is not None and total_paths_explored >= total_paths_limit:
                 done = True
                 return
             path_key = tuple(gid[i] for i in path_indices)
             if path_key in best_paths:
                 return
-            best_paths[path_key] = SearchPath(node_path=list(path_key), total_distance=total_dist,
-                                              path_score=raw_total, _mask=valid, _decoder=fh)
+            best_paths[path_key] = SearchPath(node_path=list(path_key), total_distance=float(np.sqrt(total_sq)),
+                                              path_score=float(np.sqrt(raw_sq)), _mask=valid, _decoder=fh)
             if max_results is not None and len(best_paths) >= max_results:
                 done = True
             return
@@ -379,15 +382,14 @@ def search_index(index_handle: IndexHandle, query_spd: np.ndarray, budget: float
         child_dists.sort(key=lambda x: x[1])
 
         for c, d, r, m in child_dists:
-            new_total = total_dist + d
-            new_remaining = remaining_budget - d
-            if new_remaining < 0 or new_total > budget:
+            new_sq = total_sq + d * d
+            if new_sq > budget_sq:
                 failed_paths += 1
                 if max_failed_paths is not None and failed_paths >= max_failed_paths:
                     done = True
                     return
                 continue
-            dfs(layer_idx + 1, c, new_remaining, new_total, raw_total + r, path_indices + [c], m)
+            dfs(layer_idx + 1, c, new_sq, raw_sq + r * r, path_indices + [c], m)
             if done:
                 return
 
@@ -399,7 +401,7 @@ def search_index(index_handle: IndexHandle, query_spd: np.ndarray, budget: float
         before = len(best_paths)
         valid = mask[node_idx]
         if valid:
-            dfs(0, node_idx, budget - d, d, r, [node_idx], valid)
+            dfs(0, node_idx, d * d, r * r, [node_idx], valid)
         if len(best_paths) == before:
             failed_starts += 1
             if config.max_failed_starts is not None and failed_starts >= config.max_failed_starts:
@@ -417,21 +419,25 @@ def _niche_scale_factor(n_niche: int, typical: int = 500, min_factor: float = 1.
     return float(np.clip(np.sqrt(max(n_niche, 1) / typical), min_factor, max_factor))
 
 
-def search_lite(lite: LiteIndex, query_cov, budget_multiplier: float = 1.0, effort_multiplier: float = 1.0):
+def search_lite(lite: LiteIndex, query_cov, budget_multiplier: float = 1.0, effort_multiplier: float | None = 1.0):
     """Search every niche; returns (training rows in the order found, seconds).
 
-    Effort caps per niche: 100 failed starts, 200 failed branches, 3000 leaves, each times f * effort_multiplier.
+    Effort caps per niche: 100 failed starts, 200 failed branches, 3000 leaves, each times f * effort_multiplier;
+    ``effort_multiplier=None`` lifts the caps (only the budget prunes).
     """
-    q = raw_cov(query_cov)
+    q = as_cov(query_cov)
     found, seen = [], set()
     seconds = 0.0
     for c in sorted(lite.dag_dict):
         handle = lite.dag_dict[c]
         f = _niche_scale_factor(lite.niche_sizes[c])
-        fe = f * effort_multiplier
-        config = SearchConfig(max_failed_starts=max(1, round(100 * fe)), max_failed_paths=max(1, round(200 * fe)),
-                              total_paths_limit=max(1, round(3000 * fe)))
-        budget = float(lite.epsilon_dict[c]) * float(len(handle.sorted_blocks)) * float(budget_multiplier) * f
+        if effort_multiplier is None:
+            config = SearchConfig(total_paths_limit=None)
+        else:
+            fe = f * effort_multiplier
+            config = SearchConfig(max_failed_starts=max(1, round(100 * fe)), max_failed_paths=max(1, round(200 * fe)),
+                                  total_paths_limit=max(1, round(3000 * fe)))
+        budget = float(lite.epsilon_dict[c]) * float(budget_multiplier) * f
         t0 = time.perf_counter()
         results = search_index(handle, q[np.ix_(handle.perm, handle.perm)], budget, config)
         seconds += time.perf_counter() - t0

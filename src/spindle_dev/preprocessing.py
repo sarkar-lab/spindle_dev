@@ -8,6 +8,7 @@ import numpy as np
 import scipy.sparse as sp
 from joblib import Parallel, delayed
 
+from .metrics import shrink_cov
 from .utils import get_logger
 
 LOGGER = get_logger(__name__)
@@ -137,11 +138,13 @@ def _cov_ml(Xslice, eps=1e-6, cast32=True):
 
 
 def _tile_cov(X, t, eps):
-    return {"tile_id": t.id, "cov": _cov_ml(X[t.idx, :], eps=eps, cast32=True), "n": len(t.idx)}
+    """The tile's covariance, shrunk (metrics.SHRINK_ALPHA) and stored as float32."""
+    cov = shrink_cov(_cov_ml(X[t.idx, :], eps=eps, cast32=False)).astype(np.float32)
+    return {"tile_id": t.id, "cov": cov, "n": len(t.idx)}
 
 
 def build_tile_covs_full(adata, tiles, gene_idx=None, n_jobs=8, eps=1e-6, prefer="threads"):
-    """One {'tile_id', 'cov', 'n'} per tile, computed in parallel."""
+    """One {'tile_id', 'cov' (shrunk), 'n'} per tile, computed in parallel."""
     X = adata.X if gene_idx is None else adata.X[:, gene_idx]
     return Parallel(n_jobs=n_jobs, prefer=prefer)(delayed(_tile_cov)(X, t, eps) for t in tiles)
 
@@ -163,7 +166,7 @@ def load_adata(path):
 
 
 def prepare_tiles(adata, max_genes=800, n_jobs=8):
-    """Tiles (<= 200 cells), the top min(max_genes, n_genes) variable genes and every tile's covariance."""
+    """Tiles (<= 200 cells), the top min(max_genes, n_genes) variable genes and every tile's shrunk covariance."""
     tiles = build_quadtree_tiles(adata.obsm["spatial"], max_pts=200, min_side=0.0, max_depth=40)
     genes, gene_idx = topvar_genes(adata, G=min(max_genes, adata.n_vars))
     tile_covs = build_tile_covs_full(adata, tiles, gene_idx, n_jobs=n_jobs, eps=1e-6)
