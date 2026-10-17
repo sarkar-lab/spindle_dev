@@ -1,15 +1,9 @@
 numpy
 scipy
-pandas
 scikit-learn
 umap-learn
 scanpy
-markdown
-sphinx
-sphinx-rtd-theme
-myst-parser
-plotly
+joblib
 igraph
 leidenalg
-faiss-cpu
-gseapy
+pyyaml

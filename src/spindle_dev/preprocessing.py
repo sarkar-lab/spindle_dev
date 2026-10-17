@@ -1,16 +1,10 @@
-"""Preprocessing interfaces for SPD indexing.
-
-This module intentionally only defines interfaces and placeholders.
-Actual preprocessing (tiling, SPD estimation, etc.) is expected to live
-in a separate project and be plugged in via these interfaces.
-"""
+"""Tiling, gene selection, per-tile covariances and the train/held-out split."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Protocol, Sequence
-import numpy as np
 import math
+
+import numpy as np
 import scipy.sparse as sp
 from joblib import Parallel, delayed
 
@@ -20,190 +14,116 @@ LOGGER = get_logger(__name__)
 
 
 class QuadTile:
-    __slots__ = ("id","bbox","idx","centroid","side")
+    __slots__ = ("id", "bbox", "idx", "centroid", "side")
+
     def __init__(self, id, bbox, idx):
-        self.id = id                      # int
-        self.bbox = bbox                  # (xmin, ymin, xmax, ymax)
-        self.idx = idx                    # np.array of spot indices
-        self.side = max(bbox[2]-bbox[0], bbox[3]-bbox[1])
-        self.centroid = np.array([(bbox[0]+bbox[2])/2, (bbox[1]+bbox[3])/2])
+        self.id = id          # int
+        self.bbox = bbox      # (xmin, ymin, xmax, ymax)
+        self.idx = idx        # spot indices
+        self.side = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
+        self.centroid = np.array([(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2])
 
 
 def _split_bbox(b):
-    xm = (b[0]+b[2])/2; ym = (b[1]+b[3])/2
-    return [(b[0], b[1], xm,   ym  ),
-            (xm,   b[1], b[2], ym  ),
-            (b[0], ym,   xm,   b[3]),
-            (xm,   ym,   b[2], b[3])]
-
-
-def build_quadtree_tiles_old(coords, max_pts=200, min_side=0.0, max_depth=12):
-    """
-    coords: (n,2) array, typically adata.obsm['spatial'] (x,y in same units)
-    Returns: list[QuadTile] with spot membership per tile.
-    """
-    coords = np.asarray(coords, float)
-    n = coords.shape[0]
-    xmin, ymin = coords.min(0); xmax, ymax = coords.max(0)
-    root_bbox = (xmin, ymin, xmax, ymax)
-    tiles, stack, next_id = [], [(root_bbox, np.arange(n), 0)], 0
-
-    while stack:
-        bbox, idx, depth = stack.pop()
-        side = max(bbox[2]-bbox[0], bbox[3]-bbox[1])
-        if (idx.size <= max_pts) or (side <= min_side) or (depth >= max_depth):
-            tiles.append(QuadTile(next_id, bbox, idx))
-            next_id += 1
-            continue
-        # split
-        for child in _split_bbox(bbox):
-            x0,y0,x1,y1 = child
-            mask = (coords[idx,0] >= x0) & (coords[idx,0] < x1) & \
-                   (coords[idx,1] >= y0) & (coords[idx,1] < y1)
-            child_idx = idx[mask]
-            if child_idx.size == 0: 
-                continue
-            stack.append((child, child_idx, depth+1))
-    return tiles
+    xm = (b[0] + b[2]) / 2
+    ym = (b[1] + b[3]) / 2
+    return [(b[0], b[1], xm, ym), (xm, b[1], b[2], ym), (b[0], ym, xm, b[3]), (xm, ym, b[2], b[3])]
 
 
 def reindex_tiles(tiles, sort=True):
-    """
-    Reassign tile_id to 0..K-1 after filtering.
-    If sort=True, sort deterministically by (depth proxy, bbox coords) so IDs are stable.
-    """
+    """Renumber tile ids 0..K-1 (optionally after sorting by bbox)."""
     if sort:
-        # stable ordering by bbox; add more keys if you want
         tiles = sorted(tiles, key=lambda t: (t.bbox[0], t.bbox[1], t.bbox[2], t.bbox[3]))
-
     for new_id, t in enumerate(tiles):
-        t.id = new_id   # or t.id depending on your QuadTile class
-
+        t.id = new_id
     return tiles
 
 
 def _low_density_tile_mask(tiles, mad_multiplier=6.0):
-    """Boolean mask marking tiles whose point density (cells / tile area)
-    is far below typical -- the low-density tiles a count-only quadtree
-    stop rule leaves oversized in background/debris regions (few cells
-    spread over a much larger area than a normal tile), which then
-    collapse toward near-identical, near-empty covariances during
-    indexing.
-
-    Density spans orders of magnitude across a normal dataset (a tiny
-    tile at a busy boundary vs. a huge tile in sparse tissue), so the
-    robust (median + MAD) threshold is computed in log-density space
-    rather than on the raw density scale.
-    """
+    """Tiles whose log cell density is more than ``mad_multiplier`` robust s.d. below the median."""
     n = len(tiles)
     if n == 0:
         return np.zeros(0, dtype=bool)
-
     areas = np.array([max((t.bbox[2] - t.bbox[0]) * (t.bbox[3] - t.bbox[1]), 1e-9) for t in tiles])
     counts = np.array([t.idx.size for t in tiles], dtype=float)
     log_density = np.log(np.maximum(counts / areas, 1e-12))
-
     median = np.median(log_density)
     mad = np.median(np.abs(log_density - median))
     if mad == 0:
         return np.zeros(n, dtype=bool)
-
-    threshold = median - mad_multiplier * 1.4826 * mad  # 1.4826 * MAD ~= std for a normal distribution
-    return log_density < threshold
+    return log_density < median - mad_multiplier * 1.4826 * mad
 
 
 def build_quadtree_tiles(coords, max_pts=200, min_side=0.0, max_depth=12,
-                          filter_low_density=True, density_mad_multiplier=6.0):
-    """
-    coords: (n,2) array, typically adata.obsm['spatial'] (x,y in same units)
-    Returns: list[QuadTile] with spot membership per tile.
-    Guarantees: each tile has at most `max_pts` points.
-
-    If `filter_low_density` is True (default), tiles whose point density
-    is far below typical (see `_low_density_tile_mask`) are dropped after
-    tiling -- their member spots are excluded from every downstream tile,
-    so they can't seed the near-empty covariances a count-only quadtree
-    stop rule otherwise leaves behind in background/debris regions.
-    """
+                         filter_low_density=True, density_mad_multiplier=6.0):
+    """Quadtree tiles of at most ``max_pts`` spots each; low-density tiles are dropped by default."""
     coords = np.asarray(coords, float)
     n = coords.shape[0]
-    xmin, ymin = coords.min(0); xmax, ymax = coords.max(0)
-    root_bbox = (xmin, ymin, xmax, ymax)
-    tiles, stack, next_id = [], [(root_bbox, np.arange(n), 0)], 0
+    xmin, ymin = coords.min(0)
+    xmax, ymax = coords.max(0)
+    tiles, stack, next_id = [], [((xmin, ymin, xmax, ymax), np.arange(n), 0)], 0
 
     while stack:
         bbox, idx, depth = stack.pop()
         idx = np.asarray(idx, dtype=int)
         side = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
 
-        # Stop splitting if we hit min_side or max_depth
         if (side <= min_side) or (depth >= max_depth):
-            n_chunks = max(1, math.ceil(idx.size / max_pts))
-            for chunk in np.array_split(idx, n_chunks):
+            for chunk in np.array_split(idx, max(1, math.ceil(idx.size / max_pts))):
                 tiles.append(QuadTile(next_id, bbox, chunk))
                 next_id += 1
             continue
 
-        # If we have very few points, we can stop early to avoid deep trees,
-        # unless we strictly want to enforce uniform tile sizes down to min_side.
-        # But if max_pts is very large (e.g. 999999), we want to force spatial splitting.
-        # So we only stop early if min_side is 0.
         if min_side <= 0 and idx.size <= max_pts:
             tiles.append(QuadTile(next_id, bbox, idx))
             next_id += 1
             continue
 
-        # Try spatial split
         child_nodes = []
         for child in _split_bbox(bbox):
             x0, y0, x1, y1 = child
-            mask = (
-                (coords[idx, 0] >= x0) & (coords[idx, 0] < x1) &
-                (coords[idx, 1] >= y0) & (coords[idx, 1] < y1)
-            )
-            child_idx = idx[mask]
-            if child_idx.size > 0:
-                child_nodes.append((child, child_idx))
+            mask = ((coords[idx, 0] >= x0) & (coords[idx, 0] < x1) &
+                    (coords[idx, 1] >= y0) & (coords[idx, 1] < y1))
+            if mask.any():
+                child_nodes.append((child, idx[mask]))
 
-        # Degenerate case: all points end up in one child, or no effective split.
+        # All points in one child: split by count instead.
         if len(child_nodes) <= 1:
-            n_chunks = math.ceil(idx.size / max_pts)
-            for chunk in np.array_split(idx, n_chunks):
+            for chunk in np.array_split(idx, math.ceil(idx.size / max_pts)):
                 tiles.append(QuadTile(next_id, bbox, chunk))
                 next_id += 1
             continue
 
-        # Normal case: push children for further processing
         for child_bbox, child_idx in child_nodes:
             stack.append((child_bbox, child_idx, depth + 1))
 
     if filter_low_density and tiles:
-        degenerate_mask = _low_density_tile_mask(tiles, mad_multiplier=density_mad_multiplier)
-        if degenerate_mask.any():
-            n_spots_dropped = sum(t.idx.size for t, drop in zip(tiles, degenerate_mask) if drop)
-            LOGGER.info(f"build_quadtree_tiles: dropping {int(degenerate_mask.sum())} low-density "
-                        f"tile(s) ({n_spots_dropped} spot(s) total) whose density is far below typical.")
-            tiles = [t for t, drop in zip(tiles, degenerate_mask) if not drop]
-            tiles = reindex_tiles(tiles, sort=False)
-
+        drop = _low_density_tile_mask(tiles, mad_multiplier=density_mad_multiplier)
+        if drop.any():
+            LOGGER.info("build_quadtree_tiles: dropping %d low-density tile(s) (%d spots)",
+                        int(drop.sum()), sum(t.idx.size for t, d in zip(tiles, drop) if d))
+            tiles = reindex_tiles([t for t, d in zip(tiles, drop) if not d], sort=False)
     return tiles
 
 
 def topvar_genes(adata, G=800):
+    """Names and column indices of the ``G`` highest-variance genes."""
     X = adata.X
     if sp.issparse(X):
         m = np.asarray(X.mean(0)).ravel()
         m2 = np.asarray(X.multiply(X).mean(0)).ravel()
     else:
-        m = X.mean(0); m2 = (X**2).mean(0)
-    var = m2 - m**2
-    keep = np.argsort(var)[::-1][:G]
+        m = X.mean(0)
+        m2 = (X ** 2).mean(0)
+    keep = np.argsort(m2 - m ** 2)[::-1][:G]
     return np.array(adata.var_names)[keep], keep
 
 
 def _cov_ml(Xslice, eps=1e-6, cast32=True):
+    """Maximum-likelihood covariance of the rows of ``Xslice`` plus ``eps`` on the diagonal."""
     n = Xslice.shape[0]
-    if n == 0: return None
+    if n == 0:
+        return None
     if sp.issparse(Xslice):
         mu = np.asarray(Xslice.mean(0)).ravel()
         XtX = (Xslice.T @ Xslice).toarray()
@@ -211,163 +131,52 @@ def _cov_ml(Xslice, eps=1e-6, cast32=True):
         X = np.asarray(Xslice)
         mu = X.mean(0)
         XtX = X.T @ X
-    Sig = XtX / max(n,1) - np.outer(mu, mu)
-    g = Sig.shape[0]; Sig.flat[::g+1] += eps
+    Sig = XtX / max(n, 1) - np.outer(mu, mu)
+    Sig.flat[::Sig.shape[0] + 1] += eps
     return Sig.astype(np.float32) if cast32 else Sig
 
 
+def _tile_cov(X, t, eps):
+    return {"tile_id": t.id, "cov": _cov_ml(X[t.idx, :], eps=eps, cast32=True), "n": len(t.idx)}
+
+
 def build_tile_covs_full(adata, tiles, gene_idx=None, n_jobs=8, eps=1e-6, prefer="threads"):
-    if gene_idx is None:
-        X = adata.X
-    else:
-        X = adata.X[:, gene_idx]  # slice once
-    def one(t):
-        idx = t.idx if hasattr(t,"idx") else t["spot_indices"]
-        Sig = _cov_ml(X[idx, :], eps=eps, cast32=True)
-        return {"tile_id": (t.id if hasattr(t,"id") else t.get("tile_id")),
-                "cov": Sig, "n": len(idx)}
-    return Parallel(n_jobs=n_jobs, prefer=prefer)(delayed(one)(t) for t in tiles)
+    """One {'tile_id', 'cov', 'n'} per tile, computed in parallel."""
+    X = adata.X if gene_idx is None else adata.X[:, gene_idx]
+    return Parallel(n_jobs=n_jobs, prefer=prefer)(delayed(_tile_cov)(X, t, eps) for t in tiles)
 
 
 def build_tile_covs_full_serial(adata, tiles, gene_idx=None, eps=1e-6):
-    """
-    Serial (non-parallel) version of build_tile_covs_full.
-    Computes covariance per tile sequentially and returns the same structure.
-    """
-    if gene_idx is None:
-        X = adata.X
+    """Serial version of ``build_tile_covs_full``."""
+    X = adata.X if gene_idx is None else adata.X[:, gene_idx]
+    return [_tile_cov(X, t, eps) for t in tiles]
+
+
+def load_adata(path):
+    """Read an .h5ad; cells with ``Cluster == "Unlabeled"`` (breast annotation) are dropped."""
+    import scanpy as sc
+
+    adata = sc.read_h5ad(path)
+    if "Cluster" in adata.obs.columns:
+        adata = adata[adata.obs.loc[adata.obs.Cluster != "Unlabeled"].index, :].copy()
+    return adata
+
+
+def prepare_tiles(adata, max_genes=800, n_jobs=8):
+    """Tiles (<= 200 cells), the top min(max_genes, n_genes) variable genes and every tile's covariance."""
+    tiles = build_quadtree_tiles(adata.obsm["spatial"], max_pts=200, min_side=0.0, max_depth=40)
+    genes, gene_idx = topvar_genes(adata, G=min(max_genes, adata.n_vars))
+    tile_covs = build_tile_covs_full(adata, tiles, gene_idx, n_jobs=n_jobs, eps=1e-6)
+    return tiles, tile_covs, genes
+
+
+def split_tiles(n_tiles, seed, n_holdout=None, test_ratio=0.05):
+    """(train_idx, test_idx): ``n_holdout`` tiles (or a ``test_ratio`` share) held out at random."""
+    np.random.seed(seed)
+    if n_holdout is not None:
+        num_test = min(n_holdout, max(0, n_tiles - 1))
     else:
-        X = adata.X[:, gene_idx]  # slice once
-
-    out = []
-    for t in tiles:
-        idx = t.idx if hasattr(t, "idx") else t["spot_indices"]
-        Sig = _cov_ml(X[idx, :], eps=eps, cast32=True)
-        out.append({
-            "tile_id": (t.id if hasattr(t, "id") else t.get("tile_id")),
-            "cov": Sig,
-            "n": len(idx),
-        })
-    return out
-
-class SpatialDataset(Protocol):
-    """Protocol describing the minimal spatial dataset needed for indexing.
-
-    Implementations are expected to provide:
-    - a set of spatial point coordinates (e.g., shape (N, D)), and
-    - a collection of SPD sub-matrices derived from these points.
-    """
-
-    @property
-    def points(self) -> np.ndarray:
-        """Array of spatial coordinates, shape (N, dim)."""
-        ...
-
-    @property
-    def spd_matrices(self) -> Sequence[np.ndarray]:
-        """Sequence of SPD matrices associated with the spatial data."""
-        ...
-
-
-@dataclass
-class PreprocessingConfig:
-    """Configuration stub for preprocessing.
-
-    This is kept deliberately generic; concrete projects should subclass
-    or extend this in their own codebase if they need additional fields.
-    """
-
-    description: str | None = None
-
-
-def build_spatial_dataset(raw_data: Any, config: PreprocessingConfig | None = None) -> SpatialDataset:
-    """Hook for user-provided preprocessing.
-
-    This function is intentionally *not* implemented in this repo.
-    Downstream projects should provide an implementation that converts
-    arbitrary raw spatial data into a ``SpatialDataset`` instance that
-    can be passed to ``index.build_index``.
-    """
-
-    raise NotImplementedError(
-        "Preprocessing is out-of-scope for this package; "
-        "provide your own `build_spatial_dataset` implementation in the "
-        "host project."
-    )
-
-
-def prepare_multiple_adatas(adatas: list, max_pts=200, min_side=0.0, max_depth=40, n_jobs=8, eps=1e-6):
-    """
-    Takes a list of AnnData objects, finds their common genes, 
-    and builds an aggregated list of tiles and tile covariances 
-    with globally unique tile IDs.
-    
-    Returns:
-        combined_tiles: list of QuadTile
-        combined_tile_covs: list of dict
-        common_genes: list of str
-        total_spots: int
-    """
-    if not adatas:
-        return [], [], [], 0
-
-    # 1. Unique var names and find intersection
-    common_genes_set = None
-    for adata in adatas:
-        adata.var_names_make_unique()
-        genes = set(adata.var_names)
-        if common_genes_set is None:
-            common_genes_set = genes
-        else:
-            common_genes_set = common_genes_set.intersection(genes)
-            
-    common_genes = sorted(list(common_genes_set))
-    if len(common_genes) == 0:
-        raise ValueError("No common genes found across the provided datasets.")
-    
-    LOGGER.info("Found %d common genes across %d datasets.", len(common_genes), len(adatas))
-
-    combined_tiles = []
-    combined_tile_covs = []
-    total_spots = 0
-    tile_id_offset = 0
-
-    for i, adata in enumerate(adatas):
-        LOGGER.info("Processing dataset %d/%d with %d spots.", i+1, len(adatas), adata.n_obs)
-        # Subset adata to common genes to ensure exact order
-        adata_sub = adata[:, common_genes].copy()
-        
-        coords = adata_sub.obsm["spatial"]
-        
-        # Build tiles
-        tiles = build_quadtree_tiles(coords, max_pts=max_pts, min_side=min_side, max_depth=max_depth)
-        
-        # Build covariance matrices using the subset (so gene_idx=None)
-        tile_covs = build_tile_covs_full(adata_sub, tiles, gene_idx=None, n_jobs=n_jobs, eps=eps)
-        
-        # Offset tile IDs
-        for t, t_cov in zip(tiles, tile_covs):
-            old_id = getattr(t, 'id', None)
-            if old_id is None:
-                old_id = t.get("id") if isinstance(t, dict) else 0
-            
-            new_id = old_id + tile_id_offset
-            
-            if hasattr(t, 'id'):
-                t.id = new_id
-            elif isinstance(t, dict):
-                t["id"] = new_id
-                
-            t_cov["tile_id"] = new_id
-            
-            combined_tiles.append(t)
-            combined_tile_covs.append(t_cov)
-            
-        # Update offsets
-        if tiles:
-            max_id_in_batch = max(t.id if hasattr(t, 'id') else t.get('id', 0) for t in tiles)
-            tile_id_offset = max_id_in_batch + 1
-            
-        total_spots += adata_sub.n_obs
-
-    return combined_tiles, combined_tile_covs, common_genes, total_spots
+        num_test = int(n_tiles * test_ratio)
+    all_idx = np.arange(n_tiles)
+    test_idx = np.random.choice(all_idx, size=num_test, replace=False)
+    return np.setdiff1d(all_idx, test_idx), test_idx
