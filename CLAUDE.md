@@ -2,112 +2,42 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Project
 
-**Spindle** is a Python library for indexing and searching symmetric positive definite (SPD) sub-matrices derived from spatial-omics datasets. It builds a block-structured DAG index over SPD covariance matrices computed from spatial tiles, enabling fast budget-pruned nearest-neighbor search.
+**Spindle** indexes and searches the covariance matrices of spatial-omics tiles. The paper has two indexes
+plus a partial-query index, all on one shared layout:
 
-Published docs: https://www.hiraksarkar.com/spindle_dev/
+- **Spindle** (`src/spindle_dev/spindle.py`): exact scan over stored block logs. `Spindle` answers whole-tile
+  queries with d_B = √(Σ_b ‖log q_b − log t_b‖²_F)/√p on shrunk covariances (`metrics.SHRINK_ALPHA` = 0.1);
+  `SpindlePartial` answers gene-set queries with d_B^S.
+- **Spindle-lite** (`lite.py`): the first draft's layered block DAG (`Spindle/Spindle_Old.pdf`): ε-net nodes
+  per block, edges between co-occurring nodes, budgeted DFS searched in every niche.
+- **Interval index** (`interval.py`): dyadic gene intervals with ε-bounded node means, for gene sets.
+- **Layout** (`layout.py`): tiles → Leiden covariance niches (cap 1,000) → gene order and blocks per niche.
+  `preprocessing.py` tiles the section, picks genes, computes covariances and splits train/held-out.
 
-## Installation
+## Rules
+
+- **The method is frozen** once `paper/FIGURES.md` Stage A closes (git tag `method-v1`). Do not change
+  `src/` while results or figures are being made: no variants, no retuning, no extra checks. A real bug goes
+  to the user first; see `paper/FIGURES.md` Section 0. That file is the plan; read it at the start of any
+  paper session.
+- Dataset paths live only in `datasets.yaml`; read them with `paths.dataset_path(key)` (shell:
+  `python paths.py <key>`). Never hard-code a path.
+- Experiment code goes in `experiments/<figure>/` and uses only the public API of `spindle_dev`;
+  baselines never go into `src/`.
+- Heavy compute goes through `sbatch` (the shell is a login node), in the `spindle_env` conda env
+  (`~/miniforge3/envs/spindle_env`). `spindle_dev` is not installed there: put `src/` on `sys.path`.
+  Compute nodes cannot see the login node's `/tmp`, so job scripts and outputs must live on the shared
+  file system.
+- The manuscript is a separate Overleaf project (local copy `Spindle/`, gitignored); no code writes into it.
+- `backup/` (gitignored) holds the figures from before the 17 Oct 2026 cleanup and the reference
+  outputs used to check that the cleanup did not change results (`backup/reference/compare.py`).
+
+## Run
 
 ```bash
-pip install -r requirements.txt
-# or
-pip install -e .
+python examples/run_single_dataset.py skin_melanoma
 ```
 
-## Common Commands
-
-### Run a typical workflow (end-to-end)
-```bash
-python examples/run_single_dataset.py path/to/sample.h5ad
-```
-
-### Paper experiments and figures
-Use the `spindle_env` conda env; heavy compute goes through `sbatch` (the shell is a login node).
-`slurm_jobs/README.md` gives the run order (index build → experiments → figure data → figures),
-`results/README.md` maps each results folder to its script and paper figure/table, and
-`bash slurm_jobs/figures/run_make_figures.sbatch` redraws every figure twice, as `figures/pdf/<figure>.pdf` and `figures/png/<figure>.png`
-(plus one file per panel in `figures/{pdf,png}/panels/<figure>/`). The manuscript is a separate Overleaf project (local copy `Spindle/`,
-gitignored); no code writes into it. Plan and status: `paper/PLAN.md` (gitignored).
-
-Dataset paths are written only in `datasets.yaml` (repo root); code reads them via `benchmarks/paths.py` (`dataset_path(key)`; shell: `python benchmarks/paths.py <key>`). Never hard-code a dataset path; add new datasets there.
-
-No formal test suite exists; sanity testing is done via `spindle_dev.test.run_sanity_search()`.
-
-## Architecture
-
-### Public API (`src/spindle_dev/__init__.py`)
-
-The two main entry points:
-- **`build_index(spatial_data, config) -> IndexHandle`** — constructs the DAG index
-- **`query_index(index_handle, query_spd, budget, config) -> SearchResults`** — searches the index
-
-### Core Modules
-
-**`typing.py`** — Dataclasses for the entire system:
-- `IndexConfig` — index construction parameters (epsilons, ordering, clustering method)
-- `BlockClusterNode` — a node in the DAG (block_index, global_node_id, children)
-- `DatasetIndex` — serialized bundle: dag_dict + metadata + PCA model + embeddings
-- `SearchConfig` — search parameters (max_results, budget limits, debug flags)
-
-**`preprocessing.py`** — Spatial data preparation:
-- `build_quadtree_tiles(coords)` — recursively tiles spatial coordinates into `QuadTile` objects
-- `build_tile_covs_full_serial()` — computes per-tile SPD covariance matrices
-- `topvar_genes()` — selects top-variance genes
-
-**`metrics.py`** — SPD distance math:
-- `log_euclidean_distance()` — primary metric between SPD matrices (normalized by √p)
-- `log_spd()` — matrix log via eigendecomposition
-- `spd_to_correlation()` / `correlation_to_spd()` — SPD ↔ correlation conversions
-- `build_ultrametrics()` / `consensus_tree_from_ultrametrics()` — hierarchical clustering support
-
-**`index.py`** — Index construction (largest module, ~2400 lines):
-- `ProcessedData` — central data container; holds tiles, SPD matrices, cluster assignments, block structure
-  - `.reduce_dim()` — PCA + optional UMAP on flattened SPD features
-  - `.cluster_spds()` — Leiden clustering in SPD feature space
-  - `.assign_label_to_spots()` — maps original spatial spots → cluster labels
-  - `.get_adaptive_runs()` — detects block boundaries adaptively
-- `choose_adaptive_epsilons()` — per-block distance thresholds via k-means on target cluster size
-- `index_spds(data, config)` — **core function**: builds the block-DAG, returns `dag_dict`
-- `save_index()` / `load_index()` — pickle serialization
-
-**`search.py`** — DAG traversal (~1030 lines):
-- `search_index()` — best-first traversal with budget pruning; uses binary search over sorted block-cluster means
-
-**`test.py`** — Sanity checks:
-- `run_sanity_search()` — end-to-end validation: builds ground-truth paths, queries the index, verifies recovery
-
-**`plotting.py`** — Visualization utilities for index structure and results
-
-**`go_score.py`** — Gene ontology scoring/analysis
-
-### Typical Workflow
-
-```
-1. Load AnnData (sc.read_h5ad)
-2. build_quadtree_tiles(coords)          → QuadTile list
-3. topvar_genes(adata, G=800)            → gene subset
-4. build_tile_covs_full_serial(...)      → per-tile SPD matrices
-5. ProcessedData(tiles, covs, genes)
-6. data.reduce_dim(num_pca_components=30)
-7. data.cluster_spds(method='leiden')
-8. data.assign_label_to_spots()
-9. data.get_adaptive_runs(find_blocks=True)
-10. choose_adaptive_epsilons(data, ...)
-11. index_spds(data, config)             → dag_dict
-12. save_index(data, dag_dict, path)
-13. run_sanity_search(data, dag_dict, ...) → validation CSV
-```
-
-### Key Design Concepts
-
-- **Block-structured DAG**: SPD matrices are grouped into blocks (detected via adaptive consensus clustering). Each block becomes a DAG layer with parent-child relationships across layers.
-- **Per-block epsilons**: Distance thresholds differ per block/cluster, chosen to hit a target neighborhood size (`k_target_per_block`).
-- **Budget-pruned search**: `search_index()` tracks a query budget and prunes subtrees when the budget is exhausted, trading recall for speed.
-- **Determinism**: `DeterministicConfig` / `configure_determinism()` set NumPy seeds for reproducible clustering runs.
-
-## Documentation
-
-Published docs: https://www.hiraksarkar.com/spindle_dev/. The Sphinx sources (`docs_src/`) are not in this
-checkout, so the `.github/workflows/` docs jobs currently fail.
+There is no test suite; `backup/reference/ref_new.py` + `compare.py` reproduce the cleanup check.

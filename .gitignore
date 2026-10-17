@@ -66,8 +66,11 @@ dataset/
 *.h5ad
 paper/
 
-# Benchmark pre-built index files (large, re-generable)
+# Pickled layouts and indexes (large, re-generable)
 *.pkl
+
+# Local backups (old figures, reference outputs of the pre-cleanup code)
+backup/
 
 # Manuscript: local copy of the Overleaf project (independent of the code; synced by hand)
 Spindle/
