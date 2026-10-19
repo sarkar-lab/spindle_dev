@@ -11,6 +11,8 @@ eigendecomposes the sub-blocks S cap b at query time.
 
 ``search`` returns training rows (positions in ``data.labels``) best first, their scores and the seconds
 taken; ``last_timing`` splits those into the query's own logs (``query_s``) and the scan (``scan_s``).
+``Spindle.distances`` runs the compiled scan (``kernels.spindle_scan``, bit-identical to ``distances_numpy``);
+benchmarks time the scan (``scan_s``), which leaves out the query's own logs.
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from typing import Optional
 
 import numpy as np
 
+from .kernels import spindle_scan
 from .metrics import LOG_FLOOR, as_cov, batched_log_spd, log_spd, query_cov_s, sym_to_vec
 
 
@@ -88,7 +91,14 @@ class Spindle:
         return {k: vec.vector(cov, np.float32) for k, (_, vec) in self.layouts.items()}
 
     def distances(self, qv):
-        """d_B from the query vectors to every training tile."""
+        """d_B from the query vectors to every training tile (compiled scan)."""
+        d = np.empty(self.n)
+        for k, (idx, _) in self.layouts.items():
+            spindle_scan(self.X[k], qv[k], idx, d)
+        return d
+
+    def distances_numpy(self, qv):
+        """The numpy reference of ``distances`` (same values, bit for bit)."""
         d = np.empty(self.n)
         for k, (idx, _) in self.layouts.items():
             d[idx] = np.sqrt(np.maximum(((self.X[k] - qv[k]) ** 2).sum(1, dtype=np.float64), 0.0))

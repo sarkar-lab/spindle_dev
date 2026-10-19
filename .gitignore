@@ -75,3 +75,6 @@ backup/
 # Manuscript: local copy of the Overleaf project (independent of the code; synced by hand)
 Spindle/
 
+
+# Compiled Spindle-lite kernel (built on import from src/spindle_dev/lite_kernels.c)
+src/spindle_dev/_build/

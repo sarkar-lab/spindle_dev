@@ -2,20 +2,24 @@
 
 - ``layout``: tiles -> covariance niches -> gene order and blocks per niche (shared by all indexes).
 - ``spindle``: Spindle, the exact block-log scan (``Spindle`` for whole tiles, ``SpindlePartial`` for gene sets).
-- ``lite``: Spindle-lite, the layered block DAG with budgeted depth-first search.
-- ``interval``: the interval index for gene-set queries.
+- ``lite``: Spindle-lite (``SpindleLite``), the layered block DAG searched with a radius set by the greedy probe
+  (paper/SPINDLE_LITE.md).
+- ``lite_partial``: Spindle-lite partial (``SpindleLitePartial``), gene-set queries on dyadic gene intervals
+  (paper/SPINDLE_PARTIAL.md).
+- ``kernels``: the compiled searches behind ``Spindle.search``, ``SpindleLite.search`` and
+  ``SpindleLitePartial.search`` (C, built on first use).
+- ``spindle_lite_legacy``: the first draft's Spindle-lite (ε elbow budget, effort caps), kept for reference only.
 """
 
-from .interval import build_interval_index, error_bound, search_interval_index
 from .layout import ProcessedData, build_layout
-from .lite import LiteIndex, build_lite, load_index, save_index, search_lite
+from .lite import SpindleLite
+from .lite_partial import SpindleLitePartial
 from .preprocessing import load_adata, prepare_tiles, split_tiles
 from .spindle import Spindle, SpindlePartial
+from .utils import load_index, save_index
 
 __all__ = [
     "build_layout", "ProcessedData", "load_adata", "prepare_tiles", "split_tiles",
-    "Spindle", "SpindlePartial",
-    "build_lite", "search_lite", "LiteIndex",
-    "build_interval_index", "search_interval_index", "error_bound",
+    "Spindle", "SpindlePartial", "SpindleLite", "SpindleLitePartial",
     "save_index", "load_index",
 ]

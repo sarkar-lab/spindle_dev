@@ -1,4 +1,4 @@
-"""Build Spindle, Spindle-lite and the interval index on one dataset and query each with a held-out tile.
+"""Build Spindle and Spindle-lite (whole tile and partial) on one dataset and query each with a held-out tile.
 
 Usage: python examples/run_single_dataset.py <dataset key | path.h5ad> [--out DIR]
 """
@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 import paths  # noqa: E402
 import spindle_dev as sd  # noqa: E402
+from spindle_dev.metrics import query_cov_s  # noqa: E402
 
 
 def main():
@@ -32,29 +33,35 @@ def main():
     print(f"{len(train)} training tiles, {len(set(data.labels.tolist()))} niches")
 
     spindle = sd.Spindle(data, train_covs)
-    lite = sd.build_lite(data)
+    lite = sd.SpindleLite.from_spindle(spindle, data)
     partial = sd.SpindlePartial(data, train_covs)
-    interval = sd.build_interval_index(data, block_covs=partial.covs)
+    lite_partial = sd.SpindleLitePartial.from_partial(partial, data)
 
     query = covs[test[0]]
     rows, scores, sec = spindle.search(query, c=10)
     print(f"Spindle top 10 ({sec * 1e3:.1f} ms):", rows.tolist())
-    found, sec = sd.search_lite(lite, query)
-    print(f"Spindle-lite returned {len(found)} tiles ({sec * 1e3:.1f} ms); "
-          f"{np.isin(rows, found).sum()} of Spindle's top 10")
+    found, _, sec = lite.search(query)
+    c = min(10, len(found))
+    d = spindle.distances(spindle.query_vectors(query))
+    exact = np.sort(d)[:c].mean()
+    print(f"Spindle-lite returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); its top {c} is "
+          f"{100 * (d[found[:c]].mean() - exact) / exact:.1f} % farther than the exact top {c}")
 
     k = int(data.labels[0])
     s, e = data.block_dict[k][0]
     gene_set = np.asarray(data.perm_list[k])[s:min(e, s + 12)]
-    rows_s, _, _ = partial.search(query, gene_set, c=10)
-    rows_i, _, sec = sd.search_interval_index(interval, query, gene_set, c=10)
-    print(f"12-gene set: interval index top 10 ({sec * 1e3:.1f} ms) shares {np.isin(rows_i, rows_s).sum()} "
-          f"with the exact top 10")
+    d_s = partial.distances(query_cov_s(query, gene_set, partial.p), gene_set)
+    found, _, sec = lite_partial.search(query, gene_set)
+    c = min(10, len(found))
+    exact = np.sort(d_s)[:c].mean()
+    print(f"12-gene set: Spindle-lite partial returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); "
+          f"its top {c} is {100 * (d_s[found[:c]].mean() - exact) / exact:.1f} % farther than the exact top {c}")
 
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)
         data.spd_matrices, data.U_list = [], None
-        for name, obj in [("layout", data), ("spindle", spindle), ("lite", lite), ("interval", interval)]:
+        for name, obj in [("layout", data), ("spindle", spindle), ("lite", lite), ("partial", partial),
+                          ("lite_partial", lite_partial)]:
             sd.save_index(obj, args.out / f"{path.stem}_{name}.pkl")
         print("saved to", args.out)
 

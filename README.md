@@ -2,11 +2,12 @@
 
 Search over the covariance matrices of spatial-omics tiles. A section is cut into tiles of ≤ 200 cells;
 each tile's gene–gene covariance is indexed under a shared layout (covariance niches, and a gene order with
-contiguous gene blocks per niche). Three indexes sit on that layout:
+contiguous gene blocks per niche). Two indexes, each for whole tiles and gene sets, sit on that layout:
 
 - **Spindle**: an exact scan over stored block logs, for whole-tile and gene-set queries.
-- **Spindle-lite**: a layered block DAG per niche with a budgeted depth-first search.
-- **Interval index**: dyadic gene intervals with ε-bounded node means, for gene-set queries.
+- **Spindle-lite**: a layered block DAG per niche, searched with a radius set by the query's own best match
+  (`paper/SPINDLE_LITE.md`); for gene sets, the same design on dyadic gene intervals (Spindle-lite partial,
+  `paper/SPINDLE_PARTIAL.md`).
 
 ## Layout
 
@@ -16,10 +17,12 @@ spindle_dev/
 │   ├── preprocessing.py #   tiling, gene selection, tile covariances, train/held-out split
 │   ├── layout.py        #   niches, gene order and blocks (shared by all indexes)
 │   ├── spindle.py       #   Spindle (exact block-log scan; whole tile and gene set)
-│   ├── lite.py          #   Spindle-lite (layered DAG, budgeted DFS), save/load
-│   ├── interval.py      #   interval index
+│   ├── lite.py          #   Spindle-lite (SpindleLite; paper/SPINDLE_LITE.md)
+│   ├── lite_partial.py  #   Spindle-lite partial (SpindleLitePartial; paper/SPINDLE_PARTIAL.md)
+│   ├── kernels.c/.py    #   compiled searches behind Spindle and both Spindle-lites (C, AVX2, ctypes)
+│   ├── spindle_lite_legacy.py  # the first draft's Spindle-lite (reference only)
 │   ├── metrics.py       #   shrinkage, matrix logs, correlation
-│   └── utils.py         #   logging
+│   └── utils.py         #   logging, save/load
 ├── examples/            # run_single_dataset.py (usage), check_indexes.py (sanity checks)
 ├── paths.py             # dataset paths, read from datasets.yaml
 └── datasets.yaml        # the only place a dataset path is written
@@ -46,15 +49,18 @@ data = sd.build_layout([tiles[i] for i in train], train_covs, genes, adata.n_obs
 spindle = sd.Spindle(data, train_covs)
 rows, scores, seconds = spindle.search(covs[test[0]], c=10)        # exact d_B top 10
 
-lite = sd.build_lite(data)
-rows, seconds = sd.search_lite(lite, covs[test[0]])                 # Spindle-lite set
+lite = sd.SpindleLite.from_spindle(spindle, data)
+rows, scores, seconds = lite.search(covs[test[0]])                  # Spindle-lite set (g = 0.25), best first
 
 partial = sd.SpindlePartial(data, train_covs)
-interval = sd.build_interval_index(data, block_covs=partial.covs)
-rows, scores, seconds = sd.search_interval_index(interval, covs[test[0]], gene_idx, c=10)
+rows, scores, seconds = partial.search(covs[test[0]], gene_idx, c=10)  # exact d_B^S top 10
+
+plite = sd.SpindleLitePartial.from_partial(partial, data)
+rows, scores, seconds = plite.search(covs[test[0]], gene_idx)        # Spindle-lite partial set (g = 1), best first
 ```
 
 Every tile covariance is shrunk once when it is computed (`metrics.SHRINK_ALPHA` = 0.1), and every
 distance is d_B (d_B^S for gene sets). Queries built elsewhere must be shrunk first (`metrics.shrink_cov`).
-Rows are positions of the training tiles (`data.labels` order). `python examples/run_single_dataset.py
-skin_melanoma` runs all three on one dataset.
+Rows are positions of the training tiles (`data.labels` order). Spindle's whole-tile scan and both Spindle-lite searches run compiled C kernels
+(built with gcc on first use into `src/spindle_dev/_build/`), bit-identical to their numpy references. `python examples/run_single_dataset.py
+skin_melanoma` runs all of them on one dataset.
