@@ -84,3 +84,8 @@ presentation/
 
 # Poster: python-pptx installed locally (pip --target) and LibreOffice render scratch
 poster/
+
+# Results session pipeline: index cache and sbatch logs (shared FS, re-generable); python-pptx install
+results/_cache/
+results/_logs/
+experiments/common/.pylib/
