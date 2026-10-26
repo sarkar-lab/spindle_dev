@@ -1,0 +1,26 @@
+{
+ "dataset": "brain_cancer",
+ "tag": "7f8f7b9-dirty",
+ "seed": 73,
+ "n_index": 10520,
+ "p": 480,
+ "label_source": "leiden",
+ "n_classes": 9,
+ "tv_random": 0.1204360709931564,
+ "skipped": [
+  {
+   "family": "generic",
+   "list": "EMT_Stromal_Invasion",
+   "n_index_genes": 2,
+   "missing": [
+    "VIM",
+    "CDH2",
+    "SNAI1",
+    "ZEB1",
+    "MMP2"
+   ]
+  }
+ ],
+ "alias": {},
+ "seconds": 388
+}

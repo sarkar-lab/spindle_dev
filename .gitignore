@@ -78,3 +78,9 @@ Spindle/
 
 # Compiled Spindle-lite kernel (built on import from src/spindle_dev/lite_kernels.c)
 src/spindle_dev/_build/
+
+# Talk deck, its scripts, figures and results (local only)
+presentation/
+
+# Poster: python-pptx installed locally (pip --target) and LibreOffice render scratch
+poster/

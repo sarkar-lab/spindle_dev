@@ -1,4 +1,5 @@
-"""Build Spindle and Spindle-lite (whole tile and partial) on one dataset and query each with a held-out tile.
+"""Build Spindle and Spindle-lite (whole tile and partial) on one dataset, query each with a held-out tile, then
+query the partial indexes with a gene list given by names (GENE_LIST, the myeloid program).
 
 Usage: python examples/run_single_dataset.py <dataset key | path.h5ad> [--out DIR]
 """
@@ -14,6 +15,8 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 import paths  # noqa: E402
 import spindle_dev as sd  # noqa: E402
 from spindle_dev.metrics import query_cov_s  # noqa: E402
+
+GENE_LIST = ["CD68", "CD163", "CD14", "AIF1", "MNDA"]
 
 
 def main():
@@ -56,6 +59,20 @@ def main():
     exact = np.sort(d_s)[:c].mean()
     print(f"12-gene set: Spindle-lite partial returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); "
           f"its top {c} is {100 * (d_s[found[:c]].mean() - exact) / exact:.1f} % farther than the exact top {c}")
+
+    # a gene list by names (Methods Eq. signature); omega is kept beside the index
+    omega = sd.variance_quantiles(train_covs)
+    idx, found_genes, missing = sd.gene_indices(genes, GENE_LIST)
+    if len(idx) >= 2:
+        cov_s, idx = sd.template_query(omega, idx)
+        rows, scores, sec = partial.search(cov_s, idx, c=10)
+        print(f"gene list {found_genes} (not in the index: {missing}): Spindle partial top 10 "
+              f"({sec * 1e3:.1f} ms):", rows.tolist())
+        found, _, sec = lite_partial.search(cov_s, idx)
+        print(f"  Spindle-lite partial returned {len(found)} tiles ({sec * 1e3:.1f} ms), "
+              f"{len(set(found[:10].tolist()) & set(rows.tolist()))} of the exact top 10 in its top 10")
+    else:
+        print(f"gene list: {len(idx)} of {GENE_LIST} in the index genes, skipped")
 
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,59 @@
+{
+ "dataset": "lymph_node",
+ "tag": "7f8f7b9-dirty",
+ "seed": 73,
+ "n_index": 2515,
+ "p": 377,
+ "label_source": "leiden",
+ "n_classes": 11,
+ "tv_random": 0.11027453879311203,
+ "skipped": [
+  {
+   "family": "generic",
+   "list": "Interferon_Response",
+   "n_index_genes": 2,
+   "missing": [
+    "CXCL11",
+    "STAT1",
+    "IRF1"
+   ]
+  },
+  {
+   "family": "generic",
+   "list": "Inflammatory_Response",
+   "n_index_genes": 0,
+   "missing": [
+    "IL6",
+    "TNF",
+    "IL1B",
+    "CCL2",
+    "ICAM1"
+   ]
+  },
+  {
+   "family": "generic",
+   "list": "Hypoxia_Angiogenesis",
+   "n_index_genes": 0,
+   "missing": [
+    "VEGFA",
+    "HIF1A",
+    "MMP9"
+   ]
+  },
+  {
+   "family": "generic",
+   "list": "EMT_Stromal_Invasion",
+   "n_index_genes": 1,
+   "missing": [
+    "VIM",
+    "CDH2",
+    "ZEB1",
+    "FN1",
+    "MMP2",
+    "SPARC"
+   ]
+  }
+ ],
+ "alias": {},
+ "seconds": 141
+}

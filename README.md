@@ -19,6 +19,7 @@ spindle_dev/
 │   ├── spindle.py       #   Spindle (exact block-log scan; whole tile and gene set)
 │   ├── lite.py          #   Spindle-lite (SpindleLite; paper/SPINDLE_LITE.md)
 │   ├── lite_partial.py  #   Spindle-lite partial (SpindleLitePartial; paper/SPINDLE_PARTIAL.md)
+│   ├── queries.py       #   gene-set queries from gene names (template, tile)
 │   ├── kernels.c/.py    #   compiled searches behind Spindle and both Spindle-lites (C, AVX2, ctypes)
 │   ├── spindle_lite_legacy.py  # the first draft's Spindle-lite (reference only)
 │   ├── metrics.py       #   shrinkage, matrix logs, correlation
@@ -57,6 +58,13 @@ rows, scores, seconds = partial.search(covs[test[0]], gene_idx, c=10)  # exact d
 
 plite = sd.SpindleLitePartial.from_partial(partial, data)
 rows, scores, seconds = plite.search(covs[test[0]], gene_idx)        # Spindle-lite partial set (g = 1), best first
+
+# a gene list by names: the co-expression template (Methods Eq. signature)
+omega = sd.variance_quantiles(train_covs)                           # (p,), keep it beside the index
+idx, found, missing = sd.gene_indices(genes, ["CD68", "CD163", "CD14", "AIF1", "MNDA"])
+cov_s, idx = sd.template_query(omega, idx)                          # rho = 0.5, 90th-percentile variances
+rows, scores, seconds = partial.search(cov_s, idx, c=10)
+rows, scores, seconds = plite.search(cov_s, idx)
 ```
 
 Every tile covariance is shrunk once when it is computed (`metrics.SHRINK_ALPHA` = 0.1), and every

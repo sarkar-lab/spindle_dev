@@ -1,0 +1,22 @@
+{
+ "dataset": "skin_melanoma",
+ "tag": "7f8f7b9-dirty",
+ "seed": 73,
+ "n_index": 832,
+ "p": 382,
+ "label_source": "leiden",
+ "n_classes": 12,
+ "tv_random": 0.2116424152888715,
+ "skipped": [
+  {
+   "family": "generic",
+   "list": "Hypoxia_Angiogenesis",
+   "n_index_genes": 2,
+   "missing": [
+    "HIF1A"
+   ]
+  }
+ ],
+ "alias": {},
+ "seconds": 69
+}

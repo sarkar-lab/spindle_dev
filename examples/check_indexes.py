@@ -12,6 +12,10 @@
 6. Information: Spindle-lite at g = 0.25 / 0.5 / 1 and Spindle-lite partial at g = 1 (tiles returned, node
    distances, excess mean distance of the returned top 10 over the exact top 10) and search-only times (query logs
    excluded) against the exact scans.
+7. Gene-list queries (queries.py; run before 6): gene_indices drops unknown genes and duplicates (case-sensitive and
+   not); tile_query self-query; template_query on 20 random gene lists (3-16 genes, across blocks) has variances
+   omega, correlations 0.5 and is SPD; Spindle-lite partial compiled search == Python DFS on those queries at
+   g = 1 and 2.
 
 Usage: python examples/check_indexes.py <dataset key>
 """
@@ -143,6 +147,38 @@ for gs, qp in zip(gsets, qps):
     miss += int((~np.isin(near, rows)).sum())
 report(lb_viol == 0, f"Spindle-lite partial path lower bound <= piece distance for every tile: {lb_viol} violations")
 report(miss == 0, f"Spindle-lite partial safety at g = 2: {within} (query, tile) pairs within the radius, {miss} missed")
+
+# 7. gene-list queries (queries.py)
+names = [str(x) for x in genes]
+idx, found_g, missing = sd.gene_indices(names, [names[5], names[2], names[5], "NOT_A_GENE", names[2].lower()])
+report(idx.tolist() == [5, 2] and found_g == [names[5], names[2]] and missing == ["NOT_A_GENE", names[2].lower()],
+       f"gene_indices: duplicates removed, unknown genes reported ({idx.tolist()}, missing {missing})")
+idx, _, missing = sd.gene_indices(names, [names[5].lower(), names[2]], case_sensitive=False)
+report(idx.tolist() == [5, 2] and not missing, "gene_indices: case-insensitive lookup")
+cq, ci = sd.tile_query(tr_covs[N // 2], gsets[0])
+rows, sc, _ = partial.search(cq, ci, c=1)
+report(rows[0] == N // 2 and sc[0] < 1e-5, f"tile_query self-query row {N // 2}: top {rows[0]} at {sc[0]:.2e}")
+omega = sd.variance_quantiles(tr_covs)
+lsets = [rng.choice(partial.p, int(rng.integers(3, 17)), replace=False) for _ in range(20)]
+bad_t = 0
+tqs = []
+for gs in lsets:
+    cq, ci = sd.template_query(omega, gs)
+    sdv = np.sqrt(np.diag(cq))
+    r = cq / np.outer(sdv, sdv)
+    bad_t += not (np.allclose(np.diag(cq), omega[gs]) and np.allclose(r[~np.eye(len(gs), dtype=bool)], 0.5)
+                  and np.linalg.eigvalsh(cq).min() > 0)
+    tqs.append((ci, plite.query_vectors(cq, ci)))
+report(bad_t == 0, f"template_query: variances = omega, correlations = 0.5, SPD on {len(lsets) - bad_t}/{len(lsets)} "
+                   f"random gene lists (3-16 genes, across blocks)")
+bad = 0
+for gs, qp in tqs:
+    for g in (1.0, 2.0):
+        a, b = plite.search_vectors(qp, g=g), plite.search_vectors_dfs(qp, g=g)
+        bad += not (np.array_equal(a[0], b[0]) and np.array_equal(a[1].view(np.int64), b[1].view(np.int64))
+                    and a[2] == b[2])
+report(bad == 0, f"Spindle-lite partial compiled search == Python DFS on template queries: {2 * len(tqs) - bad}/"
+                 f"{2 * len(tqs)} (query, g) pairs")
 
 # 6. information (search only: the query's block logs are computed beforehand for both indexes)
 spindle.distances(qvs[0])

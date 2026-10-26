@@ -28,6 +28,11 @@ each for whole tiles and gene sets, all on one shared layout:
   at β = 0.10, one-byte node index, no stored edges; the query's pieces left to right, greedy probe, r² = g²·Â²
   (default g = 1). Final configuration and decision log: `paper/SPINDLE_PARTIAL.md`. Its compiled search is
   `kernels.c` `partial_search` (bit-identical to `SpindleLitePartial.search_vectors_dfs`).
+- **Gene-list queries** (`queries.py`): `gene_indices` (names → indices, unknown/duplicate genes dropped and
+  reported), `template_query` (Methods Eq. signature: ρ = 0.5, Ω = 90th-percentile shrunk variances from
+  `variance_quantiles`, kept beside the index since Spindle-lite partial stores no covariances), `tile_query`. All
+  return `(cov_s, idx)` for `SpindlePartial` / `SpindleLitePartial`. Chosen by the Session 1 pilot
+  (`experiments/gene_set_pilot/`, 25–26 Oct); the exemplar rule stays experiment code.
 - **Layout** (`layout.py`): tiles → Leiden covariance niches (cap 1,000) → gene order and blocks per niche.
   `preprocessing.py` tiles the section, picks genes, computes covariances and splits train/held-out.
 
@@ -35,8 +40,9 @@ each for whole tiles and gene sets, all on one shared layout:
 
 - **The method is frozen** once `paper/FIGURES.md` Stage A closes (git tag `method-v1`). Do not change
   `src/` while results or figures are being made: no variants, no retuning, no extra checks. A real bug goes
-  to the user first; see `paper/FIGURES.md` Section 0. That file is the plan; read it at the start of any
-  paper session.
+  to the user first; see `paper/FIGURES.md` Section 0. Read its Sections 0–1 at the start of any paper session.
+- **The Results plan is `paper/RESULTS_PLAN.md`** (sessions, figure/pptx pipeline, captions, Results text, status
+  table); start every Results session there.
 - Dataset paths live only in `datasets.yaml`; read them with `paths.dataset_path(key)` (shell:
   `python paths.py <key>`). Never hard-code a path.
 - Experiment code goes in `experiments/<figure>/` and uses only the public API of `spindle_dev`;
