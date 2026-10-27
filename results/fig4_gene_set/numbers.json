@@ -1,0 +1,669 @@
+{
+ "stamp": {
+  "tag": "method-v1",
+  "describe": "method-v1-1-gc770f5a-dirty",
+  "commit": "c770f5a"
+ },
+ "tags": [
+  "method-v1"
+ ],
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "g": 1,
+ "sizes": [
+  4,
+  8,
+  16,
+  32
+ ],
+ "timed_tiles_per_seed": 200,
+ "queries_per_seed_all_datasets": 11232.0,
+ "datasets": {
+  "skin_melanoma": {
+   "NX5_pct": {
+    "lite": [
+     8.7,
+     0.6
+    ],
+    "padding": [
+     84.3,
+     4.0
+    ],
+    "imputation": [
+     45.6,
+     2.1
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 87.7,
+    "padding": 11.0,
+    "imputation": 21.4
+   },
+   "lite_short10_pct": 4.7,
+   "lite_short5_pct": 20.3,
+   "lite_found_median": 140.0,
+   "lite_found_pct_of_N": 16.7,
+   "imputation_home_niche_pct": 55.6,
+   "N": 839,
+   "queries_per_seed": 372.0,
+   "ms": {
+    "exact": 5.129,
+    "exact_search": 4.626,
+    "qlog_exact": 0.588,
+    "lite": 0.135,
+    "qlog_lite": 1.202,
+    "padding": 4.873,
+    "imputation": 9.116
+   },
+   "speedup_search": 34.0,
+   "speedup_e2e": 3.8,
+   "MB": {
+    "whole": 245.5,
+    "partial": 31.81,
+    "plite": 2.18,
+    "padding": 15.9,
+    "imputation": 17.01
+   },
+   "plite_pct_partial": 6.85
+  },
+  "kidney_nondiseased": {
+   "NX5_pct": {
+    "lite": [
+     17.6,
+     7.2
+    ],
+    "padding": [
+     80.5,
+     7.0
+    ],
+    "imputation": [
+     63.8,
+     6.2
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 73.7,
+    "padding": 12.1,
+    "imputation": 12.0
+   },
+   "lite_short10_pct": 3.1,
+   "lite_short5_pct": 11.6,
+   "lite_found_median": 218.0,
+   "lite_found_pct_of_N": 31.0,
+   "imputation_home_niche_pct": 45.5,
+   "N": 705,
+   "queries_per_seed": 298.0,
+   "ms": {
+    "exact": 3.951,
+    "exact_search": 3.704,
+    "qlog_exact": 0.272,
+    "lite": 0.107,
+    "qlog_lite": 0.568,
+    "padding": 2.821,
+    "imputation": 5.52
+   },
+   "speedup_search": 34.0,
+   "speedup_e2e": 5.8,
+   "MB": {
+    "whole": 200.93,
+    "partial": 22.52,
+    "plite": 1.61,
+    "padding": 11.26,
+    "imputation": 11.89
+   },
+   "plite_pct_partial": 7.16
+  },
+  "breast_cancer": {
+   "NX5_pct": {
+    "lite": [
+     11.3,
+     0.5
+    ],
+    "padding": [
+     82.4,
+     1.1
+    ],
+    "imputation": [
+     48.8,
+     2.4
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 89.6,
+    "padding": 15.9,
+    "imputation": 24.1
+   },
+   "lite_short10_pct": 4.2,
+   "lite_short5_pct": 27.8,
+   "lite_found_median": 259.0,
+   "lite_found_pct_of_N": 14.1,
+   "imputation_home_niche_pct": 50.9,
+   "N": 1840,
+   "queries_per_seed": 816.0,
+   "ms": {
+    "exact": 9.564,
+    "exact_search": 9.144,
+    "qlog_exact": 0.509,
+    "lite": 0.178,
+    "qlog_lite": 1.059,
+    "padding": 4.256,
+    "imputation": 7.175
+   },
+   "speedup_search": 51.0,
+   "speedup_e2e": 7.7,
+   "MB": {
+    "whole": 361.68,
+    "partial": 57.01,
+    "plite": 3.9,
+    "padding": 28.5,
+    "imputation": 29.25
+   },
+   "plite_pct_partial": 6.85
+  },
+  "lung_cancer": {
+   "NX5_pct": {
+    "lite": [
+     13.6,
+     1.7
+    ],
+    "padding": [
+     86.4,
+     3.3
+    ],
+    "imputation": [
+     60.6,
+     0.1
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 87.1,
+    "padding": 11.0,
+    "imputation": 16.4
+   },
+   "lite_short10_pct": 4.3,
+   "lite_short5_pct": 23.1,
+   "lite_found_median": 369.0,
+   "lite_found_pct_of_N": 24.0,
+   "imputation_home_niche_pct": 38.7,
+   "N": 1535,
+   "queries_per_seed": 680.0,
+   "ms": {
+    "exact": 8.083,
+    "exact_search": 7.632,
+    "qlog_exact": 0.534,
+    "lite": 0.166,
+    "qlog_lite": 1.062,
+    "padding": 5.348,
+    "imputation": 8.955
+   },
+   "speedup_search": 46.0,
+   "speedup_e2e": 6.6,
+   "MB": {
+    "whole": 437.49,
+    "partial": 57.55,
+    "plite": 3.94,
+    "padding": 28.77,
+    "imputation": 29.86
+   },
+   "plite_pct_partial": 6.85
+  },
+  "pancreatic_cancer": {
+   "NX5_pct": {
+    "lite": [
+     10.4,
+     1.3
+    ],
+    "padding": [
+     96.1,
+     4.3
+    ],
+    "imputation": [
+     54.0,
+     3.7
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 90.8,
+    "padding": 10.7,
+    "imputation": 18.8
+   },
+   "lite_short10_pct": 5.0,
+   "lite_short5_pct": 30.4,
+   "lite_found_median": 258.0,
+   "lite_found_pct_of_N": 12.5,
+   "imputation_home_niche_pct": 39.8,
+   "N": 2061,
+   "queries_per_seed": 825.0,
+   "ms": {
+    "exact": 6.953,
+    "exact_search": 6.265,
+    "qlog_exact": 0.642,
+    "lite": 0.178,
+    "qlog_lite": 1.102,
+    "padding": 7.464,
+    "imputation": 11.902
+   },
+   "speedup_search": 35.0,
+   "speedup_e2e": 5.4,
+   "MB": {
+    "whole": 928.07,
+    "partial": 78.53,
+    "plite": 5.69,
+    "padding": 39.27,
+    "imputation": 41.07
+   },
+   "plite_pct_partial": 7.24
+  },
+  "lymph_node": {
+   "NX5_pct": {
+    "lite": [
+     10.6,
+     0.7
+    ],
+    "padding": [
+     133.9,
+     4.5
+    ],
+    "imputation": [
+     46.6,
+     2.0
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 94.4,
+    "padding": 9.4,
+    "imputation": 22.4
+   },
+   "lite_short10_pct": 5.5,
+   "lite_short5_pct": 31.3,
+   "lite_found_median": 367.0,
+   "lite_found_pct_of_N": 15.6,
+   "imputation_home_niche_pct": 17.0,
+   "N": 2354,
+   "queries_per_seed": 1043.0,
+   "ms": {
+    "exact": 11.984,
+    "exact_search": 11.217,
+    "qlog_exact": 0.937,
+    "lite": 0.242,
+    "qlog_lite": 1.771,
+    "padding": 8.19,
+    "imputation": 13.085
+   },
+   "speedup_search": 46.0,
+   "speedup_e2e": 6.0,
+   "MB": {
+    "whole": 670.92,
+    "partial": 82.36,
+    "plite": 5.74,
+    "padding": 41.18,
+    "imputation": 42.95
+   },
+   "plite_pct_partial": 6.97
+  },
+  "lymph_node_5k": {
+   "NX5_pct": {
+    "lite": [
+     31.5,
+     1.5
+    ],
+    "padding": [
+     79.7,
+     2.1
+    ],
+    "imputation": [
+     59.0,
+     1.7
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 94.9,
+    "padding": 16.2,
+    "imputation": 25.2
+   },
+   "lite_short10_pct": 4.7,
+   "lite_short5_pct": 45.9,
+   "lite_found_median": 433.0,
+   "lite_found_pct_of_N": 6.2,
+   "imputation_home_niche_pct": 5.0,
+   "N": 6972,
+   "queries_per_seed": 3096.0,
+   "ms": {
+    "exact": 34.432,
+    "exact_search": 31.459,
+    "qlog_exact": 2.828,
+    "lite": 0.748,
+    "qlog_lite": 4.813,
+    "padding": 23.585,
+    "imputation": 38.403
+   },
+   "speedup_search": 42.0,
+   "speedup_e2e": 6.2,
+   "MB": {
+    "whole": 2236.62,
+    "partial": 273.64,
+    "plite": 18.79,
+    "padding": 136.82,
+    "imputation": 141.83
+   },
+   "plite_pct_partial": 6.87
+  },
+  "brain_cancer": {
+   "NX5_pct": {
+    "lite": [
+     17.9,
+     1.3
+    ],
+    "padding": [
+     124.8,
+     1.4
+    ],
+    "imputation": [
+     46.9,
+     2.0
+    ]
+   },
+   "overlap5_pct": {
+    "lite": 88.0,
+    "padding": 9.1,
+    "imputation": 23.5
+   },
+   "lite_short10_pct": 5.3,
+   "lite_short5_pct": 60.2,
+   "lite_found_median": 258.0,
+   "lite_found_pct_of_N": 2.7,
+   "imputation_home_niche_pct": 13.4,
+   "N": 9558,
+   "queries_per_seed": 4102.0,
+   "ms": {
+    "exact": 31.321,
+    "exact_search": 28.21,
+    "qlog_exact": 2.869,
+    "lite": 0.548,
+    "qlog_lite": 5.09,
+    "padding": 36.589,
+    "imputation": 50.134
+   },
+   "speedup_search": 51.0,
+   "speedup_e2e": 5.6,
+   "MB": {
+    "whole": 4413.5,
+    "partial": 403.1,
+    "plite": 28.49,
+    "padding": 201.55,
+    "imputation": 209.49
+   },
+   "plite_pct_partial": 7.07
+  }
+ },
+ "size": {
+  "lite": {
+   "4": {
+    "NX5_pct": [
+     8.6,
+     1.0
+    ],
+    "overlap5_pct": [
+     92.4,
+     1.1
+    ],
+    "short10_pct": 14.9
+   },
+   "8": {
+    "NX5_pct": [
+     9.6,
+     0.2
+    ],
+    "overlap5_pct": [
+     95.4,
+     0.5
+    ],
+    "short10_pct": 2.4
+   },
+   "16": {
+    "NX5_pct": [
+     13.2,
+     1.2
+    ],
+    "overlap5_pct": [
+     89.9,
+     1.1
+    ],
+    "short10_pct": 0.3
+   },
+   "32": {
+    "NX5_pct": [
+     18.9,
+     1.5
+    ],
+    "overlap5_pct": [
+     81.8,
+     1.5
+    ],
+    "short10_pct": 0.0
+   }
+  },
+  "padding": {
+   "4": {
+    "NX5_pct": [
+     85.4,
+     1.0
+    ],
+    "overlap5_pct": [
+     9.6,
+     0.9
+    ]
+   },
+   "8": {
+    "NX5_pct": [
+     84.0,
+     1.3
+    ],
+    "overlap5_pct": [
+     11.7,
+     1.2
+    ]
+   },
+   "16": {
+    "NX5_pct": [
+     85.8,
+     1.2
+    ],
+    "overlap5_pct": [
+     12.9,
+     1.2
+    ]
+   },
+   "32": {
+    "NX5_pct": [
+     97.7,
+     6.2
+    ],
+    "overlap5_pct": [
+     12.0,
+     2.2
+    ]
+   }
+  },
+  "imputation": {
+   "4": {
+    "NX5_pct": [
+     60.5,
+     2.5
+    ],
+    "overlap5_pct": [
+     13.8,
+     0.7
+    ]
+   },
+   "8": {
+    "NX5_pct": [
+     57.0,
+     1.2
+    ],
+    "overlap5_pct": [
+     16.3,
+     1.0
+    ]
+   },
+   "16": {
+    "NX5_pct": [
+     50.4,
+     1.7
+    ],
+    "overlap5_pct": [
+     21.0,
+     1.9
+    ]
+   },
+   "32": {
+    "NX5_pct": [
+     40.7,
+     2.0
+    ],
+    "overlap5_pct": [
+     33.7,
+     1.7
+    ]
+   }
+  }
+ },
+ "range": {
+  "NX5_pct_lite": [
+   8.7,
+   31.5
+  ],
+  "NX5_pct_padding": [
+   79.7,
+   133.9
+  ],
+  "NX5_pct_imputation": [
+   45.6,
+   63.8
+  ],
+  "overlap5_pct_lite": [
+   73.7,
+   94.9
+  ],
+  "overlap5_pct_padding": [
+   9.1,
+   16.2
+  ],
+  "overlap5_pct_imputation": [
+   12.0,
+   25.2
+  ],
+  "lite_short10_pct": [
+   3.1,
+   5.5
+  ],
+  "lite_found_pct_of_N": [
+   2.7,
+   31.0
+  ],
+  "imputation_home_niche_pct": [
+   5.0,
+   56.0
+  ],
+  "exact_ms": [
+   4.0,
+   34.4
+  ],
+  "exact_search_ms": [
+   3.7,
+   31.5
+  ],
+  "qlog_exact_ms": [
+   0.27,
+   2.87
+  ],
+  "lite_ms": [
+   0.11,
+   0.75
+  ],
+  "qlog_lite_ms": [
+   0.6,
+   5.1
+  ],
+  "qlog_lite_over_lite": [
+   5.3,
+   9.3
+  ],
+  "padding_ms": [
+   2.8,
+   36.6
+  ],
+  "imputation_ms": [
+   5.5,
+   50.1
+  ],
+  "speedup_search": [
+   34.0,
+   51.0
+  ],
+  "speedup_e2e": [
+   3.8,
+   7.7
+  ],
+  "plite_MB": [
+   1.6,
+   28.5
+  ],
+  "partial_MB": [
+   23.0,
+   403.0
+  ],
+  "whole_MB": [
+   201.0,
+   4414.0
+  ],
+  "plite_pct_partial": [
+   6.8,
+   7.2
+  ],
+  "partial_over_plite": [
+   13.8,
+   14.6
+  ],
+  "padding_over_plite": [
+   6.9,
+   7.3
+  ],
+  "imputation_over_plite": [
+   7.2,
+   7.8
+  ],
+  "whole_over_plite": [
+   93.0,
+   163.0
+  ]
+ },
+ "median": {
+  "NX5_pct_lite": 12.5,
+  "NX5_pct_padding": 85.3,
+  "NX5_pct_imputation": 51.4,
+  "overlap5_pct_lite": 88.8,
+  "overlap5_pct_padding": 11.0,
+  "overlap5_pct_imputation": 21.9,
+  "speedup_search": 44.0,
+  "speedup_e2e": 5.9
+ },
+ "band_breast": {
+  "seed": 0,
+  "query": 137,
+  "size": 16,
+  "N": 1840,
+  "returned": 309,
+  "NX5_pct": 6.9,
+  "c5": 92,
+  "exact_top_c5_returned": 92,
+  "exact_top10_returned": 10,
+  "queries": 204,
+  "share_short10_pct": 1.0
+ }
+}

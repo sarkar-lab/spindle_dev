@@ -1,0 +1,3 @@
+direction,N,n_query,p,niches_min,niches_max,blocks_min,blocks_max,spindle_mb,lite_mb,tag
+v2x,165,156,307,3,3,46,47,2.5744008,0.2873558,method-v1
+x2v,156,165,307,2,2,33,35,2.1519272000000003,0.2505106,method-v1

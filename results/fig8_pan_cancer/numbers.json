@@ -1,0 +1,219 @@
+{
+ "stamp": {
+  "tag": "method-v1",
+  "describe": "method-v1-3-g76ca801-dirty",
+  "commit": "76ca801"
+ },
+ "pairs": 20,
+ "hits_c": {
+  "breast_cancer": 92,
+  "lung_cancer": 77,
+  "pancreatic_cancer": 103,
+  "brain_cancer": 478,
+  "skin_melanoma": 42
+ },
+ "index_tiles": {
+  "breast_cancer": 1840.0,
+  "lung_cancer": 1535.0,
+  "pancreatic_cancer": 2061.0,
+  "brain_cancer": 9558.0,
+  "skin_melanoma": 839.0
+ },
+ "exemplars": {
+  "Cytotoxic_T": {
+   "tile": 1120,
+   "cells": 179,
+   "c": 0.404,
+   "mean_r": 0.121,
+   "n_robust": 191,
+   "genes": 10
+  },
+  "Myeloid": {
+   "tile": 832,
+   "cells": 180,
+   "c": 0.654,
+   "mean_r": 0.412,
+   "n_robust": 270,
+   "genes": 5
+  },
+  "Stromal_Perivascular": {
+   "tile": 947,
+   "cells": 90,
+   "c": 0.511,
+   "mean_r": 0.284,
+   "n_robust": 355,
+   "genes": 5
+  },
+  "B_Plasma": {
+   "tile": 389,
+   "cells": 150,
+   "c": 0.407,
+   "mean_r": 0.174,
+   "n_robust": 112,
+   "genes": 5
+  }
+ },
+ "absent": [
+  "brain_cancer/Cytotoxic_T",
+  "skin_melanoma/B_Plasma"
+ ],
+ "spindle": {
+  "gain_pos": 16,
+  "gain_pos_range": [
+   0.01,
+   0.096
+  ],
+  "gain_zero": [
+   "pancreatic_cancer/B_Plasma",
+   "brain_cancer/Cytotoxic_T",
+   "brain_cancer/B_Plasma",
+   "skin_melanoma/B_Plasma"
+  ],
+  "delta_pos": 18,
+  "lift_pos": 17
+ },
+ "lite": {
+  "gain_pos": 15,
+  "delta_pos": 17,
+  "short_of_c": 16,
+  "returned_min": 1.0,
+  "returned_min_pair": [
+   "lung_cancer/B_Plasma"
+  ],
+  "jaccard_with_spindle_median": 0.281,
+  "gain_within_0.01_of_spindle": 14
+ },
+ "controls": {
+  "variances_only_gain_below_spindle": 15,
+  "variances_only_gain_pos": 16,
+  "jaccard_spindle_variances_median": 0.415,
+  "jaccard_spindle_variances_range": [
+   0.163,
+   0.86
+  ],
+  "expression_gain_above_spindle": 7,
+  "jaccard_spindle_expression_median": 0.003
+ },
+ "gain_eps": 0.001,
+ "shown_rule": "gain > gain_eps and delta > 0 (Spindle-partial) in all five sections",
+ "shown": {
+  "Myeloid": {
+   "gain_range": [
+    0.049,
+    0.088
+   ],
+   "delta_range": [
+    0.33,
+    0.47
+   ],
+   "lite_gain_range": [
+    0.037,
+    0.08
+   ],
+   "lite_returned_range": [
+    18.4,
+    147.4
+   ],
+   "variances_only_below": 5,
+   "lift_range": [
+    0.06,
+    0.116
+   ],
+   "lite_lift_range": [
+    -0.04,
+    0.074
+   ],
+   "variances_only_lift_below": 5,
+   "variances_only_delta_above": 2
+  },
+  "Stromal_Perivascular": {
+   "gain_range": [
+    0.01,
+    0.096
+   ],
+   "delta_range": [
+    0.01,
+    0.52
+   ],
+   "lite_gain_range": [
+    0.011,
+    0.094
+   ],
+   "lite_returned_range": [
+    11.0,
+    478.0
+   ],
+   "variances_only_below": 5,
+   "lift_range": [
+    0.02,
+    0.054
+   ],
+   "lite_lift_range": [
+    -0.028,
+    0.04
+   ],
+   "variances_only_lift_below": 5,
+   "variances_only_delta_above": 5
+  }
+ },
+ "not_shown": [
+  "Cytotoxic_T",
+  "B_Plasma"
+ ],
+ "shown_all": {
+  "lite_short_of_c": 8,
+  "pairs": 10,
+  "lite_returned_range": [
+   11.0,
+   478.0
+  ],
+  "expression_gain_above": 4,
+  "expression_lift_above": 4
+ },
+ "shown_pair": {
+  "spearman_seed0": {
+   "breast_cancer": 0.21,
+   "lung_cancer": 0.16,
+   "pancreatic_cancer": 0.08,
+   "brain_cancer": 0.08,
+   "skin_melanoma": 0.19
+  },
+  "hits_jaccard": {
+   "breast_cancer": 0.034,
+   "lung_cancer": 0.024,
+   "pancreatic_cancer": 0.013,
+   "brain_cancer": 0.003,
+   "skin_melanoma": 0.045
+  }
+ },
+ "not_shown_detail": {
+  "Cytotoxic_T": {
+   "gain_pos": [
+    "breast_cancer",
+    "lung_cancer",
+    "pancreatic_cancer",
+    "skin_melanoma"
+   ],
+   "gain_range_pos": [
+    0.019,
+    0.045
+   ],
+   "delta_le0": {
+    "brain_cancer": -0.28
+   }
+  },
+  "B_Plasma": {
+   "gain_pos": [
+    "breast_cancer",
+    "lung_cancer"
+   ],
+   "gain_range_pos": [
+    0.069,
+    0.085
+   ],
+   "delta_le0": {
+    "skin_melanoma": -0.15
+   }
+  }
+ }
+}

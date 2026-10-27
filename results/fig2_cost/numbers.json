@@ -1,0 +1,587 @@
+{
+ "stamp": {
+  "tag": "method-v1",
+  "describe": "method-v1-1-gc770f5a-dirty",
+  "commit": "c770f5a"
+ },
+ "builds": 40,
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "tags": [
+  "method-v1"
+ ],
+ "datasets": {
+  "skin_melanoma": {
+   "seed0": {
+    "n_cells": 87499,
+    "p": 382,
+    "n_train": 839,
+    "n_niches": 4,
+    "n_blocks": 82
+   },
+   "niches_over_seeds": [
+    3,
+    4
+   ],
+   "blocks_over_seeds": [
+    58,
+    82
+   ],
+   "mb": {
+    "whole": 245.5,
+    "spindle": 15.9,
+    "lite": 1.8,
+    "partial": 31.81,
+    "plite": 2.18
+   },
+   "fold_whole_spindle": 15.4,
+   "fold_spindle_lite": 8.8,
+   "fold_partial_plite": 14.6,
+   "lite_pct": [
+    11.32,
+    0.78
+   ],
+   "plite_pct": [
+    13.71,
+    0.18
+   ],
+   "spindle_build_s": [
+    21.9,
+    0.3
+   ],
+   "adds_s": {
+    "lite": 0.75,
+    "partial": 0.59,
+    "plite": 4.94
+   },
+   "peak_gb": 3.1
+  },
+  "kidney_nondiseased": {
+   "seed0": {
+    "n_cells": 97560,
+    "p": 377,
+    "n_train": 705,
+    "n_niches": 2,
+    "n_blocks": 43
+   },
+   "niches_over_seeds": [
+    2,
+    3
+   ],
+   "blocks_over_seeds": [
+    40,
+    60
+   ],
+   "mb": {
+    "whole": 200.93,
+    "spindle": 11.26,
+    "lite": 1.27,
+    "partial": 22.52,
+    "plite": 1.61
+   },
+   "fold_whole_spindle": 17.8,
+   "fold_spindle_lite": 8.9,
+   "fold_partial_plite": 14.0,
+   "lite_pct": [
+    11.26,
+    0.62
+   ],
+   "plite_pct": [
+    14.34,
+    0.27
+   ],
+   "spindle_build_s": [
+    20.0,
+    0.2
+   ],
+   "adds_s": {
+    "lite": 0.58,
+    "partial": 0.41,
+    "plite": 3.47
+   },
+   "peak_gb": 2.9
+  },
+  "breast_cancer": {
+   "seed0": {
+    "n_cells": 159226,
+    "p": 313,
+    "n_train": 1840,
+    "n_niches": 4,
+    "n_blocks": 63
+   },
+   "niches_over_seeds": [
+    3,
+    4
+   ],
+   "blocks_over_seeds": [
+    45,
+    67
+   ],
+   "mb": {
+    "whole": 361.68,
+    "spindle": 28.5,
+    "lite": 3.2,
+    "partial": 57.01,
+    "plite": 3.9
+   },
+   "fold_whole_spindle": 12.7,
+   "fold_spindle_lite": 8.9,
+   "fold_partial_plite": 14.6,
+   "lite_pct": [
+    11.22,
+    0.87
+   ],
+   "plite_pct": [
+    13.7,
+    0.14
+   ],
+   "spindle_build_s": [
+    27.2,
+    0.2
+   ],
+   "adds_s": {
+    "lite": 1.47,
+    "partial": 1.06,
+    "plite": 7.25
+   },
+   "peak_gb": 4.4
+  },
+  "lung_cancer": {
+   "seed0": {
+    "n_cells": 162254,
+    "p": 377,
+    "n_train": 1535,
+    "n_niches": 3,
+    "n_blocks": 57
+   },
+   "niches_over_seeds": [
+    3,
+    4
+   ],
+   "blocks_over_seeds": [
+    57,
+    77
+   ],
+   "mb": {
+    "whole": 437.49,
+    "spindle": 28.77,
+    "lite": 3.22,
+    "partial": 57.55,
+    "plite": 3.94
+   },
+   "fold_whole_spindle": 15.2,
+   "fold_spindle_lite": 8.9,
+   "fold_partial_plite": 14.6,
+   "lite_pct": [
+    11.2,
+    0.53
+   ],
+   "plite_pct": [
+    13.7,
+    0.08
+   ],
+   "spindle_build_s": [
+    28.7,
+    0.2
+   ],
+   "adds_s": {
+    "lite": 1.41,
+    "partial": 1.03,
+    "plite": 6.94
+   },
+   "peak_gb": 5.4
+  },
+  "pancreatic_cancer": {
+   "seed0": {
+    "n_cells": 190965,
+    "p": 474,
+    "n_train": 2061,
+    "n_niches": 4,
+    "n_blocks": 108
+   },
+   "niches_over_seeds": [
+    4,
+    4
+   ],
+   "blocks_over_seeds": [
+    108,
+    111
+   ],
+   "mb": {
+    "whole": 928.07,
+    "spindle": 39.27,
+    "lite": 4.7,
+    "partial": 78.53,
+    "plite": 5.69
+   },
+   "fold_whole_spindle": 23.6,
+   "fold_spindle_lite": 8.4,
+   "fold_partial_plite": 13.8,
+   "lite_pct": [
+    11.97,
+    0.71
+   ],
+   "plite_pct": [
+    14.49,
+    0.09
+   ],
+   "spindle_build_s": [
+    45.8,
+    0.2
+   ],
+   "adds_s": {
+    "lite": 2.15,
+    "partial": 1.42,
+    "plite": 11.01
+   },
+   "peak_gb": 9.5
+  },
+  "lymph_node": {
+   "seed0": {
+    "n_cells": 377985,
+    "p": 377,
+    "n_train": 2354,
+    "n_niches": 5,
+    "n_blocks": 103
+   },
+   "niches_over_seeds": [
+    5,
+    7
+   ],
+   "blocks_over_seeds": [
+    103,
+    146
+   ],
+   "mb": {
+    "whole": 670.92,
+    "spindle": 41.18,
+    "lite": 4.47,
+    "partial": 82.36,
+    "plite": 5.74
+   },
+   "fold_whole_spindle": 16.3,
+   "fold_spindle_lite": 9.2,
+   "fold_partial_plite": 14.3,
+   "lite_pct": [
+    10.84,
+    0.41
+   ],
+   "plite_pct": [
+    13.94,
+    0.13
+   ],
+   "spindle_build_s": [
+    37.9,
+    0.2
+   ],
+   "adds_s": {
+    "lite": 2.07,
+    "partial": 1.52,
+    "plite": 11.12
+   },
+   "peak_gb": 7.1
+  },
+  "lymph_node_5k": {
+   "seed0": {
+    "n_cells": 708983,
+    "p": 400,
+    "n_train": 6972,
+    "n_niches": 15,
+    "n_blocks": 302
+   },
+   "niches_over_seeds": [
+    15,
+    17
+   ],
+   "blocks_over_seeds": [
+    302,
+    345
+   ],
+   "mb": {
+    "whole": 2236.62,
+    "spindle": 136.82,
+    "lite": 15.67,
+    "partial": 273.64,
+    "plite": 18.79
+   },
+   "fold_whole_spindle": 16.3,
+   "fold_spindle_lite": 8.7,
+   "fold_partial_plite": 14.6,
+   "lite_pct": [
+    11.45,
+    0.23
+   ],
+   "plite_pct": [
+    13.73,
+    0.07
+   ],
+   "spindle_build_s": [
+    108.2,
+    2.2
+   ],
+   "adds_s": {
+    "lite": 6.86,
+    "partial": 5.66,
+    "plite": 35.43
+   },
+   "peak_gb": 26.4
+  },
+  "brain_cancer": {
+   "seed0": {
+    "n_cells": 816769,
+    "p": 480,
+    "n_train": 9558,
+    "n_niches": 18,
+    "n_blocks": 471
+   },
+   "niches_over_seeds": [
+    16,
+    18
+   ],
+   "blocks_over_seeds": [
+    418,
+    480
+   ],
+   "mb": {
+    "whole": 4413.5,
+    "spindle": 201.55,
+    "lite": 23.29,
+    "partial": 403.1,
+    "plite": 28.49
+   },
+   "fold_whole_spindle": 21.9,
+   "fold_spindle_lite": 8.7,
+   "fold_partial_plite": 14.1,
+   "lite_pct": [
+    11.56,
+    0.28
+   ],
+   "plite_pct": [
+    14.14,
+    0.07
+   ],
+   "spindle_build_s": [
+    183.7,
+    6.5
+   ],
+   "adds_s": {
+    "lite": 10.51,
+    "partial": 7.4,
+    "plite": 50.97
+   },
+   "peak_gb": 51.2
+  }
+ },
+ "range": {
+  "cells_seed0": [
+   87499.0,
+   816769.0
+  ],
+  "genes": [
+   313.0,
+   480.0
+  ],
+  "index_tiles_seed0": [
+   705.0,
+   9558.0
+  ],
+  "niches_seed0": [
+   2.0,
+   18.0
+  ],
+  "blocks_seed0": [
+   43.0,
+   471.0
+  ],
+  "niches_builds": [
+   2.0,
+   18.0
+  ],
+  "blocks_builds": [
+   40.0,
+   480.0
+  ],
+  "fold_whole_spindle": [
+   12.7,
+   23.6
+  ],
+  "fold_spindle_lite": [
+   8.4,
+   9.2
+  ],
+  "fold_partial_plite": [
+   13.8,
+   14.6
+  ],
+  "lite_pct_datasets": [
+   10.84,
+   11.97
+  ],
+  "plite_pct_datasets": [
+   13.7,
+   14.49
+  ],
+  "lite_pct_builds": [
+   10.31,
+   12.68
+  ],
+  "plite_pct_builds": [
+   13.45,
+   14.62
+  ],
+  "lite_pct_median_builds": 11.3,
+  "plite_pct_median_builds": 13.86,
+  "spindle_build_s": [
+   20.0,
+   183.7
+  ],
+  "spindle_build_sd_max": 6.5,
+  "adds_lite_s": [
+   0.58,
+   10.51
+  ],
+  "adds_partial_s": [
+   0.41,
+   7.4
+  ],
+  "adds_plite_s": [
+   3.47,
+   50.97
+  ],
+  "adds_plite_pct_of_spindle_build": [
+   17.4,
+   32.8
+  ],
+  "adds_all_three_s": [
+   4.5,
+   68.9
+  ],
+  "peak_gb": [
+   2.9,
+   51.2
+  ],
+  "layout_pct_of_spindle_build": [
+   83.3,
+   93.2
+  ],
+  "peak_gb_above_layout_builds": [
+   0.0,
+   0.72
+  ]
+ },
+ "cell_ladder": {
+  "dataset": "tonsil_reactive",
+  "points": 11,
+  "cells": [
+   1000.0,
+   1349620.0
+  ],
+  "full": {
+   "cells": 1349620,
+   "genes": 377,
+   "index_tiles": 9245,
+   "niches": 18,
+   "blocks": 355,
+   "spindle_build_s": 127.3,
+   "build_all_s": 181.4,
+   "peak_gb": 31.0,
+   "mb": {
+    "whole": 2634.9,
+    "spindle": 163.4,
+    "lite": 19.0,
+    "partial": 326.8,
+    "plite": 22.7
+   }
+  },
+  "floor_s_up_to_20k_cells": [
+   12.9,
+   14.5
+  ],
+  "from_100k_to_full": {
+   "cells": 13.5,
+   "index_tiles": 11.7,
+   "spindle_build": 6.2,
+   "peak_gb": 10.8,
+   "mb_spindle": 11.3
+  },
+  "layout_s_1k_cells": 13.1
+ },
+ "gene_ladder": {
+  "dataset": "lymph_node_5k",
+  "genes": [
+   250.0,
+   1500.0
+  ],
+  "index_tiles": 6972,
+  "points": [
+   250,
+   400,
+   500,
+   750,
+   1000,
+   1500
+  ],
+  "spindle_build_s": {
+   "250": 68.5,
+   "400": 107.1,
+   "500": 148.2,
+   "750": 307.3,
+   "1000": 668.2,
+   "1500": 2002.7
+  },
+  "peak_gb": {
+   "250": 11.7,
+   "400": 27.2,
+   "500": 35.2,
+   "750": 76.9,
+   "1000": 135.3,
+   "1500": 303.1
+  },
+  "mb_spindle": {
+   "250": 92.4,
+   "400": 140.0,
+   "500": 160.0,
+   "750": 217.4,
+   "1000": 283.5,
+   "1500": 383.6
+  },
+  "mb_whole": {
+   "250": 875.0,
+   "400": 2236.6,
+   "500": 3493.0,
+   "750": 7854.0,
+   "1000": 13957.9,
+   "1500": 31394.9
+  },
+  "fold_whole_spindle": {
+   "250": 9.5,
+   "400": 16.0,
+   "500": 21.8,
+   "750": 36.1,
+   "1000": 49.2,
+   "1500": 81.8
+  },
+  "mb_lite": {
+   "250": 10.4,
+   "400": 15.7,
+   "500": 17.9,
+   "750": 24.2,
+   "1000": 31.1,
+   "1500": 41.6
+  },
+  "mb_plite": {
+   "250": 12.5,
+   "400": 19.1,
+   "500": 22.3,
+   "750": 31.1,
+   "1000": 40.9,
+   "1500": 57.0
+  },
+  "limit_note": "2,000 genes: the frozen builder's gene ordering (scipy dendrogram, layout.py:96) exceeds Python's recursion limit; ladder stops at 1,500 (user, 26 Oct)"
+ }
+}

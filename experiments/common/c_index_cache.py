@@ -1,4 +1,4 @@
-"""The index cache: one build of the layout and all four indexes per (dataset, seed), timed (RESULTS_PLAN.md §6, S2).
+"""The index cache: one build of the layout and all four indexes per (dataset, seed), timed.
 
 Usage (one array task per dataset x seed, one at a time on one node; the build times are Fig 2C):
   sbatch --array=0-39%1 experiments/common/timing.sbatch experiments/common/c_index_cache.py

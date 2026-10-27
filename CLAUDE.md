@@ -15,8 +15,7 @@ each for whole tiles and gene sets, all on one shared layout:
 - **Spindle-lite** (`lite.py`, `SpindleLite`): the first draft's layered block DAG (`Spindle/Spindle_Old.pdf`)
   on d_B: ε-net nodes per block, edges between co-occurring nodes, DFS with an L2 path lower bound, in every
   niche. The final configuration (variance-weighted node counts, spread-ordered layers, radius g × the greedy
-  probe's best score) is specified in `paper/SPINDLE_LITE.md`. `spindle_lite_legacy.py` is the first draft's code,
-  kept for reference only.
+  probe's best score) is specified in `paper/SPINDLE_LITE.md`.
 - **Compiled search** (`kernels.c`, `kernels.py`): `Spindle.search` / `Spindle.distances` and
   `SpindleLite.search` / `search_vectors` and `SpindleLitePartial.search` / `search_vectors` run C kernels (AVX2,
   through ctypes), bit-identical to the numpy / Python references (`Spindle.distances_numpy`,
@@ -31,18 +30,22 @@ each for whole tiles and gene sets, all on one shared layout:
 - **Gene-list queries** (`queries.py`): `gene_indices` (names → indices, unknown/duplicate genes dropped and
   reported), `template_query` (Methods Eq. signature: ρ = 0.5, Ω = 90th-percentile shrunk variances from
   `variance_quantiles`, kept beside the index since Spindle-lite partial stores no covariances), `tile_query`. All
-  return `(cov_s, idx)` for `SpindlePartial` / `SpindleLitePartial`. Chosen by the Session 1 pilot
-  (`experiments/gene_set_pilot/`, 25–26 Oct); the exemplar rule stays experiment code.
+  return `(cov_s, idx)` for `SpindlePartial` / `SpindleLitePartial`. Chosen by a gene-set pilot (25–26 Oct;
+  removed in the 27 Oct cleanup, in git history); the exemplar rule stays experiment code (`fig8_pan_cancer/common8.py`).
+- **Figures** (`experiments/`, `results/`, `figures/`): `experiments/common/` holds the shared pieces (`data.py`:
+  datasets, the index cache in `results/_cache/`, seeds 0–4 with seed 0 for examples, the `method-v1` stamp;
+  `style.py`, `build_figure.py`, `render.py`, `assemble_all.py`; `run.sbatch` / `timing.sbatch`).
+  `experiments/<fig>/run.sh` lists each figure's steps in order (sbatch `c_*.py` → `f_*.py` atoms → draft pptx →
+  render → `write_numbers.py` → `results/<fig>/numbers.json`). `figures/<fig>/<fig>.pptx` is the user's edited copy
+  and the source of truth (no script writes it); Fig 1 is the user's own PDF.
 - **Layout** (`layout.py`): tiles → Leiden covariance niches (cap 1,000) → gene order and blocks per niche.
   `preprocessing.py` tiles the section, picks genes, computes covariances and splits train/held-out.
 
 ## Rules
 
-- **The method is frozen** once `paper/FIGURES.md` Stage A closes (git tag `method-v1`). Do not change
-  `src/` while results or figures are being made: no variants, no retuning, no extra checks. A real bug goes
-  to the user first; see `paper/FIGURES.md` Section 0. Read its Sections 0–1 at the start of any paper session.
-- **The Results plan is `paper/RESULTS_PLAN.md`** (sessions, figure/pptx pipeline, captions, Results text, status
-  table); start every Results session there.
+- **The method is frozen** at git tag `method-v1`. Do not change `src/`: no variants, no retuning, no extra checks.
+  A real bug goes to the user first. `data.stamp()` refuses to make a figure input when `src/` differs from the tag
+  (the only allowed change is the 27 Oct removal of the unused `spindle_lite_legacy.py`).
 - Dataset paths live only in `datasets.yaml`; read them with `paths.dataset_path(key)` (shell:
   `python paths.py <key>`). Never hard-code a path.
 - Experiment code goes in `experiments/<figure>/` and uses only the public API of `spindle_dev`;
@@ -55,9 +58,8 @@ each for whole tiles and gene sets, all on one shared layout:
   (`~/miniforge3/envs/spindle_env`). `spindle_dev` is not installed there: put `src/` on `sys.path`.
   Compute nodes cannot see the login node's `/tmp`, so job scripts and outputs must live on the shared
   file system.
-- The manuscript is a separate Overleaf project (local copy `Spindle/`, gitignored); no code writes into it.
-- `backup/` (gitignored) holds the figures from before the 17 Oct 2026 cleanup and the pre-cleanup code
-  with its reference outputs.
+- The manuscript is a separate Overleaf project (local copy `Spindle/`, gitignored); no code writes into it. The
+  Results section is written by hand in `Spindle/main_submission.tex`, matching the user's own Results and Methods.
 
 ## Run
 

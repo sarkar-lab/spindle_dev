@@ -10,7 +10,6 @@
   ``variance_quantiles``; ``tile_query``).
 - ``kernels``: the compiled searches behind ``Spindle.search``, ``SpindleLite.search`` and
   ``SpindleLitePartial.search`` (C, built on first use).
-- ``spindle_lite_legacy``: the first draft's Spindle-lite (ε elbow budget, effort caps), kept for reference only.
 """
 
 from .layout import ProcessedData, build_layout

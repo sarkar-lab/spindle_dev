@@ -21,10 +21,12 @@ spindle_dev/
 │   ├── lite_partial.py  #   Spindle-lite partial (SpindleLitePartial; paper/SPINDLE_PARTIAL.md)
 │   ├── queries.py       #   gene-set queries from gene names (template, tile)
 │   ├── kernels.c/.py    #   compiled searches behind Spindle and both Spindle-lites (C, AVX2, ctypes)
-│   ├── spindle_lite_legacy.py  # the first draft's Spindle-lite (reference only)
 │   ├── metrics.py       #   shrinkage, matrix logs, correlation
 │   └── utils.py         #   logging, save/load
 ├── examples/            # run_single_dataset.py (usage), check_indexes.py (sanity checks)
+├── experiments/         # the paper's figures: common/ pipeline, one folder per figure (run.sh lists the steps)
+├── results/             # figure inputs and numbers.json per figure (the index cache _cache/ is gitignored)
+├── figures/             # atoms, edited pptx and rendered PDF/PNG per figure, all_figures.{pptx,pdf}
 ├── paths.py             # dataset paths, read from datasets.yaml
 └── datasets.yaml        # the only place a dataset path is written
 ```

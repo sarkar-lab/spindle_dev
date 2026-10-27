@@ -1,0 +1,481 @@
+{
+ "stamp": {
+  "tag": "method-v1",
+  "describe": "method-v1-1-gc770f5a-dirty",
+  "commit": "c770f5a"
+ },
+ "tags": [
+  "method-v1"
+ ],
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "g": 0.25,
+ "timed_queries_per_seed": 200,
+ "datasets": {
+  "skin_melanoma": {
+   "ms": {
+    "whole": 16.17,
+    "spindle": 1.11,
+    "lite": 0.24,
+    "qlog_whole": 8.68,
+    "qlog_block": 4.79
+   },
+   "speedup_spindle_vs_whole": 14.6,
+   "speedup_lite_vs_spindle": 4.5,
+   "speedup_lite_vs_whole": 66.0,
+   "e2e_ms": {
+    "whole": 24.9,
+    "spindle": 5.9,
+    "lite": 5.0
+   },
+   "NX5_pct": [
+    8.2,
+    1.2
+   ],
+   "overlap5_pct": 80.5,
+   "short5_pct": 19.4,
+   "short10_pct": 3.7,
+   "found_median": 118.0,
+   "found_pct_of_N": 14.1,
+   "N": 839,
+   "queries_per_seed": 93,
+   "work_frac_pct": 58.3
+  },
+  "kidney_nondiseased": {
+   "ms": {
+    "whole": 14.69,
+    "spindle": 0.76,
+    "lite": 0.17,
+    "qlog_whole": 8.3,
+    "qlog_block": 2.64
+   },
+   "speedup_spindle_vs_whole": 19.2,
+   "speedup_lite_vs_spindle": 4.6,
+   "speedup_lite_vs_whole": 89.0,
+   "e2e_ms": {
+    "whole": 23.0,
+    "spindle": 3.4,
+    "lite": 2.8
+   },
+   "NX5_pct": [
+    11.5,
+    1.5
+   ],
+   "overlap5_pct": 80.7,
+   "short5_pct": 34.9,
+   "short10_pct": 13.8,
+   "found_median": 58.0,
+   "found_pct_of_N": 8.3,
+   "N": 705,
+   "queries_per_seed": 78,
+   "work_frac_pct": 44.9
+  },
+  "breast_cancer": {
+   "ms": {
+    "whole": 24.43,
+    "spindle": 1.72,
+    "lite": 0.39,
+    "qlog_whole": 5.45,
+    "qlog_block": 3.81
+   },
+   "speedup_spindle_vs_whole": 14.2,
+   "speedup_lite_vs_spindle": 4.4,
+   "speedup_lite_vs_whole": 63.0,
+   "e2e_ms": {
+    "whole": 29.9,
+    "spindle": 5.5,
+    "lite": 4.2
+   },
+   "NX5_pct": [
+    7.8,
+    0.1
+   ],
+   "overlap5_pct": 87.8,
+   "short5_pct": 12.5,
+   "short10_pct": 2.5,
+   "found_median": 248.0,
+   "found_pct_of_N": 13.5,
+   "N": 1840,
+   "queries_per_seed": 204,
+   "work_frac_pct": 55.0
+  },
+  "lung_cancer": {
+   "ms": {
+    "whole": 30.15,
+    "spindle": 1.98,
+    "lite": 0.5,
+    "qlog_whole": 8.46,
+    "qlog_block": 4.88
+   },
+   "speedup_spindle_vs_whole": 15.2,
+   "speedup_lite_vs_spindle": 3.9,
+   "speedup_lite_vs_whole": 60.0,
+   "e2e_ms": {
+    "whole": 38.6,
+    "spindle": 6.9,
+    "lite": 5.4
+   },
+   "NX5_pct": [
+    11.8,
+    0.8
+   ],
+   "overlap5_pct": 84.9,
+   "short5_pct": 13.8,
+   "short10_pct": 2.1,
+   "found_median": 480.0,
+   "found_pct_of_N": 31.3,
+   "N": 1535,
+   "queries_per_seed": 170,
+   "work_frac_pct": 70.7
+  },
+  "pancreatic_cancer": {
+   "ms": {
+    "whole": 73.7,
+    "spindle": 2.91,
+    "lite": 0.55,
+    "qlog_whole": 14.29,
+    "qlog_block": 6.27
+   },
+   "speedup_spindle_vs_whole": 25.3,
+   "speedup_lite_vs_spindle": 5.3,
+   "speedup_lite_vs_whole": 134.0,
+   "e2e_ms": {
+    "whole": 88.0,
+    "spindle": 9.2,
+    "lite": 6.8
+   },
+   "NX5_pct": [
+    10.0,
+    0.5
+   ],
+   "overlap5_pct": 76.5,
+   "short5_pct": 34.3,
+   "short10_pct": 5.9,
+   "found_median": 179.0,
+   "found_pct_of_N": 8.7,
+   "N": 2061,
+   "queries_per_seed": 229,
+   "work_frac_pct": 55.1
+  },
+  "lymph_node": {
+   "ms": {
+    "whole": 41.75,
+    "spindle": 2.66,
+    "lite": 0.65,
+    "qlog_whole": 8.76,
+    "qlog_block": 7.61
+   },
+   "speedup_spindle_vs_whole": 15.7,
+   "speedup_lite_vs_spindle": 4.1,
+   "speedup_lite_vs_whole": 64.0,
+   "e2e_ms": {
+    "whole": 50.5,
+    "spindle": 10.3,
+    "lite": 8.3
+   },
+   "NX5_pct": [
+    10.6,
+    1.1
+   ],
+   "overlap5_pct": 83.9,
+   "short5_pct": 10.0,
+   "short10_pct": 1.0,
+   "found_median": 464.0,
+   "found_pct_of_N": 19.7,
+   "N": 2354,
+   "queries_per_seed": 261,
+   "work_frac_pct": 63.6
+  },
+  "lymph_node_5k": {
+   "ms": {
+    "whole": 113.62,
+    "spindle": 7.85,
+    "lite": 2.37,
+    "qlog_whole": 11.3,
+    "qlog_block": 23.16
+   },
+   "speedup_spindle_vs_whole": 14.5,
+   "speedup_lite_vs_spindle": 3.3,
+   "speedup_lite_vs_whole": 48.0,
+   "e2e_ms": {
+    "whole": 124.9,
+    "spindle": 31.0,
+    "lite": 25.5
+   },
+   "NX5_pct": [
+    13.4,
+    1.6
+   ],
+   "overlap5_pct": 79.9,
+   "short5_pct": 2.2,
+   "short10_pct": 0.1,
+   "found_median": 2844.0,
+   "found_pct_of_N": 40.8,
+   "N": 6972,
+   "queries_per_seed": 774,
+   "work_frac_pct": 72.3
+  },
+  "brain_cancer": {
+   "ms": {
+    "whole": 441.05,
+    "spindle": 15.44,
+    "lite": 2.93,
+    "qlog_whole": 14.7,
+    "qlog_block": 26.55
+   },
+   "speedup_spindle_vs_whole": 28.6,
+   "speedup_lite_vs_spindle": 5.3,
+   "speedup_lite_vs_whole": 151.0,
+   "e2e_ms": {
+    "whole": 455.8,
+    "spindle": 42.0,
+    "lite": 29.5
+   },
+   "NX5_pct": [
+    13.5,
+    1.1
+   ],
+   "overlap5_pct": 81.8,
+   "short5_pct": 6.9,
+   "short10_pct": 0.3,
+   "found_median": 2363.0,
+   "found_pct_of_N": 24.7,
+   "N": 9558,
+   "queries_per_seed": 1062,
+   "work_frac_pct": 74.4
+  }
+ },
+ "range": {
+  "speedup_spindle_vs_whole": [
+   14.0,
+   29.0
+  ],
+  "speedup_lite_vs_spindle": [
+   3.3,
+   5.3
+  ],
+  "speedup_lite_vs_whole": [
+   48.0,
+   151.0
+  ],
+  "spindle_ms": [
+   0.76,
+   15.44
+  ],
+  "lite_ms": [
+   0.17,
+   2.93
+  ],
+  "whole_ms": [
+   14.7,
+   441.1
+  ],
+  "qlog_block_ms": [
+   2.6,
+   26.6
+  ],
+  "qlog_whole_ms": [
+   5.4,
+   14.7
+  ],
+  "qlog_block_over_spindle": [
+   1.7,
+   4.3
+  ],
+  "qlog_block_over_lite": [
+   9.0,
+   20.0
+  ],
+  "qlog_block_lt_qlog_whole": [
+   "skin_melanoma",
+   "kidney_nondiseased",
+   "breast_cancer",
+   "lung_cancer",
+   "pancreatic_cancer",
+   "lymph_node"
+  ],
+  "e2e_whole_over_lite": [
+   4.9,
+   15.5
+  ],
+  "e2e_whole_over_spindle": [
+   4.0,
+   10.9
+  ],
+  "NX5_pct": [
+   7.8,
+   13.5
+  ],
+  "overlap5_pct": [
+   76.5,
+   87.8
+  ],
+  "short5_pct": [
+   2.2,
+   34.9
+  ],
+  "short10_pct": [
+   0.1,
+   13.8
+  ],
+  "found_pct_of_N": [
+   8.3,
+   40.8
+  ],
+  "work_frac_pct": [
+   44.9,
+   74.4
+  ]
+ },
+ "median": {
+  "NX5_pct": 11.0,
+  "overlap5_pct": 81.2,
+  "speedup_lite_vs_spindle": 4.5,
+  "speedup_spindle_vs_whole": 15.0
+ },
+ "band_breast": {
+  "seed": 0,
+  "query": 166,
+  "test_tile": 953,
+  "N": 1840,
+  "returned": 484,
+  "NX5_pct": 6.5,
+  "c5": 92,
+  "exact_top_c5_returned": 89,
+  "exact_top10_returned": 10,
+  "queries": 204,
+  "queries_ge10": 197,
+  "share_short10_pct": 3.4
+ },
+ "memory": {
+  "breast_cancer": {
+   "lite": {
+    "MB": 3.2,
+    "NX5_pct": [
+     7.8,
+     0.1
+    ],
+    "overlap5_pct": 87.8,
+    "short5_pct": 12.5
+   },
+   "pca256_pq32": {
+    "MB": 50.8,
+    "NX5_pct": [
+     5.5,
+     0.2
+    ],
+    "overlap5_pct": 91.5,
+    "short5_pct": 0.0
+   },
+   "pca256_pq8": {
+    "MB": 50.8,
+    "NX5_pct": [
+     9.4,
+     0.3
+    ],
+    "overlap5_pct": 83.6,
+    "short5_pct": 0.0
+   },
+   "pca16": {
+    "MB": 3.5,
+    "NX5_pct": [
+     9.9,
+     0.5
+    ],
+    "overlap5_pct": 79.1,
+    "short5_pct": 0.0
+   },
+   "pca256": {
+    "MB": 52.4,
+    "NX5_pct": [
+     2.6,
+     0.1
+    ],
+    "overlap5_pct": 95.7,
+    "short5_pct": 0.0
+   },
+   "pca64": {
+    "MB": 13.2,
+    "NX5_pct": [
+     7.3,
+     0.3
+    ],
+    "overlap5_pct": 85.2,
+    "short5_pct": 0.0
+   },
+   "spindle": {
+    "MB": 28.5
+   },
+   "whole": {
+    "MB": 361.7
+   }
+  },
+  "brain_cancer": {
+   "lite": {
+    "MB": 23.3,
+    "NX5_pct": [
+     13.5,
+     1.1
+    ],
+    "overlap5_pct": 81.8,
+    "short5_pct": 6.9
+   },
+   "pca256_pq32": {
+    "MB": 119.2,
+    "NX5_pct": [
+     17.7,
+     0.1
+    ],
+    "overlap5_pct": 62.9,
+    "short5_pct": 0.0
+   },
+   "pca256_pq8": {
+    "MB": 119.0,
+    "NX5_pct": [
+     22.3,
+     0.1
+    ],
+    "overlap5_pct": 53.0,
+    "short5_pct": 0.0
+   },
+   "pca16": {
+    "MB": 8.5,
+    "NX5_pct": [
+     19.4,
+     0.1
+    ],
+    "overlap5_pct": 55.6,
+    "short5_pct": 0.0
+   },
+   "pca256": {
+    "MB": 128.5,
+    "NX5_pct": [
+     11.4,
+     0.1
+    ],
+    "overlap5_pct": 72.9,
+    "short5_pct": 0.0
+   },
+   "pca64": {
+    "MB": 32.5,
+    "NX5_pct": [
+     16.9,
+     0.1
+    ],
+    "overlap5_pct": 60.5,
+    "short5_pct": 0.0
+   },
+   "spindle": {
+    "MB": 201.6
+   },
+   "whole": {
+    "MB": 4413.5
+   }
+  }
+ }
+}

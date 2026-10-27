@@ -69,14 +69,11 @@ paper/
 # Pickled layouts and indexes (large, re-generable)
 *.pkl
 
-# Local backups (old figures, reference outputs of the pre-cleanup code)
-backup/
-
 # Manuscript: local copy of the Overleaf project (independent of the code; synced by hand)
 Spindle/
 
 
-# Compiled Spindle-lite kernel (built on import from src/spindle_dev/lite_kernels.c)
+# Compiled search kernels (built on first use from src/spindle_dev/kernels.c)
 src/spindle_dev/_build/
 
 # Talk deck, its scripts, figures and results (local only)
@@ -89,3 +86,6 @@ poster/
 results/_cache/
 results/_logs/
 experiments/common/.pylib/
+
+# Per-query dumps (re-generable)
+results/*/per_query/

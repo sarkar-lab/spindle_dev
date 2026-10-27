@@ -1,0 +1,271 @@
+{
+ "stamp": {
+  "tag": "method-v1",
+  "describe": "method-v1-3-g76ca801-dirty",
+  "commit": "76ca801"
+ },
+ "example": {
+  "query_tile": 771,
+  "candidates": 30,
+  "queries": 93,
+  "base_rate": 1.0,
+  "n_below": 93,
+  "tv_top_median": 0.202,
+  "tv_random_median": 0.575,
+  "composition": {
+   "query": {
+    "Melanocyte": 0.033,
+    "Keratinocyte": 0.328,
+    "Immune": 0.287,
+    "Other": 0.352
+   },
+   "top10": {
+    "Melanocyte": 0.043,
+    "Keratinocyte": 0.456,
+    "Immune": 0.185,
+    "Other": 0.316
+   },
+   "random10": {
+    "Melanocyte": 0.336,
+    "Keratinocyte": 0.045,
+    "Immune": 0.275,
+    "Other": 0.344
+   },
+   "section": {
+    "Melanocyte": 0.342,
+    "Keratinocyte": 0.05,
+    "Immune": 0.265,
+    "Other": 0.343
+   }
+  },
+  "clusters_per_class": {
+   "Immune": 3,
+   "Keratinocyte": 5,
+   "Melanocyte": 8,
+   "Other": 10
+  },
+  "cells_per_class": {
+   "Immune": 23218,
+   "Keratinocyte": 4339,
+   "Melanocyte": 29953,
+   "Other": 29989
+  }
+ },
+ "lists": {
+  "n": 24,
+  "per_dataset": {
+   "brain_cancer": 3,
+   "breast_cancer": 5,
+   "kidney_nondiseased": 2,
+   "lung_cancer": 2,
+   "lymph_node": 4,
+   "lymph_node_5k": 2,
+   "pancreatic_cancer": 3,
+   "skin_melanoma": 3
+  },
+  "dropped_genes": {
+   "skin_melanoma/Keratinocyte_Epidermis": "KRT14",
+   "lymph_node_5k/T_Cell_Zone": "CD3D"
+  },
+  "T_delta": [
+   0.068,
+   0.92
+  ],
+  "T_delta_gt0": 24,
+  "T_delta_gt05": 20,
+  "T_delta_le05": {
+   "lung_cancer/Alveolar_Airway_Epithelium": 0.368,
+   "brain_cancer/Glioma_Tumor_Proliferative": 0.33,
+   "brain_cancer/Microglia_Myeloid": 0.417,
+   "brain_cancer/TIL_Lymphocyte": 0.068
+  },
+  "T_lift_gt0": 22,
+  "T_lift_le0": {
+   "kidney_nondiseased/Tubular_Epithelium": -0.035,
+   "lymph_node_5k/T_Cell_Zone": -0.05
+  },
+  "T_lift": [
+   -0.05,
+   0.432
+  ],
+  "TL_delta": [
+   0.182,
+   0.934
+  ],
+  "TL_delta_gt0": 24,
+  "TL_delta_gt05": 20,
+  "TL_lift_gt0": 16,
+  "TL_delta_minus_T": [
+   -0.288,
+   0.195
+  ],
+  "TL_delta_minus_T_median": 0.006,
+  "TL_lift_minus_T_median": -0.015,
+  "TL_returned_lt10": {
+   "skin_melanoma/Melanocyte_Tumor": 8.6,
+   "skin_melanoma/Keratinocyte_Epidermis": 7.0,
+   "skin_melanoma/Immune_Infiltrate": 3.0,
+   "kidney_nondiseased/Injury_Immune_Infiltrate": 6.4,
+   "breast_cancer/Macrophage_Myeloid": 7.6,
+   "lung_cancer/Alveolar_Airway_Epithelium": 8.8,
+   "pancreatic_cancer/Mast_Cell_Stroma": 9.4,
+   "lymph_node/B_Cell_Germinal_Center": 9.8,
+   "lymph_node/T_Cell_Zone": 8.2,
+   "lymph_node/Lymphatic_Vascular_Stroma": 3.0,
+   "lymph_node_5k/B_Cell_Germinal_Center": 5.8,
+   "lymph_node_5k/T_Cell_Zone": 6.8,
+   "brain_cancer/Glioma_Tumor_Proliferative": 5.0,
+   "brain_cancer/Microglia_Myeloid": 8.6,
+   "brain_cancer/TIL_Lymphocyte": 6.4
+  },
+  "TL_jacc_T_median": 0.21,
+  "D_lift_gt0": 13,
+  "X_cov_above_T": 11,
+  "jacc_TD": [
+   0.032,
+   0.927
+  ],
+  "jacc_TD_ge05": 7,
+  "skin": {
+   "Melanocyte_Tumor": {
+    "genes": 8,
+    "delta": 0.874,
+    "cov_top": 0.412,
+    "cov_all": 0.336,
+    "TL_delta": 0.815,
+    "TL_returned": 8.6,
+    "D_delta": 0.9
+   },
+   "Keratinocyte_Epidermis": {
+    "genes": 4,
+    "delta": 0.783,
+    "cov_top": 0.253,
+    "cov_all": -0.01,
+    "TL_delta": 0.786,
+    "TL_returned": 7.0,
+    "D_delta": 0.802
+   },
+   "Immune_Infiltrate": {
+    "genes": 5,
+    "delta": 0.819,
+    "cov_top": 0.134,
+    "cov_all": 0.118,
+    "TL_delta": 0.878,
+    "TL_returned": 3.0,
+    "D_delta": 0.059
+   }
+  }
+ },
+ "tiles": {
+  "per_dataset": {
+   "skin_melanoma": {
+    "tv_top": 0.217,
+    "tv_lite": 0.224,
+    "tv_random": 0.581,
+    "tv_expr": 0.205,
+    "lite_in_top": 4.4,
+    "below_random": 0.998,
+    "lite_below_random": 0.996
+   },
+   "kidney_nondiseased": {
+    "tv_top": 0.203,
+    "tv_lite": 0.215,
+    "tv_random": 0.348,
+    "tv_expr": 0.195,
+    "lite_in_top": 4.8,
+    "below_random": 0.985,
+    "lite_below_random": 0.974
+   },
+   "breast_cancer": {
+    "tv_top": 0.133,
+    "tv_lite": 0.154,
+    "tv_random": 0.538,
+    "tv_expr": 0.103,
+    "lite_in_top": 3.6,
+    "below_random": 0.998,
+    "lite_below_random": 0.981
+   },
+   "lung_cancer": {
+    "tv_top": 0.21,
+    "tv_lite": 0.209,
+    "tv_random": 0.466,
+    "tv_expr": 0.195,
+    "lite_in_top": 3.6,
+    "below_random": 0.972,
+    "lite_below_random": 0.979
+   },
+   "pancreatic_cancer": {
+    "tv_top": 0.223,
+    "tv_lite": 0.249,
+    "tv_random": 0.492,
+    "tv_expr": 0.209,
+    "lite_in_top": 3.6,
+    "below_random": 0.985,
+    "lite_below_random": 0.959
+   },
+   "lymph_node": {
+    "tv_top": 0.193,
+    "tv_lite": 0.204,
+    "tv_random": 0.419,
+    "tv_expr": 0.188,
+    "lite_in_top": 3.2,
+    "below_random": 0.996,
+    "lite_below_random": 0.991
+   },
+   "lymph_node_5k": {
+    "tv_top": 0.243,
+    "tv_lite": 0.263,
+    "tv_random": 0.407,
+    "tv_expr": 0.227,
+    "lite_in_top": 2.2,
+    "below_random": 0.995,
+    "lite_below_random": 0.957
+   },
+   "brain_cancer": {
+    "tv_top": 0.227,
+    "tv_lite": 0.232,
+    "tv_random": 0.357,
+    "tv_expr": 0.202,
+    "lite_in_top": 2.8,
+    "below_random": 0.963,
+    "lite_below_random": 0.937
+   }
+  },
+  "tv_top": [
+   0.133,
+   0.243
+  ],
+  "tv_lite": [
+   0.154,
+   0.263
+  ],
+  "tv_random": [
+   0.348,
+   0.581
+  ],
+  "tv_expr": [
+   0.103,
+   0.227
+  ],
+  "below_random_pct_per_seed": [
+   94.0,
+   100.0
+  ],
+  "lite_below_random_pct_per_seed": [
+   83.5,
+   100.0
+  ],
+  "queries_per_seed": [
+   78,
+   1062
+  ],
+  "lite_in_top_median": [
+   1,
+   5
+  ],
+  "breast_check": {
+   "tv_top": 0.133,
+   "tv_random": 0.538
+  }
+ }
+}

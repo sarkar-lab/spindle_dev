@@ -1,5 +1,5 @@
-"""Curated gene signatures for the gene-list queries (ported unchanged from the old repository,
-backup/reference/old_repo/benchmarks/common/gene_signatures.py).
+"""Curated gene signatures for the gene-list queries (ported unchanged from the old repository's
+benchmarks/common/gene_signatures.py, in git history).
 
 TISSUE_MODULES: per-tissue signatures; every gene was checked against that tissue's Xenium panel (not against the
 index genes: the 5K panel keeps only its top-variance 400 genes).

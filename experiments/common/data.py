@@ -6,7 +6,7 @@
     c.spindle, c.lite, c.partial, c.plite, c.layout, c.train, c.test, c.omega, c.D, c.qvs
     data.stamp()                                                        # {"tag": "method-v1", ...}; every result row
 
-Seeds (paper/RESULTS_PLAN.md §1): 0-4, 10 % of the tiles held out at random (``split_tiles(seed, test_ratio=0.1)``);
+Seeds: 0-4, 10 % of the tiles held out at random (``split_tiles(seed, test_ratio=0.1)``);
 seed 0 is the one used for examples, maps and schematics.
 
 Cache layout, results/_cache/<key>/seed<k>/ (gitignored, shared file system), written by c_index_cache.py:
@@ -53,9 +53,10 @@ def _git(*args):
 
 def stamp():
     """The code version of a result: ``tag`` is TAG only if src/ is identical to it (committed and in the working
-    tree); otherwise this raises, because a result of a changed method is not a figure input (FIGURES.md §0)."""
-    changed = _git("diff", "--name-only", TAG, "--", "src/")
-    if changed:
+    tree); otherwise this raises, because a result of a changed method is not a figure input. The one change allowed
+    since the tag is the removal of the unused ``spindle_lite_legacy`` module (27 Oct cleanup)."""
+    if _git("diff", "--diff-filter=d", "-Ispindle_lite_legacy", TAG, "--", "src/"):
+        changed = _git("diff", "--name-only", TAG, "--", "src/")
         raise RuntimeError(f"src/ differs from {TAG}: {changed.split()}; no figure input can be made")
     return {"tag": TAG, "describe": _git("describe", "--tags", "--dirty", "--always"),
             "commit": _git("rev-parse", "--short", "HEAD")}

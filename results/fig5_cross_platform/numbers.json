@@ -1,0 +1,137 @@
+{
+ "tag": "method-v1",
+ "describe": "method-v1-1-gc770f5a-dirty",
+ "genes": 307,
+ "tiles": {
+  "Xenium": 165,
+  "Visium": 156
+ },
+ "cells_per_tile_max": 2000,
+ "min_spots_per_tile": 10,
+ "spots_per_visium_tile": [
+  10,
+  68
+ ],
+ "directions": {
+  "x2v": {
+   "N_index": 156,
+   "n_query": 165,
+   "niches": [
+    2,
+    2
+   ],
+   "blocks": [
+    33,
+    35
+   ],
+   "tissue_r": {
+    "none": [
+     0.155,
+     0.002
+    ],
+    "per_niche": [
+     0.785,
+     0.04
+    ],
+    "global": [
+     0.891,
+     0.004
+    ]
+   },
+   "tumour_mae_top10": [
+    0.176,
+    0.004
+   ],
+   "tumour_mae_random": 0.424,
+   "colocated_hit5": [
+    0.172,
+    0.003
+   ],
+   "colocated_hit5_random": 0.032,
+   "silhouette": {
+    "uncorrected": 0.501,
+    "global": 0.078
+   },
+   "lite_NX5_pct": [
+    15.8,
+    3.8
+   ],
+   "lite_overlap5": [
+    0.488,
+    0.055
+   ],
+   "lite_found": 39.3,
+   "spindle_MB": 2.15,
+   "lite_MB": 0.25
+  },
+  "v2x": {
+   "N_index": 165,
+   "n_query": 156,
+   "niches": [
+    3,
+    3
+   ],
+   "blocks": [
+    46,
+    47
+   ],
+   "tissue_r": {
+    "none": [
+     0.78,
+     0.002
+    ],
+    "per_niche": [
+     0.747,
+     0.084
+    ],
+    "global": [
+     0.844,
+     0.0
+    ]
+   },
+   "tumour_mae_top10": [
+    0.284,
+    0.001
+   ],
+   "tumour_mae_random": 0.424,
+   "colocated_hit5": [
+    0.186,
+    0.0
+   ],
+   "colocated_hit5_random": 0.03,
+   "silhouette": {
+    "uncorrected": 0.501,
+    "global": 0.03
+   },
+   "lite_NX5_pct": [
+    11.3,
+    0.1
+   ],
+   "lite_overlap5": [
+    0.681,
+    0.045
+   ],
+   "lite_found": 28.6,
+   "spindle_MB": 2.57,
+   "lite_MB": 0.29
+  }
+ },
+ "example": {
+  "direction": "v2x",
+  "seed": 0,
+  "query": 60,
+  "focal_class": "Immune",
+  "query_share_pct": 87,
+  "top5_share_pct": [
+   49,
+   69
+  ],
+  "top5_mean_pct": 59,
+  "section_share_pct": 22,
+  "colocated_rank": 5,
+  "same_top5_all_seeds": true,
+  "n_focal_rich": 46,
+  "n_candidates": 12,
+  "base_rate_pct": 83
+ }
+}

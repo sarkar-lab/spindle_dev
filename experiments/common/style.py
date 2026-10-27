@@ -1,4 +1,4 @@
-"""Paper style: every atom is one plot, drawn at its placed size in mm on the 180 mm page (RESULTS_PLAN.md §2).
+"""Paper style: every atom is one plot, drawn at its placed size in mm on the 180 mm page.
 
     import style as ps
     fig, ax = ps.atom(55, 40, left=9, bottom=7, right=1, top=1)       # mm: figure size, then axes margins
@@ -10,8 +10,10 @@ Rules:
   log), ticks and colourbar ticks only. A legend is its own atom (``legend_atom``), so is a colourbar
   (``colorbar_atom``).
 - Saved at exactly its size (never bbox_inches="tight"), so the pptx never rescales it.
-- PDF: vector, TrueType (fonttype 42); artists made with ``rasterized=True`` (cell clouds) are rasterised at 600 dpi.
-  PNG: 600 dpi. Written to figures/<fig>/atoms/{pdf,png}/<atom>.*, one row per atom in figures/manifest.csv.
+- PDF: vector, TrueType (fonttype 42), transparent background (render.py stamps it onto the page, so text boxes
+  under it stay visible); artists made with ``rasterized=True`` (cell clouds) are rasterised at 1200 dpi.
+  PNG: 1200 dpi, white (the pptx picture). Written to figures/<fig>/atoms/{pdf,png}/<atom>.*, one row per atom in
+  figures/manifest.csv. Resolution rule (user, 26 Oct): nothing may break when zoomed in, within the size budget.
 - Liberation Sans; axis labels 7 pt, ticks and legends 6 pt, lines 0.75 pt.
 - Plotting only: compute nodes lack the font, so never import this module in an sbatch job.
 """
@@ -29,7 +31,7 @@ from matplotlib import font_manager  # noqa: E402
 ROOT = Path(__file__).resolve().parents[2]
 FIGURES = ROOT / "figures"
 MANIFEST = FIGURES / "manifest.csv"
-DPI = 600
+DPI = 1200
 MM = 1 / 25.4
 PAGE_W, PAGE_H = 180.0, 225.0  # mm
 
@@ -209,7 +211,7 @@ def save(fig, fig_name, name, source=""):
     pdf.parent.mkdir(parents=True, exist_ok=True)
     png.parent.mkdir(parents=True, exist_ok=True)
     w, h = fig.get_size_inches() / MM
-    fig.savefig(pdf, dpi=DPI)
+    fig.savefig(pdf, dpi=DPI, transparent=True)
     fig.savefig(png, dpi=DPI)
     plt.close(fig)
     rows = {}
