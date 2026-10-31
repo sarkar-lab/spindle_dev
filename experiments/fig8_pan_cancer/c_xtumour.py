@@ -18,10 +18,10 @@ RULES (fixed before the run):
   shrunk variance of gene g is <= the exemplar's.
 - QUERY in section X, seed s (quantile-matched scale, Fig 8 decision of 9 Oct): sigma_g = sqrt of the q_g quantile
   of gene g's shrunk variance over X's seed-s index tiles; Q = diag(sigma) R_S diag(sigma).
-- HITS = the first c = 5 % of the index tiles (common8.n_hits): Spindle-partial ("P", exact d_B^S); Spindle-lite-
-  partial ("PL", the first c of search_vectors at the default g; fewer if it returns fewer, recorded). Controls,
-  computed and reported, never claimed against: "D" = diag(sigma^2) (variances only, Spindle-partial) and "X" = the c
-  index tiles with the highest tile score. The exemplar tile is never a hit and is left out of every background.
+- HITS = the first c = 5 % of the index tiles (common8.n_hits): Spindle-naive ("naive_partial", exact d_B^S);
+  Spindle ("spindle_partial", the first c of search_vectors at the default g; fewer if it returns fewer, recorded).
+  Controls, computed and reported, never claimed against: "D" = diag(sigma^2) (variances only, Spindle-naive) and
+  "X" = the c index tiles with the highest tile score. The exemplar tile is never a hit and is left out of every background.
 - READOUTS per (program, section, seed, method), against the other index tiles (background):
   gain = median over the background of the correlation gap minus its median over the hits (gap = RMS difference
   between a tile's S x S correlation, from its shrunk covariance, and R_S, off-diagonal pairs; > 0 = the hits
@@ -29,8 +29,8 @@ RULES (fixed before the run):
   delta = Cliff's delta of the tile score (mean over S of the z-scored tile-mean log-normalised expression) of the
   hits vs the background [D; delta <= 0 = programme absent, drawn open];
   lift = median over the hits minus median over all index tiles of c without the robust filter (Figs 6-7) [text];
-  Jaccard with P, D and X [text].
-- MAPS (B): seed 0, every section's cells and each programme's Spindle-partial hits (tile boxes).
+  Jaccard with naive_partial, D and X [text].
+- MAPS (B): seed 0, every section's cells and each programme's Spindle-naive hits (tile boxes).
 """
 
 import os
@@ -79,7 +79,7 @@ def exemplars():
 def main(key, seed):
     E = pd.read_csv(c8.OUT / "exemplar.csv")
     Z = np.load(c8.OUT / "exemplar.npz")
-    S = c7.load(key, seed, parts=("layout", "partial", "plite"))
+    S = c7.load(key, seed, parts=("layout", "naive_partial", "spindle_partial"))
     c, covs, st = S["c"], S["covs"], S["stamp"]
     n = len(c.train)
     k = c8.n_hits(n)
@@ -107,19 +107,19 @@ def main(key, seed):
             return np.asarray([r for r in order if valid[r]][:k], dtype=int)
 
         tops = {}
-        for m, Qm in (("P", Q), ("D", np.diag(sig ** 2))):
-            tops[m] = first(np.argsort(c.partial.distances(Qm, idx), kind="stable"))
-        lite_rows, _, _ = c.plite.search_vectors(c.plite.query_vectors(Q, idx))
-        tops["PL"] = first(lite_rows)
+        for m, Qm in (("naive_partial", Q), ("D", np.diag(sig ** 2))):
+            tops[m] = first(np.argsort(c.naive_partial.distances(Qm, idx), kind="stable"))
+        spindle_rows, _, _ = c.spindle_partial.search_vectors(c.spindle_partial.query_vectors(Q, idx))
+        tops["spindle_partial"] = first(spindle_rows)
         tops["X"] = first(np.argsort(-score, kind="stable"))
         for m, top in tops.items():
             back = np.setdiff1d(np.flatnonzero(valid), top)
             rows.append({"key": key, "seed": seed, "program": prog, "n_genes": len(idx), "method": m, "n_index": n,
-                         "c": k, "n_returned": len(top), "lite_returned": len(lite_rows),
+                         "c": k, "n_returned": len(top), "spindle_partial_returned": len(spindle_rows),
                          "gap_hits": float(np.median(gap[top])), "gap_back": float(np.median(gap[back])),
                          "delta": float(c6.cliffs_delta(score[top], score[back])),
                          "cov_top": float(np.nanmedian(cov_all[top])), "cov_all": float(np.nanmedian(cov_all[valid])),
-                         **{f"jacc_{o}": c6.jaccard(top, tops[o]) for o in ("P", "D", "X")}, "tag": st["tag"]})
+                         **{f"jacc_{o}": c6.jaccard(top, tops[o]) for o in ("naive_partial", "D", "X")}, "tag": st["tag"]})
             hits += [{"key": key, "seed": seed, "program": prog, "method": m, "rank": i + 1, "tile": int(c.train[r]),
                       "gap": float(gap[r]), "score": float(score[r])} for i, r in enumerate(top)]
     T = pd.DataFrame(rows)
@@ -128,7 +128,7 @@ def main(key, seed):
     out = c8.out_dir(key, seed)
     T.to_csv(out / "programs.csv", index=False)
     pd.DataFrame(hits).to_csv(out / "hits.csv", index=False)
-    print(T[["program", "method", "n_returned", "gain", "delta", "lift", "jacc_P", "jacc_D"]].round(3)
+    print(T[["program", "method", "n_returned", "gain", "delta", "lift", "jacc_naive_partial", "jacc_D"]].round(3)
           .to_string(index=False), flush=True)
     print(f"done {key} seed {seed} (c = {k} of {n})", flush=True)
 

@@ -1,7 +1,7 @@
 """Gene-set queries from gene names (Methods, partial queries).
 
 Every constructor returns ``(cov_s, idx)``: the |S| x |S| query covariance in ``idx`` order and the global gene
-indices of S, accepted unchanged by ``SpindlePartial.search`` / ``distances`` and ``SpindleLitePartial.search`` /
+indices of S, accepted unchanged by ``SpindleNaivePartial.search`` / ``distances`` and ``SpindlePartial.search`` /
 ``query_vectors``. Queries are on the shrunk scale of the index tiles and are never shrunk again.
 
 - ``gene_indices``: gene names -> global indices; unknown genes dropped, duplicates removed (both reported).
@@ -9,7 +9,7 @@ indices of S, accepted unchanged by ``SpindlePartial.search`` / ``distances`` an
 - ``template_query``: a gene list alone, Methods Eq. (signature):
   Q_S = Omega_S^1/2 [(1 - rho) I + rho 11^T] Omega_S^1/2, rho = 0.5, Omega_S = the q = 0.9 quantile over the index
   tiles of each gene's (shrunk) variance. ``variance_quantiles`` computes that p-vector once from the index tiles'
-  covariances; keep it beside the index (Spindle-lite partial stores no tile covariances).
+  covariances; keep it beside the index (Spindle partial stores no tile covariances).
 """
 
 from __future__ import annotations

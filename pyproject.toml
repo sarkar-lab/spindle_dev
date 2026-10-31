@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "spindle-dev"
 version = "0.1.0"
-description = "Spindle and Spindle-lite: search over spatial-omics tile covariances."
+description = "Spindle and Spindle-naive: search over spatial-omics tile covariances."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

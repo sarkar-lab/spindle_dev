@@ -5,26 +5,26 @@ Writes results/fig7_skin/<key>/seed<s>/{tile_queries.csv, gene_lists.csv}; skin 
 example_cells.npz (B), skin_classes.csv and signature_cells.npz (A).
 
 As Fig 6 (experiments/fig6_breast/c_queries.py), on every section:
-- Whole-tile queries = every held-out tile; Spindle's top 10 = the 10 smallest exact d_B (the cache's D); Spindle-lite's
-  = the first 10 tiles of search_vectors (best first; default g; fewer if it returns fewer). TV between the query's
+- Whole-tile queries = every held-out tile; Spindle-naive's top 10 = the 10 smallest exact d_B (the cache's D);
+  Spindle's = the first 10 tiles of search_vectors (best first; default g; fewer if it returns fewer). TV between the query's
   composition and the pooled composition of the 10 tiles' cells, against the mean TV of N_RANDOM random 10-tile draws.
   Composition labels (common7): breast, the 8 classes of Fig 6; the others, 10x graph-based clusters (cells without a
   cluster left out). Recorded, never claimed: the expression top 10 (Euclidean on the z-scored tile-mean
   log-normalised expression).
 - Gene-list queries: the tissue's curated signatures (signatures.TISSUE_MODULES[TISSUE[key]]) with >= 2 index genes
   (missing genes dropped by sd.gene_indices and recorded), each the template query T (sd.template_query on the build's
-  omega) searched with Spindle-partial (exact d_B^S, top 10; query "T") and with Spindle-lite-partial (first 10 of
-  search_vectors, default g; query "TL"). Controls computed and reported, never claimed against: D = diag(omega_S)
-  with Spindle-partial, X = the 10 index tiles with the highest tile score. Readouts per (list, query): Cliff's delta
+  omega) searched with Spindle-naive (exact d_B^S, top 10; query "T") and with Spindle (first 10 of
+  search_vectors, default g; query "TS"). Controls computed and reported, never claimed against: D = diag(omega_S)
+  with Spindle-naive, X = the 10 index tiles with the highest tile score. Readouts per (list, query): Cliff's delta
   of the tile score of the returned tiles against the other index tiles; co-variation = mean off-diagonal correlation
   of S over a tile's cells (raw counts), median over the returned tiles against the median over all index tiles;
   Jaccard with D and X.
 SKIN EXAMPLE RULES (fixed before the run; seed 0):
 - B: among the held-out tiles with >= MIN_CELLS cells, the one with the largest share of keratinocyte-class cells
-  (common7.skin_classes; ties: lower tile id). Reported with it: the class composition of the query, of Spindle's top
-  10, of a random 10 (mean of N_RANDOM draws) and of the section, and the base rate = the share of all held-out
+  (common7.skin_classes; ties: lower tile id). Reported with it: the class composition of the query, of
+  Spindle-naive's top 10, of a random 10 (mean of N_RANDOM draws) and of the section, and the base rate = the share of all held-out
   queries whose top-10 TV is below the random-10 TV.
-- A: all three skin signatures; a cell's score = mean over S of its log-normalised expression; Spindle-partial's top
+- A: all three skin signatures; a cell's score = mean over S of its log-normalised expression; Spindle-naive's top
   10 outlined.
 """
 
@@ -58,20 +58,22 @@ def tile_queries(S, seed, out):
         q = c7.shares(cnt_q[j])
         top = np.argsort(c.D[j], kind="stable")[:c7.TOP]
         expr = np.argsort(((z_idx - z_q[j]) ** 2).sum(1), kind="stable")[:c7.TOP]
-        lite_rows, _, _ = c.lite.search_vectors(c.qvs[j])
-        lite = np.asarray(lite_rows[:c7.TOP], dtype=int)
+        spindle_rows, _, _ = c.spindle.search_vectors(c.qvs[j])
+        spindle = np.asarray(spindle_rows[:c7.TOP], dtype=int)
         rand = [c6.tv(q, c7.shares(cnt_idx[rng.choice(n, c7.TOP, replace=False)])) for _ in range(c7.N_RANDOM)]
         tops[j] = top
         rows.append({"key": S["key"], "seed": seed, "query": j, "tile": int(t), "n_cells": int(cnt_q[j].sum()),
                      "tv_top": c6.tv(q, c7.shares(cnt_idx[top])), "tv_random": float(np.mean(rand)),
-                     "tv_lite": c6.tv(q, c7.shares(cnt_idx[lite])), "tv_expr": c6.tv(q, c7.shares(cnt_idx[expr])),
-                     "lite_in_top": int(len(set(top.tolist()) & set(lite.tolist()))), "lite_found": len(lite_rows),
+                     "tv_spindle": c6.tv(q, c7.shares(cnt_idx[spindle])),
+                     "tv_expr": c6.tv(q, c7.shares(cnt_idx[expr])),
+                     "spindle_in_top": int(len(set(top.tolist()) & set(spindle.tolist()))),
+                     "spindle_found": len(spindle_rows),
                      "n_labels": len(S["comp_names"]), "tag": st["tag"]})
     T = pd.DataFrame(rows)
     T.to_csv(out / "tile_queries.csv", index=False)
-    print(f"tile queries: {len(T)} of {len(c.test)}; TV top {T.tv_top.median():.3f}, lite {T.tv_lite.median():.3f}, "
-          f"random {T.tv_random.median():.3f}, expression {T.tv_expr.median():.3f}; below random "
-          f"{(T.tv_top < T.tv_random).mean():.3f} (lite {(T.tv_lite < T.tv_random).mean():.3f})", flush=True)
+    print(f"tile queries: {len(T)} of {len(c.test)}; TV top {T.tv_top.median():.3f}, "
+          f"Spindle {T.tv_spindle.median():.3f}, random {T.tv_random.median():.3f}, expression {T.tv_expr.median():.3f}; below random "
+          f"{(T.tv_top < T.tv_random).mean():.3f} (Spindle {(T.tv_spindle < T.tv_random).mean():.3f})", flush=True)
     if S["key"] == c7.EXAMPLE_KEY and seed == c6.data.EXAMPLE_SEED:
         skin_example(S, T, tops, out)
 
@@ -127,9 +129,9 @@ def gene_lists(S, seed, out):
     for name, idx, found, missing in c7.gene_lists(S["key"], S["genes"]):
         cov_t, _ = sd.template_query(c.omega, idx)
         tops = {"T": cov_t, "D": np.diag(c.omega[idx])}
-        tops = {k: np.argsort(c.partial.distances(Q, idx), kind="stable")[:c7.TOP] for k, Q in tops.items()}
-        lite_rows, _, _ = c.plite.search_vectors(c.plite.query_vectors(cov_t, idx))
-        tops["TL"] = np.asarray(lite_rows[:c7.TOP], dtype=int)
+        tops = {k: np.argsort(c.naive_partial.distances(Q, idx), kind="stable")[:c7.TOP] for k, Q in tops.items()}
+        spindle_rows, _, _ = c.spindle_partial.search_vectors(c.spindle_partial.query_vectors(cov_t, idx))
+        tops["TS"] = np.asarray(spindle_rows[:c7.TOP], dtype=int)
         score = z[:, idx].mean(1)
         tops["X"] = np.argsort(-score, kind="stable")[:c7.TOP]
         cov_all = np.array([c6.mean_offdiag_corr(S["X"][cl][:, idx]) for cl in cells])
@@ -155,7 +157,7 @@ def gene_lists(S, seed, out):
 
 
 def main(key, seed):
-    S = c7.load(key, seed, parts=("layout", "lite", "partial", "plite", "queries", "D"))
+    S = c7.load(key, seed, parts=("layout", "spindle", "naive_partial", "spindle_partial", "queries", "D"))
     out = c7.out_dir(key, seed)
     tile_queries(S, seed, out)
     gene_lists(S, seed, out)

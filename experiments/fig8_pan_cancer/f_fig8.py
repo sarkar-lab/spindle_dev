@@ -3,14 +3,14 @@
 Usage: python experiments/fig8_pan_cancer/f_fig8.py
 Redesigned 27 Oct (user): the queries, then each query's distance as a smoothed gradient over every section, then one
 quantitative panel; cut to two queries (user: a smaller figure). SHOWN RULE (stated in the caption): the programmes whose
-Spindle-partial hits gain in match to the query (gain > GAIN_EPS) and score above the other tiles (delta > 0) in all
+Spindle-naive hits gain in match to the query (gain > GAIN_EPS) and score above the other tiles (delta > 0) in all
 five sections, means over seeds (programs.csv); the others are reported in the text (numbers.json).
 Atoms (figures/fig8_pan_cancer/atoms/), for the shown programmes:
   rs_<programme>, cbar_rs  A: the query, the breast exemplar's correlation R_S on the programme genes (diagonal blank)
   grad_<key>_<programme>, cbar_grad  B: seed 0, closeness of the tissue to the query (gradient_image); a programme
-                         absent from the section (Spindle-partial's mean delta <= 0, c_summary.py) is drawn faded
+                         absent from the section (Spindle-naive's mean delta <= 0, c_summary.py) is drawn faded
   gain, lift, legend_cd  C, D: every section x shown programme, mean +/- s.d. over seeds 0-4: gain in match to R_S
-                         (C) and co-variation lift over the hits' cells (D; c_xtumour.py) of Spindle-partial's and Spindle-lite-partial's
+                         (C) and co-variation lift over the hits' cells (D; c_xtumour.py) of Spindle-naive's and Spindle's
                          hits (5 % of the index tiles), variances only as a grey tick
 """
 
@@ -48,14 +48,14 @@ GRAD_STEPS = 32
 
 def shown():
     T = pd.read_csv(RES / "programs.csv")
-    P = T[T.method == "P"]
-    ok = P.assign(ok=(P.gain > GAIN_EPS) & (P.delta > 0)).groupby("program").ok.all()
+    N = T[T.method == "naive_partial"]
+    ok = N.assign(ok=(N.gain > GAIN_EPS) & (N.delta > 0)).groupby("program").ok.all()
     return [p for p in PROGS if ok[p]]
 
 
 def absent_pairs():
     T = pd.read_csv(RES / "programs.csv")
-    return set(map(tuple, T[(T.method == "P") & T.absent][["key", "program"]].to_numpy()))
+    return set(map(tuple, T[(T.method == "naive_partial") & T.absent][["key", "program"]].to_numpy()))
 
 
 # ---------------------------------------------------------------- A
@@ -147,10 +147,11 @@ def per_section():
             for p in progs:
                 x, c = i + off[p], PROG_COLORS[p]
                 ax.plot([x - 0.1, x + 0.1], [T.loc[(key, p, "D"), col]] * 2, color=ps.MUTED, lw=0.8, zorder=2)
-                for m, mk, dx in (("P", "o", -0.05), ("PL", "^", 0.05)):
+                for m, mk, dx in (("naive_partial", "o", -0.05), ("spindle_partial", "^", 0.05)):
                     r = T.loc[(key, p, m)]
                     ax.errorbar(x + dx, r[col], yerr=r[f"{col}_sd"] if np.isfinite(r[f"{col}_sd"]) else 0, fmt=mk,
-                                ms=2.8 if m == "P" else 3.0, color=c, mew=0.6, elinewidth=0.6, capsize=0, zorder=3)
+                                ms=2.8 if m == "naive_partial" else 3.0, color=c, mew=0.6, elinewidth=0.6, capsize=0,
+                                zorder=3)
         ax.set_xticks(range(len(KEYS)))
         ax.set_xticklabels([ps.DATASET_LABELS[k] for k in KEYS])
         ax.tick_params(axis="x", length=0)
@@ -163,8 +164,8 @@ def per_section():
         ps.save(fig, FIG, col, source="results/fig8_pan_cancer/programs.csv")
     ps.legend_atom(FIG, "legend_cd",
                    [Patch(fc=PROG_COLORS[p], ec="none", label=PROG_LABELS[p]) for p in progs]
-                   + [Line2D([], [], ls="", marker="o", ms=3, color=ps.INK, label="Spindle-partial"),
-                      Line2D([], [], ls="", marker="^", ms=3, color=ps.INK, label="Spindle-lite-partial"),
+                   + [Line2D([], [], ls="", marker="o", ms=3, color=ps.INK, label="Spindle-naive"),
+                      Line2D([], [], ls="", marker="^", ms=3, color=ps.INK, label="Spindle"),
                       Line2D([], [], ls="-", lw=0.8, color=ps.MUTED, label="Variances only")],
                    178, 4, ncol=5, handlelength=1.0, handletextpad=0.4, columnspacing=1.4, source="")
 

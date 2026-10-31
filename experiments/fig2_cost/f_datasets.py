@@ -5,10 +5,11 @@ The three panels share one row per dataset (datasets.yaml order, top to bottom) 
 margins, so the rows line up side by side in the pptx.
   datasets     A: cells, genes, index tiles, niches, blocks of the seed-0 build; dot area proportional to the value
                within each column (the range across datasets is a pptx text box).
-  storage      B: bytes, log scale, mean +- s.d. over seeds 0-4. Upper row: whole covariances, Spindle, Spindle-lite;
-               lower row: Spindle-partial (open circle), Spindle-lite-partial.
-  build_time   C: Spindle's full build (covariances, layout, block logs; file loading excluded), log scale.
-  build_adds   C: seconds each other index adds to it (Spindle-lite, Spindle-partial, Spindle-lite-partial), log scale.
+  storage      B: bytes, log scale, mean +- s.d. over seeds 0-4. Upper row: whole covariances, Spindle-naive, Spindle;
+               lower row: Spindle-naive (gene sets, open circle), Spindle (gene sets).
+  build_time   C: Spindle-naive's full build (covariances, layout, block logs; file loading excluded), log scale.
+  build_adds   C: seconds each other index adds to it (Spindle, Spindle-naive (gene sets), Spindle (gene sets)), log
+               scale.
   peak_memory  C: peak resident memory of the whole build (all four indexes), log scale.
   legend_storage, legend_adds: legends as their own atoms.
 """
@@ -35,7 +36,7 @@ A_LEFT, B_LEFT = 19.0, 1.5
 
 def load():
     df = pd.read_csv(ps.ROOT / SRC)
-    df["spindle_build_s"] = df[["prepare_s", "layout_s", "spindle_s"]].sum(axis=1)
+    df["naive_build_s"] = df[["prepare_s", "layout_s", "naive_s"]].sum(axis=1)
     df["key"] = pd.Categorical(df["key"], ps.DATASET_ORDER, ordered=True)
     return df.sort_values(["key", "seed"])
 
@@ -79,13 +80,14 @@ def storage(df):
     n = rows(ax)
     y = np.arange(n)
     up, lo = y - ROW_OFF, y + ROW_OFF
-    m = {c: mean_sd(df, f"bytes_{c}") for c in ("whole", "spindle", "lite", "partial", "plite")}
+    m = {c: mean_sd(df, f"bytes_{c}") for c in ("whole", "naive", "spindle", "naive_partial", "spindle_partial")}
     mb = {c: (mu / 1e6, sd / 1e6) for c, (mu, sd) in m.items()}
-    for yy, a, b in ((up, "whole", "lite"), (lo, "partial", "plite")):
+    for yy, a, b in ((up, "whole", "spindle"), (lo, "naive_partial", "spindle_partial")):
         ax.hlines(yy, mb[b][0], mb[a][0], color=ps.LIGHT, lw=1.2, zorder=1)
-    spec = [("whole", up, ps.TIER_COLORS["whole"], "s", True), ("spindle", up, ps.TIER_COLORS["spindle"], "o", True),
-            ("lite", up, ps.TIER_COLORS["lite"], "D", True), ("partial", lo, ps.TIER_COLORS["spindle"], "o", False),
-            ("plite", lo, ps.TIER_COLORS["plite"], "^", True)]
+    spec = [("whole", up, ps.TIER_COLORS["whole"], "s", True), ("naive", up, ps.TIER_COLORS["naive"], "o", True),
+            ("spindle", up, ps.TIER_COLORS["spindle"], "D", True),
+            ("naive_partial", lo, ps.TIER_COLORS["naive"], "o", False),
+            ("spindle_partial", lo, ps.TIER_COLORS["spindle_partial"], "^", True)]
     for c, yy, col, mk, filled in spec:
         mu, sd = mb[c]
         ax.errorbar(mu, yy, xerr=sd, fmt=mk, ms=3.2, color=col, mfc=col if filled else "white", mec=col, mew=0.8,
@@ -116,14 +118,15 @@ def xlog_rows(w, xlabel, left=1.5):
 def build_cost(df):
     y = np.arange(len(ps.DATASET_ORDER))
     fig, ax = xlog_rows(W_C1, "Build time\n(s, log scale)")
-    mu, sd = mean_sd(df, "spindle_build_s")
-    ax.errorbar(mu, y, xerr=sd, fmt="o", ms=3.2, color=ps.TIER_COLORS["spindle"], elinewidth=0.6, zorder=3)
+    mu, sd = mean_sd(df, "naive_build_s")
+    ax.errorbar(mu, y, xerr=sd, fmt="o", ms=3.2, color=ps.TIER_COLORS["naive"], elinewidth=0.6, zorder=3)
     ps.plain_log(ax, "x", subs=(1.0, 2.0, 5.0))
     ps.save(fig, FIG, "build_time", source=SRC)
 
     fig, ax = xlog_rows(W_C2, "Added\n(s, log scale)")
-    for col, c, mk, filled, dy in (("lite_s", "lite", "D", True, -ROW_OFF), ("partial_s", "spindle", "o", False, 0.0),
-                                   ("plite_s", "plite", "^", True, ROW_OFF)):
+    for col, c, mk, filled, dy in (("spindle_s", "spindle", "D", True, -ROW_OFF),
+                                   ("naive_partial_s", "naive", "o", False, 0.0),
+                                   ("spindle_partial_s", "spindle_partial", "^", True, ROW_OFF)):
         mu, sd = mean_sd(df, col)
         k = ps.TIER_COLORS[c]
         ax.errorbar(mu, y + dy, xerr=sd, fmt=mk, ms=3.0, color=k, mfc=k if filled else "white", mec=k, mew=0.8,
@@ -132,7 +135,7 @@ def build_cost(df):
     ps.save(fig, FIG, "build_adds", source=SRC)
 
     fig, ax = xlog_rows(W_C3, "Peak memory\n(GB, log scale)")
-    mu, sd = mean_sd(df, "peak_gb_plite")
+    mu, sd = mean_sd(df, "peak_gb_spindle_partial")
     ax.errorbar(mu, y, xerr=sd, fmt="o", ms=3.2, color=ps.INK, elinewidth=0.6, zorder=3)
     ps.plain_log(ax, "x", subs=(1.0, 2.0, 5.0))
     ax.set_xlim(2, 80)
@@ -145,8 +148,9 @@ def legends():
         return Line2D([], [], ls="", marker=mk, ms=3.5, color=k, mfc=k if filled else "white", mec=k, mew=0.8,
                       label=label)
 
-    handles = [h("whole", "s", "Whole covariances"), h("spindle", "o", "Spindle"), h("lite", "D", "Spindle-lite"),
-               h("spindle", "o", "Spindle-partial", filled=False), h("plite", "^", "Spindle-lite-partial")]
+    handles = [h("whole", "s", "Whole covariances"), h("naive", "o", "Spindle-naive"), h("spindle", "D", "Spindle"),
+               h("naive", "o", "Spindle-naive (gene sets)", filled=False),
+               h("spindle_partial", "^", "Spindle (gene sets)")]
     ps.legend_atom(FIG, "legend_tiers", handles, 178, 5, ncol=5, source=SRC)
 
 

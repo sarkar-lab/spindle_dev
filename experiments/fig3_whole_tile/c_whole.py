@@ -21,7 +21,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common3 as c3  # noqa: E402
 from common3 import data  # noqa: E402
-from spindle_dev.kernels import spindle_scan  # noqa: E402
+from spindle_dev.kernels import naive_scan  # noqa: E402
 
 
 def run(key):
@@ -47,7 +47,7 @@ def run(key):
         rows = np.arange(len(X), dtype=np.int64)
         DW = np.empty((len(s["test"]), len(X)))
         for j, t in enumerate(s["test"]):
-            spindle_scan(X, W[t], rows, DW[j])
+            naive_scan(X, W[t], rows, DW[j])
         np.save(data.cache_dir(key, seed) / "DW.npy", DW)
         print(f"{key} seed {seed}: d_W {DW.shape}", flush=True)
     rec["total_s"] = time.perf_counter() - t0

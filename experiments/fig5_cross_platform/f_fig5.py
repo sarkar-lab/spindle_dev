@@ -9,7 +9,7 @@ Atoms (figures/fig5_cross_platform/atoms/):
   pca_raw, pca_corr       PCA of the shrunk whole-matrix logs, fit on the Xenium tiles (index of v2x); Xenium tiles
                           and Visium tiles before / after the global shift; same axes
   legend_platform         Xenium / Visium
-  tissue                  seed 0, Spindle with the global shift: each query's tumour fraction against the mean of its
+  tissue                  seed 0, Spindle-naive with the global shift: each query's tumour fraction against the mean of its
                           top 10 on the other platform, both directions; diagonal dashed
   ablation                tissue agreement r per correction (none, per niche, global) and direction, mean +/- s.d.
                           over seeds 0-4
@@ -140,7 +140,7 @@ def tissue():
 
 def ablation():
     t = pd.read_csv(RES / "tissue.csv").set_index(["direction", "method"])
-    arms = [("spindle_none", "None"), ("spindle_per_niche", "Per niche"), ("spindle_global", "Global")]
+    arms = [("naive_none", "None"), ("naive_per_niche", "Per niche"), ("naive_global", "Global")]
     fig, ax = ps.atom(50, 46, left=10.0, bottom=8.0, right=1.5, top=1.5)
     w = 0.36
     for j, d in enumerate(("x2v", "v2x")):

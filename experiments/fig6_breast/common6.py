@@ -41,7 +41,7 @@ CLASSES = [
 CLASS_NAMES = [c[0] for c in CLASSES]
 
 
-def load(seed, parts=("layout", "spindle", "lite", "partial", "queries", "D")):
+def load(seed, parts=("layout", "naive", "spindle", "naive_partial", "queries", "D")):
     """Section, build and per-cell inputs of one seed, as a dict. seed = "full": the layout of every tile of the
     section (no tile held out; built here with sd.build_layout, as c_index_cache.py does for a seed's index tiles)."""
     adata, tiles, covs, genes = data.prepare(KEY)

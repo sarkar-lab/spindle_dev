@@ -3,7 +3,7 @@ Redesigned 27 Oct (user): distance to a query as a smoothed gradient over the se
 
 A  the query (breast exemplar correlation R_S), one row per query
 B  seed 0: closeness of every section to the query (breast | lung over pancreas | brain | skin)
-C  every section: gain in match to the query of Spindle-partial's and Spindle-lite-partial's hits
+C  every section: gain in match to the query of Spindle-naive's and Spindle's hits
 D  the same: co-variation lift over the hits' cells (Figs 6-7)
 """
 

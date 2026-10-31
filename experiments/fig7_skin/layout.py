@@ -1,11 +1,11 @@
 """Fig 7 draft layout (mm, top-left corners on the 180 mm page); read by experiments/common/build_figure.py.
 Redesigned around search (user, 27 Oct: not about blocks; full freedom):
 
-A  gene-list search on skin: the three skin signatures, cells by score, Spindle-partial's 10 tiles outlined
-B  whole-tile search on skin: a held-out epidermis tile (rule in c_queries.py) and Spindle's top 10 on the section and
-   up close; compositions; all skin held-out queries vs random 10
-C  every section: composition difference to Spindle's top 10, Spindle-lite's first 10 and a random 10
-D  every signature on every section: Cliff's delta, Spindle-partial and Spindle-lite-partial
+A  gene-list search on skin: the three skin signatures, cells by score, Spindle-naive's 10 tiles outlined
+B  whole-tile search on skin: a held-out epidermis tile (rule in c_queries.py) and Spindle-naive's top 10 on the section
+   and up close; compositions; all skin held-out queries vs random 10
+C  every section: composition difference to Spindle-naive's top 10, Spindle's first 10 and a random 10
+D  every signature on every section: Cliff's delta, Spindle-naive and Spindle
 E  the same: co-variation lift on S
 """
 
@@ -24,7 +24,7 @@ TEXTS = [("A", 0, 0, 5, 4, "letter"), ("B", 0, BY, 5, 4, "letter"), ("C", 0, R3,
 for x, (name, title) in zip(MX, SIG):
     ATOMS += [(f"sig_map_{name}", x, 6, 1), (f"cbar_sig_{name}", x + 18, 35, 1)]
     TEXTS.append((title, x + 4, 0.5, 54, 3, "label_c"))
-TEXTS.append(("Signature score; Spindle-partial's 10 nearest tiles outlined", 0, 42, 120, 3, "small"))
+TEXTS.append(("Signature score; Spindle-naive's 10 nearest tiles outlined", 0, 42, 120, 3, "small"))
 
 ATOMS += [("ex_map", 0, BY + 6, 1), ("legend_class", 0, BY + 36, 1),
           ("ex_query", TX, TY + 6.5, 1)]

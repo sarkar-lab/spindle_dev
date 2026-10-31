@@ -6,10 +6,10 @@ Reads results/fig5_cross_platform/per_query/ (c_cross.py); writes (tracked):
                     10), mean absolute difference (top 10; random = all index tiles), co-located rank (hit@1/5/10,
                     median rank), N
   tissue.csv        per (direction, method): mean and s.d. over seeds 0-4 of every tissue_seeds.csv column
-  tissue_seed0.csv  seed 0, spindle_global: per query, its tumour fraction and its top 10's mean (Fig 5C)
-  lite.csv          per direction: Spindle-lite against spindle_global (NX5, Overlap(5 %, 5 % N), tiles returned),
+  tissue_seed0.csv  seed 0, naive_global: per query, its tumour fraction and its top 10's mean (Fig 5C)
+  spindle.csv       per direction: Spindle against naive_global (NX5, Overlap(5 %, 5 % N), tiles returned),
                     mean over queries per seed, then mean and s.d. over seeds
-  index.csv         per direction: N, query tiles, p, niches and blocks (min-max over seeds), Spindle and Spindle-lite MB
+  index.csv         per direction: N, query tiles, p, niches and blocks (min-max over seeds), Spindle-naive and Spindle MB
 Every file keeps the tag of its inputs; mixed or missing tags raise.
 """
 
@@ -58,26 +58,26 @@ def main():
     ts.to_csv(c5.OUT / "tissue_seeds.csv", index=False)
     tissue = seed_stats(ts, ["direction", "method"])
     tissue.to_csv(c5.OUT / "tissue.csv", index=False)
-    s0 = pq[(pq.seed == data.EXAMPLE_SEED) & (pq.method == "spindle_global")]
+    s0 = pq[(pq.seed == data.EXAMPLE_SEED) & (pq.method == "naive_global")]
     s0[["direction", "query", "query_tumour", "hits_tumour", "tag"]].to_csv(c5.OUT / "tissue_seed0.csv", index=False)
 
-    lt = load("_lite").groupby(["direction", "seed"])[["NX5", "overlap5", "n_found", "work"]].mean().reset_index()
-    lite = seed_stats(lt, ["direction"])
-    lite.to_csv(c5.OUT / "lite.csv", index=False)
+    st = load("_spindle").groupby(["direction", "seed"])[["NX5", "overlap5", "n_found", "work"]].mean().reset_index()
+    spindle = seed_stats(st, ["direction"])
+    spindle.to_csv(c5.OUT / "spindle.csv", index=False)
 
     ix = load("_index")
     index = ix.groupby("direction").agg(N=("N", "first"), n_query=("n_query", "first"), p=("p", "first"),
                                         niches_min=("n_niches", "min"), niches_max=("n_niches", "max"),
                                         blocks_min=("n_blocks", "min"), blocks_max=("n_blocks", "max"),
-                                        spindle_mb=("bytes_spindle", "mean"), lite_mb=("bytes_lite", "mean"))
-    index[["spindle_mb", "lite_mb"]] /= 1e6
+                                        naive_mb=("bytes_naive", "mean"), spindle_mb=("bytes_spindle", "mean"))
+    index[["naive_mb", "spindle_mb"]] /= 1e6
     index["tag"] = data.TAG
     index.reset_index().to_csv(c5.OUT / "index.csv", index=False)
 
     pd.set_option("display.width", 200)
     print(tissue[["direction", "method", "tissue_r_mean", "tissue_r_std", "mae_mean", "mae_random_mean",
                   "hit5_mean", "hit5_random_mean"]].round(3).to_string(index=False))
-    print(lite.round(3).to_string(index=False))
+    print(spindle.round(3).to_string(index=False))
     print(index.round(2).to_string())
 
 

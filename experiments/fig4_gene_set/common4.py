@@ -6,16 +6,16 @@ Workload (SPINDLE_PARTIAL.md §6, as 19 Oct, user 26 Oct: contiguous sets only):
 nearest index tile, cache D.npy): a block drawn uniformly among the niche's blocks with at least |S| genes (the size
 is skipped when there is none), then a uniform start. One generator per (dataset, seed), seeded by the seed. The
 query is the held-out tile's shrunk covariance cut to S (queries.tile_query); every niche is searched. Ground truth:
-the exact d_B^S (SpindlePartial.distances).
+the exact d_B^S (SpindleNaivePartial.distances).
 
 Baselines (experiment code, ported from the pre-cleanup src/spindle_dev/partial_search.py, in git history): the gene-set
-query is completed to all p genes, then searched as a whole tile with Spindle (Spindle.query_vectors +
-Spindle.distances, exact d_B); no second shrinkage.
+query is completed to all p genes, then searched as a whole tile with Spindle-naive (SpindleNaive.query_vectors +
+SpindleNaive.distances, exact d_B); no second shrinkage.
   padding     Q_S on S x S, the mean of Q_S's variances times I on the other genes, no cross terms.
   imputation  the Gaussian conditional of the other genes given Q_S, prior the mean index covariance of the
               predicted niche (the niche whose mean covariance is nearest the query in d_B^S on its own blocks).
-Stored bytes of the baselines: padding = Spindle's block logs; imputation = those plus one float32 upper triangle of
-a p x p mean covariance per niche.
+Stored bytes of the baselines: padding = Spindle-naive's block logs; imputation = those plus one float32 upper
+triangle of a p x p mean covariance per niche.
 """
 
 import sys
@@ -72,7 +72,8 @@ def pad(cov_s, genes, p):
 
 
 def predict_niche(cov_s, genes, means, blocks):
-    """The niche whose mean covariance is nearest the query in d_B^S on that niche's blocks (blocks: partial.blocks)."""
+    """The niche whose mean covariance is nearest the query in d_B^S on that niche's blocks
+    (blocks: naive_partial.blocks)."""
     col = np.full(len(next(iter(means.values()))), -1, dtype=np.int64)
     col[genes] = np.arange(len(genes))
     best, best_d = None, np.inf
@@ -105,15 +106,16 @@ def impute(cov_s, genes, M):
     return out
 
 
-def exact_query_logs(partial, cov_s, genes):
-    """The query's block logs as SpindlePartial.distances computes them inside its scan (spindle.py:139-150): one per
-    (niche, block meeting S). Timed on their own (c_timing.py), they split the exact gene-set time into query logs and
-    search; the per-block bookkeeping is counted with the logs, so the search time is, if anything, underestimated."""
-    col = np.full(partial.p, -1, dtype=np.int64)
+def naive_partial_query_logs(naive_partial, cov_s, genes):
+    """The query's block logs as SpindleNaivePartial.distances computes them inside its scan (naive.py:137-157): one per
+    (niche, block meeting S). Timed on their own (c_timing.py), they split the Spindle-naive gene-set time into query
+    logs and search; the per-block bookkeeping is counted with the logs, so the search time is, if anything,
+    underestimated."""
+    col = np.full(naive_partial.p, -1, dtype=np.int64)
     col[genes] = np.arange(len(genes))
     out = []
-    for k in partial.niches:
-        for g in partial.blocks[k]:
+    for k in naive_partial.niches:
+        for g in naive_partial.blocks[k]:
             pos = np.flatnonzero(col[g] >= 0)
             if len(pos) == 0:
                 continue
@@ -122,10 +124,10 @@ def exact_query_logs(partial, cov_s, genes):
     return out
 
 
-def n_segments(plite, genes):
+def n_segments(spindle_partial, genes):
     """{niche: number of segments of S} (runs of consecutive positions inside one block)."""
     out = {}
-    for k, nc in plite.niches.items():
+    for k, nc in spindle_partial.niches.items():
         blk, pos = nc.gene_block[genes], nc.gene_pos[genes]
         out[k] = int(sum(1 + int(np.sum(np.diff(np.sort(pos[blk == b])) > 1)) for b in np.unique(blk)))
     return out

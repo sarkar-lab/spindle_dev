@@ -8,9 +8,9 @@ F=experiments/fig3_whole_tile
 
 # 1. whole-matrix log vectors of every tile + exact d_W of the held-out tiles
 whole=$(sbatch --parsable --job-name=f3_whole --array=0-7 $C/run.sbatch $F/c_whole.py)
-# 2. Spindle-lite vs Spindle on every held-out tile (NX, work, g trade-off, band inputs)
+# 2. Spindle vs Spindle-naive on every held-out tile (NX, work, g trade-off, band inputs)
 sbatch --job-name=f3_nx --array=0-39 $C/run.sbatch $F/c_nx.py
-# 3. memory vs fidelity, breast + brain (Spindle-lite, PCA + flat, PCA-256 + PQ)
+# 3. memory vs fidelity, breast + brain (Spindle, PCA + flat, PCA-256 + PQ)
 sbatch --job-name=f3_memory --array=10-14,35-39 --dependency=afterok:$whole $C/run.sbatch $F/c_memory.py
 # 4. timings: one job at a time on the fixed node (timing.sbatch singleton)
 sbatch --array=0-7%1 --dependency=afterok:$whole,singleton $C/timing.sbatch $F/c_timing.py

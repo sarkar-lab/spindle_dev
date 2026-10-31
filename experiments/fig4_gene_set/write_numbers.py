@@ -2,13 +2,14 @@
 
 Usage (login node or anywhere): python experiments/fig4_gene_set/write_numbers.py
 Inputs: the small tables of c_summary.py (nx.csv, nx_size.csv, timing.csv, storage.csv, band/typical.csv,
-band/breast_cancer.npz). Spindle-lite-partial at g = 1 (as built, beta = 0.10). Values per dataset are means over
+band/breast_cancer.npz). Spindle at g = 1 (as built, beta = 0.10). Values per dataset are means over
 seeds 0-4 (all sizes pooled unless a size is named); "range" is over the eight datasets, "median" the median over
 them; per size, the median over datasets of each seed, then mean and s.d. over seeds (nx_size.csv). Timings: mean over
-seeds of the per-seed median ms per query. Spindle-partial computes its query logs inside its scan; c_timing.py times
-them again on their own (qlog_exact), so "exact_search" is its scan without them, like for like with Spindle-lite-
-partial's search (user, 26 Oct). Speed-ups: "search" = exact_search / lite (the bars of panel D, its labels); "e2e"
-= each side with its own query logs (exact / (qlog_lite + lite)).
+seeds of the per-seed median ms per query. Spindle-naive computes its query logs inside its scan; c_timing.py times
+them again on their own (qlog_naive_partial), so "naive_partial_search" is its scan without them, like for like with
+Spindle's search (user, 26 Oct). Speed-ups: "search" = naive_partial_search / spindle_partial (the bars of panel D,
+its labels); "e2e" = each side with its own query logs (naive_partial / (qlog_spindle_partial + spindle_partial)).
+Keys: spindle_partial = Spindle (SpindlePartial), naive_partial = Spindle-naive (SpindleNaivePartial).
 """
 
 import json
@@ -23,7 +24,7 @@ import data  # noqa: E402
 
 RES = data.RESULTS / "fig4_gene_set"
 OUT = RES / "numbers.json"
-METHODS = {"lite": "lite", "padding": "padding", "imputation": "imputation"}
+METHODS = {"spindle_partial": "spindle_partial", "padding": "padding", "imputation": "imputation"}
 
 
 def rng(s, nd=1):
@@ -46,24 +47,27 @@ def main():
         raise RuntimeError(f"inputs carry tags {tags}, expected {data.TAG}")
 
     pooled = {m: n[(n.method == m) & (n["size"] == 0)].set_index("key").loc[keys] for m in METHODS}
-    lite = pooled["lite"]
+    spindle_partial = pooled["spindle_partial"]
 
     per = {}
     for k in keys:
-        r, s, q = t.loc[k], st.loc[k], lite.loc[k]
+        r, s, q = t.loc[k], st.loc[k], spindle_partial.loc[k]
         per[k] = {
             "NX5_pct": {m: [pct(pooled[m].loc[k, "NX5"]), pct(pooled[m].loc[k, "NX5_sd"])] for m in METHODS},
             "overlap5_pct": {m: pct(pooled[m].loc[k, "overlap5"]) for m in METHODS},
-            "lite_short10_pct": pct(q.short10), "lite_short5_pct": pct(q.short5),
-            "lite_found_median": round(float(q.n_found), 0), "lite_found_pct_of_N": pct(q.n_found / q.N),
+            "spindle_partial_short10_pct": pct(q.short10), "spindle_partial_short5_pct": pct(q.short5),
+            "spindle_partial_found_median": round(float(q.n_found), 0),
+            "spindle_partial_found_pct_of_N": pct(q.n_found / q.N),
             "imputation_home_niche_pct": pct(pooled["imputation"].loc[k, "k_hat_home"]),
             "N": int(q.N), "queries_per_seed": round(float(q.n_queries), 0),
             "ms": {c: round(float(r[f"{c}_ms"]), 3)
-                   for c in ("exact", "exact_search", "qlog_exact", "lite", "qlog_lite", "padding", "imputation")},
-            "speedup_search": round(float(r.speedup_lite), 0),
+                   for c in ("naive_partial", "naive_partial_search", "qlog_naive_partial", "spindle_partial",
+                             "qlog_spindle_partial", "padding", "imputation")},
+            "speedup_search": round(float(r.speedup_spindle_partial), 0),
             "speedup_e2e": round(float(r.speedup_e2e), 1),
-            "MB": {c: round(float(s[c]), 2) for c in ("whole", "partial", "plite", "padding", "imputation")},
-            "plite_pct_partial": round(float(s.plite_pct_partial), 2),
+            "MB": {c: round(float(s[c]), 2)
+                   for c in ("whole", "naive_partial", "spindle_partial", "padding", "imputation")},
+            "spindle_partial_pct_naive_partial": round(float(s.spindle_partial_pct_naive_partial), 2),
         }
 
     size = {}
@@ -72,7 +76,7 @@ def main():
         size[m] = {int(L): {"NX5_pct": [pct(x.loc[L, "NX5"]), pct(x.loc[L, "NX5_sd"])],
                             "overlap5_pct": [pct(x.loc[L, "overlap5"]), pct(x.loc[L, "overlap5_sd"])]}
                    for L in (4, 8, 16, 32)}
-        if m == "lite":
+        if m == "spindle_partial":
             for L in (4, 8, 16, 32):
                 size[m][int(L)]["short10_pct"] = pct(x.loc[L, "short10"])
 
@@ -98,22 +102,29 @@ def main():
         "range": {
             **{f"NX5_pct_{m}": rng(100 * pooled[m].NX5) for m in METHODS},
             **{f"overlap5_pct_{m}": rng(100 * pooled[m].overlap5) for m in METHODS},
-            "lite_short10_pct": rng(100 * lite.short10), "lite_found_pct_of_N": rng(100 * lite.n_found / lite.N),
+            "spindle_partial_short10_pct": rng(100 * spindle_partial.short10),
+            "spindle_partial_found_pct_of_N": rng(100 * spindle_partial.n_found / spindle_partial.N),
             "imputation_home_niche_pct": rng(100 * pooled["imputation"].k_hat_home, 0),
-            "exact_ms": rng(t.exact_ms, 1), "exact_search_ms": rng(t.exact_search_ms, 1),
-            "qlog_exact_ms": rng(t.qlog_exact_ms, 2), "lite_ms": rng(t.lite_ms, 2), "qlog_lite_ms": rng(t.qlog_lite_ms, 1),
-            "qlog_lite_over_lite": rng(t.qlog_lite_ms / t.lite_ms, 1),
+            "naive_partial_ms": rng(t.naive_partial_ms, 1),
+            "naive_partial_search_ms": rng(t.naive_partial_search_ms, 1),
+            "qlog_naive_partial_ms": rng(t.qlog_naive_partial_ms, 2),
+            "spindle_partial_ms": rng(t.spindle_partial_ms, 2),
+            "qlog_spindle_partial_ms": rng(t.qlog_spindle_partial_ms, 1),
+            "qlog_spindle_partial_over_spindle_partial": rng(t.qlog_spindle_partial_ms / t.spindle_partial_ms, 1),
             "padding_ms": rng(t.padding_ms, 1), "imputation_ms": rng(t.imputation_ms, 1),
-            "speedup_search": rng(t.speedup_lite, 0), "speedup_e2e": rng(t.speedup_e2e, 1),
-            "plite_MB": rng(st.plite, 1), "partial_MB": rng(st.partial, 0), "whole_MB": rng(st.whole, 0),
-            "plite_pct_partial": rng(st.plite_pct_partial, 1),
-            "partial_over_plite": rng(st.partial / st.plite, 1), "padding_over_plite": rng(st.padding / st.plite, 1),
-            "imputation_over_plite": rng(st.imputation / st.plite, 1), "whole_over_plite": rng(st.whole / st.plite, 0),
+            "speedup_search": rng(t.speedup_spindle_partial, 0), "speedup_e2e": rng(t.speedup_e2e, 1),
+            "spindle_partial_MB": rng(st.spindle_partial, 1), "naive_partial_MB": rng(st.naive_partial, 0),
+            "whole_MB": rng(st.whole, 0),
+            "spindle_partial_pct_naive_partial": rng(st.spindle_partial_pct_naive_partial, 1),
+            "naive_partial_over_spindle_partial": rng(st.naive_partial / st.spindle_partial, 1),
+            "padding_over_spindle_partial": rng(st.padding / st.spindle_partial, 1),
+            "imputation_over_spindle_partial": rng(st.imputation / st.spindle_partial, 1),
+            "whole_over_spindle_partial": rng(st.whole / st.spindle_partial, 0),
         },
         "median": {
             **{f"NX5_pct_{m}": pct(pooled[m].NX5.median()) for m in METHODS},
             **{f"overlap5_pct_{m}": pct(pooled[m].overlap5.median()) for m in METHODS},
-            "speedup_search": round(float(t.speedup_lite.median()), 0),
+            "speedup_search": round(float(t.speedup_spindle_partial.median()), 0),
             "speedup_e2e": round(float(t.speedup_e2e.median()), 1),
         },
         "band_breast": band,

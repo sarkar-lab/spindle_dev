@@ -123,13 +123,13 @@ def main():
                             "blocks": [int(per.blocks.min()), int(per.blocks.max())]}
 
     pq = Q.groupby("seed").agg(n=("query", "size"), tv_top=("tv_top", "median"), tv_random=("tv_random", "median"),
-                               tv_expr=("tv_expr", "median"), lite=("lite_in_top", "median"),
+                               tv_expr=("tv_expr", "median"), spindle=("spindle_in_top", "median"),
                                below=("tv_top", lambda s: 0))
     pq["below"] = Q.assign(b=Q.tv_top < Q.tv_random).groupby("seed").b.sum()
     out["tile_queries"] = {"n_per_split": int(pq.n.iloc[0]), "tv_top10": ms(pq.tv_top), "tv_random10": ms(pq.tv_random),
                            "below_random": [int(pq.below.min()), int(pq.below.max())],
                            "tv_expression_top10": ms(pq.tv_expr),
-                           "lite_in_spindle_top10_median": [int(pq.lite.min()), int(pq.lite.max())]}
+                           "spindle_in_naive_top10_median": [int(pq.spindle.min()), int(pq.spindle.max())]}
     q0 = Q[Q.seed == data.EXAMPLE_SEED].set_index("tile")
     t = int(ex.query_tile.iloc[0])
     out["example"] = {"seed": data.EXAMPLE_SEED, "tile": t, "cells": int(q0.loc[t, "n_cells"]),

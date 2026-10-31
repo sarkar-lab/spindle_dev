@@ -9,7 +9,7 @@ readouts, as declared on 19 Oct (the normalised-excess metric), so the earlier n
   MX10     = (mean exact d of the returned top 10 - mean exact top 10) / mean exact top 10 (secondary; queries
              returning >= 10 tiles).
 Whole-matrix vector of a covariance: the float32 upper triangle of its p x p log (eigenvalue floor 1e-6), off-diagonals
-x sqrt 2, / sqrt p, i.e. Spindle's block vector with one block of all genes in panel order; its L2 distance is the
+x sqrt 2, / sqrt p, i.e. Spindle-naive's block vector with one block of all genes in panel order; its L2 distance is the
 whole-matrix log-Euclidean distance d_W, on the same scale as d_B.
 """
 
@@ -20,7 +20,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "common"))
 import data  # noqa: E402,F401  (puts src/ on sys.path)
-from spindle_dev.spindle import BlockVectorizer  # noqa: E402
+from spindle_dev.naive import BlockVectorizer  # noqa: E402
 
 OUT = data.RESULTS / "fig3_whole_tile"
 G_DEFAULT = 0.25

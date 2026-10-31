@@ -2,10 +2,10 @@
 No schematic (user, 26 Oct).
 
 A  the typical breast query's distance bands (|S| = 16)
-B  NX at 5 % of N against |S|: Spindle-lite-partial, padding, imputation
+B  NX at 5 % of N against |S|: Spindle, padding, imputation
 C  Overlap(5 %, 5 % of N) against |S|, the same methods
-D  time per query (exact gene-set scan, Spindle-lite-partial), speed-ups as text boxes (annotations.json)
-E  Spindle-lite-partial NX at 5 % of N per dataset, rows aligned with D
+D  time per query (Spindle-naive gene-set scan, Spindle), speed-ups as text boxes (annotations.json)
+E  Spindle NX at 5 % of N per dataset, rows aligned with D
 F  stored MB per dataset, rows aligned with D
 """
 

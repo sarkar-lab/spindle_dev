@@ -1,4 +1,4 @@
-"""Memory against fidelity (Fig 3D: breast and brain; no supplement, user 26 Oct): Spindle-lite on block logs
+"""Memory against fidelity (Fig 3D: breast and brain; no supplement, user 26 Oct): Spindle on block logs
 against compressed indexes over whole-matrix log vectors, each graded against its own exact distance.
 
 Usage: sbatch --array=10-14,35-39 experiments/common/run.sbatch experiments/fig3_whole_tile/c_memory.py   (breast, brain)
@@ -13,10 +13,10 @@ every whole vector plus a graph, so it compresses nothing, and at these N its se
                 scan of the codes; MB = codes N x D + projection + mean.
   pca256_pq<m>  PCA-256, then product quantization (m in {8, 32} sub-quantizers, 8 bits); MB = serialized PQ (codes +
                 codebooks) + projection + mean.
-  lite          Spindle-lite as built (the cached index, beta = 0.10), g = 0.25; MB = SpindleLite.nbytes(). Graded
+  spindle       Spindle as built (the cached index, beta = 0.10), g = 0.25; MB = Spindle.nbytes(). Graded
                 against d_B (D.npy). One point (user, 26 Oct): a beta curve at the fixed g is not monotone (above 0.10
                 the finer nodes return fewer tiles: short of 5 % N 13 % -> 96 %, NX up), so it was dropped.
-Reference stores (dotted lines, not graded: NX = 0 by definition): Spindle = Spindle.nbytes(), whole = float32 upper
+Reference stores (dotted lines, not graded: NX = 0 by definition): naive = SpindleNaive.nbytes(), whole = float32 upper
 triangles of the whole-matrix logs of the index tiles.
 Readout per method: NX5 (c = 5 % of N; c_eff = min(c, returned)), Overlap(5 %, 5 % N), share of queries returning
 fewer than c; mean over every held-out query. The PQ build uses the job's cores (build time is not a readout).
@@ -65,7 +65,7 @@ def grade(name, param, mb, orders, Dref, c):
 def run(key, seed):
     st = data.stamp()
     threads = int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
-    cc = data.load_cache(key, seed, parts=("spindle", "lite", "queries", "D"))
+    cc = data.load_cache(key, seed, parts=("naive", "spindle", "queries", "D"))
     DW = np.load(data.cache_dir(key, seed) / "DW.npy")
     W = np.load(c3.whole_path(key), mmap_mode="r")
     X = np.ascontiguousarray(W[cc.train])
@@ -81,10 +81,10 @@ def run(key, seed):
               f"overlap {r.get('overlap5', 0):.3f}, short5 {r.get('short5', 0):.3f}, empty {r.get('empty', 0):.3f}",
               flush=True)
 
-    # Spindle-lite as built, graded against d_B
-    orders = [cc.lite.search_vectors(qv)[0] for qv in cc.qvs]
-    log({**grade("lite", cc.lite.beta, cc.lite.nbytes(), orders, cc.D, c), "nodes": cc.lite.n_nodes()})
-    log({"method": "spindle", "param": "", "MB": cc.spindle.nbytes() / 1e6})
+    # Spindle as built, graded against d_B
+    orders = [cc.spindle.search_vectors(qv)[0] for qv in cc.qvs]
+    log({**grade("spindle", cc.spindle.beta, cc.spindle.nbytes(), orders, cc.D, c), "nodes": cc.spindle.n_nodes()})
+    log({"method": "naive", "param": "", "MB": cc.naive.nbytes() / 1e6})
     log({"method": "whole", "param": "", "MB": X.nbytes / 1e6})
 
     # whole-matrix competitors, graded against d_W

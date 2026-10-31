@@ -1,13 +1,13 @@
-"""Compiled search for Spindle, Spindle-lite and Spindle-lite partial: the C kernels (``kernels.c``) through ctypes.
+"""Compiled search for Spindle-naive, Spindle and Spindle partial: the C kernels (``kernels.c``) through ctypes.
 
-- ``spindle_scan``: Spindle's exact d_B scan, bit-identical to ``Spindle.distances_numpy``.
-- ``FlatLite``: Spindle-lite's flat index arrays and search, the same search as ``lite.greedy_probe`` +
-  ``lite.radius_search`` breadth-first over the node index, with bit-identical output (rows, order, scores, A_hat,
+- ``naive_scan``: Spindle-naive's exact d_B scan, bit-identical to ``SpindleNaive.distances_numpy``.
+- ``FlatSpindle``: Spindle's flat index arrays and search, the same search as ``spindle.greedy_probe`` +
+  ``spindle.radius_search`` breadth-first over the node index, with bit-identical output (rows, order, scores, A_hat,
   radius, work); see the C file for why.
-- ``FlatPartial``: Spindle-lite partial's flat arrays and search, bit-identical to
-  ``SpindleLitePartial.search_vectors_dfs`` (the query's pieces are the layers, passed per query).
+- ``FlatPartial``: Spindle partial's flat arrays and search, bit-identical to
+  ``SpindlePartial.search_vectors_dfs`` (the query's pieces are the layers, passed per query).
 
-They are what ``Spindle.search``, ``SpindleLite.search`` and ``SpindleLitePartial.search`` run; every benchmark
+They are what ``SpindleNaive.search``, ``Spindle.search`` and ``SpindlePartial.search`` run; every benchmark
 times these.
 
 The shared library is built with gcc on first use into ``_build/`` next to this file (on the shared file system),
@@ -15,7 +15,7 @@ named by the source's hash. Compute nodes have no gcc: after the C file changes,
 ``python -c "import spindle_dev.kernels as k; print(k.build())"``. ``-mavx2`` runs on both the login node and the
 compute nodes.
 
-Flat index (``FlatLite``, derived from ``LiteNiche`` objects; global ids run over niches in sorted order, then layers,
+Flat index (``FlatSpindle``, derived from ``SpindleNiche`` objects; global ids run over niches in sorted order, then layers,
 then nodes): ``cent`` float32 centre vectors back to back, ``node_voff`` each node's start in ``cent``, ``rad``
 float64 radii (the stored float32, widened), ``layer_node0`` first node of each layer (+ end), ``layer_dim``,
 ``layer_qoff`` each layer's start in the query's ``qcat``, ``niche_layer0`` / ``niche_tile0`` first layer / tile of
@@ -69,14 +69,14 @@ def _lib():
     global _LIB
     if _LIB is None:
         lib = ctypes.CDLL(str(build()))
-        lib.lite_search.restype = _i64
-        lib.lite_search.argtypes = [_p] * 10 + [_i64, _i64, _p, ctypes.c_double, _p, _p, _p, _p]
-        lib.spindle_scan.restype = None
-        lib.spindle_scan.argtypes = [_p, _p, _i64, _i64, _p, _p]
+        lib.spindle_search.restype = _i64
+        lib.spindle_search.argtypes = [_p] * 10 + [_i64, _i64, _p, ctypes.c_double, _p, _p, _p, _p]
+        lib.naive_scan.restype = None
+        lib.naive_scan.argtypes = [_p, _p, _i64, _i64, _p, _p]
         lib.partial_search.restype = _i64
         lib.partial_search.argtypes = [_p] * 9 + [_i64] + [_p] * 4 + [ctypes.c_double] + [_p] * 4
-        lib.lite_row_dists.restype = None
-        lib.lite_row_dists.argtypes = [_p, _p, _i64, _i64, _p]
+        lib.spindle_row_dists.restype = None
+        lib.spindle_row_dists.argtypes = [_p, _p, _i64, _i64, _p]
         _LIB = lib
     return _LIB
 
@@ -85,17 +85,17 @@ def _ptr(a: np.ndarray):
     return a.ctypes.data
 
 
-def spindle_scan(X: np.ndarray, q: np.ndarray, rows: np.ndarray, out: np.ndarray) -> None:
+def naive_scan(X: np.ndarray, q: np.ndarray, rows: np.ndarray, out: np.ndarray) -> None:
     """out[rows] = d_B of each row of float32 X to float32 q, as numpy's
     sqrt(((X - q) ** 2).sum(1, dtype=float64)) bit for bit."""
     X = np.ascontiguousarray(X, dtype=np.float32)
     q = np.ascontiguousarray(q, dtype=np.float32)
     rows = np.ascontiguousarray(rows, dtype=np.int64)
     if out.dtype != np.float64 or not out.flags.c_contiguous or len(rows) != len(X) or q.shape != (X.shape[1],):
-        raise ValueError("spindle_scan: shape or dtype mismatch")
+        raise ValueError("naive_scan: shape or dtype mismatch")
     if len(rows) and (rows.min() < 0 or rows.max() >= len(out)):
-        raise IndexError("spindle_scan: row outside out")
-    _lib().spindle_scan(_ptr(X), _ptr(q), len(X), X.shape[1], _ptr(rows), _ptr(out))
+        raise IndexError("naive_scan: row outside out")
+    _lib().naive_scan(_ptr(X), _ptr(q), len(X), X.shape[1], _ptr(rows), _ptr(out))
 
 
 def row_dists(C: np.ndarray, q: np.ndarray) -> np.ndarray:
@@ -103,12 +103,12 @@ def row_dists(C: np.ndarray, q: np.ndarray) -> np.ndarray:
     C = np.ascontiguousarray(C, dtype=np.float32)
     q = np.ascontiguousarray(q, dtype=np.float64)
     out = np.empty(len(C))
-    _lib().lite_row_dists(_ptr(C), _ptr(q), len(C), C.shape[1], _ptr(out))
+    _lib().spindle_row_dists(_ptr(C), _ptr(q), len(C), C.shape[1], _ptr(out))
     return out
 
 
-class FlatLite:
-    """The flat arrays of a Spindle-lite index (derived from its ``LiteNiche`` objects, nothing new stored)."""
+class FlatSpindle:
+    """The flat arrays of a Spindle index (derived from its ``SpindleNiche`` objects, nothing new stored)."""
 
     def __init__(self, niches):
         if any(len(C) > 256 for nc in niches.values() for C in nc.centres):
@@ -158,9 +158,9 @@ class FlatLite:
         qcat = self.qcat(qv)
         N = len(self.rows)
         a2, k, t, st = np.empty(N), np.empty(N, dtype=np.int64), np.empty(N, dtype=np.int64), np.empty(3)
-        n = _lib().lite_search(*self._args, _ptr(qcat), float(g), _ptr(a2), _ptr(k), _ptr(t), _ptr(st))
+        n = _lib().spindle_search(*self._args, _ptr(qcat), float(g), _ptr(a2), _ptr(k), _ptr(t), _ptr(st))
         if n < 0:
-            raise MemoryError("lite_search: out of memory")
+            raise MemoryError("spindle_search: out of memory")
         a2, k, t = a2[:n], k[:n], t[:n]
         order = np.lexsort((t, k, a2))            # = sorting the (A^2, niche, tile) tuples
         rows = self.rows[self.niche_tile0[k[order]] + t[order]]
@@ -174,7 +174,7 @@ class FlatLite:
 
 
 class FlatPartial:
-    """The flat arrays of a Spindle-lite partial index (derived from its ``PartialNiche`` objects)."""
+    """The flat arrays of a Spindle partial index (derived from its ``PartialNiche`` objects)."""
 
     def __init__(self, niches):
         if any(len(C) > 256 for nc in niches.values() for C in nc.centres):
@@ -213,7 +213,7 @@ class FlatPartial:
 
     def search(self, qp, g: float):
         """(training rows by increasing A, A, best A^2 of the probe (unnormalised), work) for one query's pieces
-        (``lite_partial.QueryPieces``)."""
+        (``spindle_partial.QueryPieces``)."""
         qlayer, q0, qoff, qcat, o = [], [0], [], [], 0
         for k in self.keys:
             for iv, vec in qp.layers[k]:

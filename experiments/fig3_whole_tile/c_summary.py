@@ -6,10 +6,10 @@ Reads results/fig3_whole_tile/{per_query,timing,memory}/ and writes (tracked):
                    10 and of 5 % N over held-out queries; median work, work fraction, tiles returned, radius / nearest
   nx.csv           per (dataset, g): mean and s.d. over seeds of every nx_seeds.csv column
   timing_seeds.csv per (dataset, seed): median ms of every timed step over the timed queries
-  timing.csv       per dataset: mean and s.d. over seeds; speed-ups of the means (whole / Spindle, Spindle / lite)
+  timing.csv       per dataset: mean and s.d. over seeds; speed-ups of the means (whole / naive, naive / Spindle)
   memory.csv       per (dataset, method, param): mean and s.d. over seeds of MB, NX5, Overlap, short5
   band/<key>.npz   the typical query of the band plot (seed 0, g = 0.25; rule in c_nx.py): its exact d_B to every
-                   index tile, the rows Spindle-lite returned; band/typical.csv: the pick and its base rate per dataset
+                   index tile, the rows Spindle returned; band/typical.csv: the pick and its base rate per dataset
 Every file keeps the tag column of its inputs; mixed or missing tags raise.
 """
 
@@ -87,15 +87,15 @@ def timing_tables():
         return
     tm = pd.concat([pd.read_csv(f) for f in files])
     tag = one_tag(tm)
-    cols = ["qlog_whole_ms", "qlog_block_ms", "whole_ms", "spindle_ms", "lite_ms"]
+    cols = ["qlog_whole_ms", "qlog_block_ms", "whole_ms", "naive_ms", "spindle_ms"]
     med = tm.groupby(["key", "seed"])[cols].median().reset_index()
     med["n_queries"] = tm.groupby(["key", "seed"]).size().values
     med["tag"] = tag
     med.to_csv(OUT / "timing_seeds.csv", index=False)
     t = mean_sd(med, ["key"], cols)
+    t["speedup_naive_vs_whole"] = t.whole_ms / t.naive_ms
+    t["speedup_spindle_vs_naive"] = t.naive_ms / t.spindle_ms
     t["speedup_spindle_vs_whole"] = t.whole_ms / t.spindle_ms
-    t["speedup_lite_vs_spindle"] = t.spindle_ms / t.lite_ms
-    t["speedup_lite_vs_whole"] = t.whole_ms / t.lite_ms
     t["tag"] = tag
     t.to_csv(OUT / "timing.csv", index=False)
 

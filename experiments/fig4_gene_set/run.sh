@@ -6,7 +6,7 @@ cd "$(dirname "$0")/../.."
 C=experiments/common
 F=experiments/fig4_gene_set
 
-# 1. gene-set search against the exact d_B^S on every held-out tile (Spindle-lite-partial, padding, imputation)
+# 1. gene-set search against the exact d_B^S on every held-out tile (Spindle, padding, imputation)
 sbatch --job-name=f4_nx --array=0-39 $C/run.sbatch $F/c_nx.py
 # 2. timings: one job at a time on the fixed node (timing.sbatch singleton)
 sbatch --array=0-7%1 $C/timing.sbatch $F/c_timing.py

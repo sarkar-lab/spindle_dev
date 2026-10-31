@@ -1,9 +1,9 @@
 """Every number Fig 5's caption and text quote -> results/fig5_cross_platform/numbers.json.
 
 Usage (login node or anywhere): python experiments/fig5_cross_platform/write_numbers.py
-Inputs: the small tables of c_summary.py (tissue.csv, lite.csv, index.csv) and c_extras.py (tiles.csv,
+Inputs: the small tables of c_summary.py (tissue.csv, spindle.csv, index.csv) and c_extras.py (tiles.csv,
 bias_pca_summary.csv, example.csv). Per direction (x2v: Xenium queries, Visium index; v2x: the reverse): mean and
-s.d. over seeds 0-4 of the per-seed value. Spindle with the global shift unless an arm is named. The co-located rank
+s.d. over seeds 0-4 of the per-seed value. Spindle-naive with the global shift unless an arm is named. The co-located rank
 (hit@k) is recorded but not quoted (user, 26 Oct: no panel); the controls are not computed (user, 26 Oct).
 """
 
@@ -18,7 +18,7 @@ import data  # noqa: E402
 
 RES = data.RESULTS / "fig5_cross_platform"
 OUT = RES / "numbers.json"
-ARMS = {"none": "spindle_none", "per_niche": "spindle_per_niche", "global": "spindle_global"}
+ARMS = {"none": "naive_none", "per_niche": "naive_per_niche", "global": "naive_global"}
 
 
 def r3(x):
@@ -27,12 +27,12 @@ def r3(x):
 
 def main():
     t = pd.read_csv(RES / "tissue.csv").set_index(["direction", "method"])
-    lite = pd.read_csv(RES / "lite.csv").set_index("direction")
+    spindle = pd.read_csv(RES / "spindle.csv").set_index("direction")
     ix = pd.read_csv(RES / "index.csv").set_index("direction")
     tiles = pd.read_csv(RES / "tiles.csv")
     pca = pd.read_csv(RES / "bias_pca_summary.csv")
     ex = pd.read_csv(RES / "example.csv")
-    tags = set(t.tag) | set(lite.tag) | set(ix.tag) | set(tiles.tag) | set(pca.tag) | set(ex.tag)
+    tags = set(t.tag) | set(spindle.tag) | set(ix.tag) | set(tiles.tag) | set(pca.tag) | set(ex.tag)
     if tags != {data.TAG}:
         raise RuntimeError(f"inputs carry tags {tags}, expected {data.TAG}")
 
@@ -55,10 +55,11 @@ def main():
             "colocated_hit5": [r3(g.hit5_mean), r3(g.hit5_std)], "colocated_hit5_random": r3(g.hit5_random_mean),
             "silhouette": {"uncorrected": r3(pca[(pca.direction == d) & ~pca.corrected].silhouette.iloc[0]),
                            "global": r3(pca[(pca.direction == d) & pca.corrected].silhouette.iloc[0])},
-            "lite_NX5_pct": [round(100 * lite.loc[d, "NX5_mean"], 1), round(100 * lite.loc[d, "NX5_std"], 1)],
-            "lite_overlap5": [r3(lite.loc[d, "overlap5_mean"]), r3(lite.loc[d, "overlap5_std"])],
-            "lite_found": round(float(lite.loc[d, "n_found_mean"]), 1),
-            "spindle_MB": round(float(ix.loc[d, "spindle_mb"]), 2), "lite_MB": round(float(ix.loc[d, "lite_mb"]), 2),
+            "spindle_NX5_pct": [round(100 * spindle.loc[d, "NX5_mean"], 1),
+                                round(100 * spindle.loc[d, "NX5_std"], 1)],
+            "spindle_overlap5": [r3(spindle.loc[d, "overlap5_mean"]), r3(spindle.loc[d, "overlap5_std"])],
+            "spindle_found": round(float(spindle.loc[d, "n_found_mean"]), 1),
+            "naive_MB": round(float(ix.loc[d, "naive_mb"]), 2), "spindle_MB": round(float(ix.loc[d, "spindle_mb"]), 2),
         }
     e = ex.iloc[0]
     out["example"] = {"direction": "v2x", "seed": data.EXAMPLE_SEED, "query": int(e.query),

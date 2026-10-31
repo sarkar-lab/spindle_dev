@@ -11,9 +11,9 @@ None = the whole section), tiled anew, gene cap as the dataset's (800, so all 37
 Gene ladder (E): lymph_node_5k (all cells, 4,624 genes) with the top GENES[t] genes by variance. GENES_PILOT finds
 the largest p the current builder fits in the node's memory (no src/ change; the paper reports the range that fits).
 Every point: split seed 0 (10 % held out, as the index cache), then the same stages as c_index_cache.py, each timed
-with the peak resident memory after it (monotone over the process): load (+ subsample), prepare, layout, spindle,
-lite, partial, plite. build_s = prepare + layout + spindle + lite + partial + plite (as builds.csv). Bytes as the
-cache. No index is saved.
+with the peak resident memory after it (monotone over the process): load (+ subsample), prepare, layout, naive,
+spindle, naive_partial, spindle_partial. build_s = prepare + layout + naive + spindle + naive_partial + spindle_partial
+(as builds.csv). Bytes as the cache. No index is saved.
 
 Writes results/fig2_cost/ladder/<ladder>_<x>.json; c_ladder_summary.py collects them into ladder.csv.
 """
@@ -71,17 +71,19 @@ def run(ladder, x):
     train, test = data.split(len(tiles), SEED)
     tr_covs = [covs[i] for i in train]
     layout = stage("layout", lambda: sd.build_layout([tiles[i] for i in train], tr_covs, genes, adata.n_obs))
-    spindle = stage("spindle", lambda: sd.Spindle(layout, tr_covs))
-    lite = stage("lite", lambda: sd.SpindleLite.from_spindle(spindle, layout))
-    partial = stage("partial", lambda: sd.SpindlePartial(layout, tr_covs))
-    plite = stage("plite", lambda: sd.SpindleLitePartial.from_partial(partial, layout))
+    naive = stage("naive", lambda: sd.SpindleNaive(layout, tr_covs))
+    spindle = stage("spindle", lambda: sd.Spindle.from_naive(naive, layout))
+    naive_partial = stage("naive_partial", lambda: sd.SpindleNaivePartial(layout, tr_covs))
+    spindle_partial = stage("spindle_partial", lambda: sd.SpindlePartial.from_naive_partial(naive_partial, layout))
 
     p, n = len(genes), len(train)
     rec.update(n_cells=int(adata.n_obs), p=p, n_tiles=len(tiles), n_train=n, n_test=len(test),
                n_niches=len(layout.block_dict), n_blocks=int(sum(len(b) for b in layout.block_dict.values())),
-               bytes_whole=4 * n * p * (p + 1) // 2, bytes_spindle=spindle.nbytes(), bytes_lite=lite.nbytes(),
-               bytes_partial=partial.nbytes(), bytes_plite=plite.nbytes(), plite_spindle_bytes=plite.spindle_bytes)
-    rec["build_s"] = sum(rec[f"{s}_s"] for s in ("prepare", "layout", "spindle", "lite", "partial", "plite"))
+               bytes_whole=4 * n * p * (p + 1) // 2, bytes_naive=naive.nbytes(), bytes_spindle=spindle.nbytes(),
+               bytes_naive_partial=naive_partial.nbytes(), bytes_spindle_partial=spindle_partial.nbytes(),
+               spindle_partial_naive_bytes=spindle_partial.naive_bytes)
+    rec["build_s"] = sum(rec[f"{s}_s"] for s in ("prepare", "layout", "naive", "spindle", "naive_partial",
+                                                  "spindle_partial"))
     rec["peak_gb"] = peak_gb()
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / f"{name}.json").write_text(json.dumps(rec, indent=1))

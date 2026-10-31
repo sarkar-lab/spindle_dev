@@ -48,36 +48,36 @@ def main():
                "cells_per_class": classes.groupby("class").n_cells.sum().to_dict()}
 
     L = pd.read_csv(RES / "lists.csv")
-    q = {k: L[L["query"] == k].set_index(["key", "list"]) for k in ("T", "TL", "D", "X")}
-    t, tl, d, x = q["T"], q["TL"].loc[q["T"].index], q["D"].loc[q["T"].index], q["X"].loc[q["T"].index]
+    q = {k: L[L["query"] == k].set_index(["key", "list"]) for k in ("T", "TS", "D", "X")}
+    t, ts, d, x = q["T"], q["TS"].loc[q["T"].index], q["D"].loc[q["T"].index], q["X"].loc[q["T"].index]
     lists = {"n": len(t), "per_dataset": t.groupby(level=0).size().to_dict(),
              "dropped_genes": {f"{k}/{n}": m for (k, n), m in t.missing.items() if isinstance(m, str) and m},
              "T_delta": rng(t.delta), "T_delta_gt0": int((t.delta > 0).sum()),
              "T_delta_gt05": int((t.delta > 0.5).sum()), "T_delta_le05": named(t.delta[t.delta <= 0.5]),
              "T_lift_gt0": int((t.lift > 0).sum()), "T_lift_le0": named(t.lift[t.lift <= 0]), "T_lift": rng(t.lift),
-             "TL_delta": rng(tl.delta), "TL_delta_gt0": int((tl.delta > 0).sum()),
-             "TL_delta_gt05": int((tl.delta > 0.5).sum()), "TL_lift_gt0": int((tl.lift > 0).sum()),
-             "TL_delta_minus_T": rng(tl.delta - t.delta), "TL_delta_minus_T_median": r3((tl.delta - t.delta).median()),
-             "TL_lift_minus_T_median": r3((tl.lift - t.lift).median()),
-             "TL_returned_lt10": named(tl.n_returned[tl.n_returned < 10]),
-             "TL_jacc_T_median": r3(tl.jacc_T.median()),
+             "TS_delta": rng(ts.delta), "TS_delta_gt0": int((ts.delta > 0).sum()),
+             "TS_delta_gt05": int((ts.delta > 0.5).sum()), "TS_lift_gt0": int((ts.lift > 0).sum()),
+             "TS_delta_minus_T": rng(ts.delta - t.delta), "TS_delta_minus_T_median": r3((ts.delta - t.delta).median()),
+             "TS_lift_minus_T_median": r3((ts.lift - t.lift).median()),
+             "TS_returned_lt10": named(ts.n_returned[ts.n_returned < 10]),
+             "TS_jacc_T_median": r3(ts.jacc_T.median()),
              "D_lift_gt0": int((d.lift > 0).sum()), "X_cov_above_T": int((x.cov_top > t.cov_top).sum()),
              "jacc_TD": rng(t.jacc_D), "jacc_TD_ge05": int((t.jacc_D >= 0.5).sum()),
              "skin": {n: {"genes": int(t.loc[(SKIN, n), "n_genes"]), "delta": r3(t.loc[(SKIN, n), "delta"]),
                           "cov_top": r3(t.loc[(SKIN, n), "cov_top"]), "cov_all": r3(t.loc[(SKIN, n), "cov_all"]),
-                          "TL_delta": r3(tl.loc[(SKIN, n), "delta"]), "TL_returned": r3(tl.loc[(SKIN, n), "n_returned"]),
+                          "TS_delta": r3(ts.loc[(SKIN, n), "delta"]), "TS_returned": r3(ts.loc[(SKIN, n), "n_returned"]),
                           "D_delta": r3(d.loc[(SKIN, n), "delta"])}
                       for n in t.loc[SKIN].index}}
 
     G = pd.read_csv(RES / "tiles.csv")
-    gm = G.groupby("key", sort=False)[["tv_top", "tv_lite", "tv_random", "tv_expr", "lite_in_top", "below_random",
-                                       "lite_below_random"]].mean()
+    gm = G.groupby("key", sort=False)[["tv_top", "tv_spindle", "tv_random", "tv_expr", "spindle_in_top",
+                                       "below_random", "spindle_below_random"]].mean()
     tiles = {"per_dataset": {k: {c: r3(v) for c, v in row.items()} for k, row in gm.iterrows()},
-             "tv_top": rng(gm.tv_top), "tv_lite": rng(gm.tv_lite), "tv_random": rng(gm.tv_random),
+             "tv_top": rng(gm.tv_top), "tv_spindle": rng(gm.tv_spindle), "tv_random": rng(gm.tv_random),
              "tv_expr": rng(gm.tv_expr),
              "below_random_pct_per_seed": rng(100 * G.below_random, lambda v: round(float(v), 1)),
-             "lite_below_random_pct_per_seed": rng(100 * G.lite_below_random, lambda v: round(float(v), 1)),
-             "queries_per_seed": rng(G.n_queries, int), "lite_in_top_median": rng(G.lite_in_top, int),
+             "spindle_below_random_pct_per_seed": rng(100 * G.spindle_below_random, lambda v: round(float(v), 1)),
+             "queries_per_seed": rng(G.n_queries, int), "spindle_in_top_median": rng(G.spindle_in_top, int),
              "breast_check": {"tv_top": r3(gm.loc["breast_cancer", "tv_top"]),
                               "tv_random": r3(gm.loc["breast_cancer", "tv_random"])}}
     out = {"stamp": data.stamp(), "example": example, "lists": lists, "tiles": tiles}

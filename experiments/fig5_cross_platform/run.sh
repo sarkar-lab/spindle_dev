@@ -7,7 +7,7 @@ F=experiments/fig5_cross_platform
 
 # 1. tiles + shrunk covariances of both platforms (results/_cache/cross_modal/tiles2000.pkl)
 tiles=$(sbatch --parsable --job-name=f5_tiles $C/run.sbatch $F/common5.py)
-# 2. search per seed (layout seed): Spindle (3 correction arms), Spindle-lite, expression and diagonal controls
+# 2. search per seed (layout seed): Spindle-naive (3 correction arms), Spindle, expression and diagonal controls
 cross=$(sbatch --parsable --job-name=f5_cross --array=0-4 --dependency=afterok:$tiles $C/run.sbatch $F/c_cross.py)
 # 3. maps, platform-bias PCA, example query
 sbatch --job-name=f5_extras --dependency=afterok:$cross $C/run.sbatch $F/c_extras.py

@@ -1,10 +1,10 @@
-"""Spindle-lite against Spindle on every held-out tile (Fig 3B; supplement: per-seed NX, band plots, g trade-off).
+"""Spindle against Spindle-naive on every held-out tile (Fig 3B; supplement: per-seed NX, band plots, g trade-off).
 
 Usage: sbatch --array=0-39 experiments/common/run.sbatch experiments/fig3_whole_tile/c_nx.py
        python experiments/fig3_whole_tile/c_nx.py [task id 0-39 | key seed]   (no argument: $SLURM_ARRAY_TASK_ID)
-Task t = dataset indexed_keys()[t // 5], seed SEEDS[t % 5]. The cached Spindle-lite (beta = 0.10) is searched from the
-cached query vectors (SpindleLite.search_vectors, compiled) at every g in common3.GS; the exact d_B is the cache's
-D.npy (Spindle.distances). Readouts per (query, g), common3: NX5, Overlap(5 %, 5 % N), MX10, tiles returned,
+Task t = dataset indexed_keys()[t // 5], seed SEEDS[t % 5]. The cached Spindle (beta = 0.10) is searched from the
+cached query vectors (Spindle.search_vectors, compiled) at every g in common3.GS; the exact d_B is the cache's
+D.npy (SpindleNaive.distances). Readouts per (query, g), common3: NX5, Overlap(5 %, 5 % N), MX10, tiles returned,
 short of 10, work (node distances computed) and work / all nodes, A_hat, radius, nearest exact d_B.
 
 Declared before the run (Fig 3B):
@@ -34,16 +34,16 @@ from common3 import data  # noqa: E402
 
 def run(key, seed):
     st = data.stamp()
-    c = data.load_cache(key, seed, parts=("lite", "queries", "D"))
-    lite, D = c.lite, c.D
+    c = data.load_cache(key, seed, parts=("spindle", "queries", "D"))
+    spindle, D = c.spindle, c.D
     n = D.shape[1]
     c5 = c3.c5(n)
-    n_nodes = lite.n_nodes()
+    n_nodes = spindle.n_nodes()
     out, found0 = [], []
     for j, qv in enumerate(c.qvs):
         d = D[j]
         for g in c3.GS:
-            rows, _, s = lite.search_vectors(qv, g=g)
+            rows, _, s = spindle.search_vectors(qv, g=g)
             out.append({"key": key, "seed": seed, "query": j, "test_tile": int(c.test[j]), "g": g, "N": n,
                         "c5": c5, "n_found": len(rows), "short10": len(rows) < 10, "short5": len(rows) < c5,
                         "NX5": c3.nx(d, rows, c5),

@@ -1,4 +1,4 @@
-"""Spindle-lite partial, final configuration (paper/SPINDLE_PARTIAL.md): gene-set queries on dyadic gene intervals,
+"""Spindle partial, final configuration (paper/SPINDLE_PARTIAL.md): gene-set queries on dyadic gene intervals,
 searched with a radius set by the query's own best match.
 
 Distances are unnormalised Frobenius distances between matrix logs (symmetric matrices as upper triangles with
@@ -9,9 +9,9 @@ Build, per niche (n tiles, its gene order and blocks from the layout):
      s | j, j + s <= m), in (block, s, j) order; a tile's interval vector is the float32 upper triangle of
      log Sigma_t[I, I];
   2. spread s_I = mean over tiles of ||v_t - mean v||^2;
-  3. per interval, farthest-first from tile 0 (lite.farthest_first, at most 256 centres); node counts: every K_I
+  3. per interval, farthest-first from tile 0 (spindle.farthest_first, at most 256 centres); node counts: every K_I
      starts at 1 and the K_I with the largest (r(K)^2 - r(K')^2) / s_I / added bytes is doubled (K' = min(2K, curve
-     length); ties to the earlier interval) until the node bytes reach BETA (0.10) times the niche's Spindle bytes;
+     length); ties to the earlier interval) until the node bytes reach BETA (0.10) times the niche's Spindle-naive bytes;
   4. nodes = the first K_I centres (float32 vectors), each tile joins its nearest (first on ties), radius = largest
      member distance (float32, rounded up); each tile stores its node per interval (one byte). No edges are stored:
      two nodes of consecutive pieces are linked when a tile points to both, which the node index already says.
@@ -41,14 +41,14 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from .kernels import FlatPartial
-from .lite import K_MAX, farthest_first, node_bytes
+from .spindle import K_MAX, farthest_first, node_bytes
 from .metrics import LOG_FLOOR, batched_log_spd, query_cov_s, sym_to_vec
-from .spindle import block_cov_stacks
+from .naive import block_cov_stacks
 from .utils import get_logger
 
 logger = get_logger(__name__)
 
-BETA = 0.10       # node bytes per niche, as a share of the niche's Spindle block-log bytes
+BETA = 0.10       # node bytes per niche, as a share of the niche's Spindle-naive block-log bytes
 G_DEFAULT = 1.0   # search knob: r = g * A_hat
 
 
@@ -123,7 +123,7 @@ class PartialNiche:
     centres: List[np.ndarray]             # (K_I, s(s+1)/2) float32 centre vectors
     radius: List[np.ndarray]              # (K_I,) float32 radii, rounded up
     node_index: List[np.ndarray]          # (n,) uint8: each tile's node in each interval
-    spindle_bytes: int = 0
+    naive_bytes: int = 0
     pos: Dict[Tuple[int, int, int], int] = field(default_factory=dict)
 
     def __post_init__(self):
@@ -153,10 +153,10 @@ class PartialNiche:
 
 
 def build_niche(covs: List[np.ndarray], perm, block_runs, rows, p: int, beta: float = BETA) -> PartialNiche:
-    """One niche's interval nodes from its tiles' block covariances (``spindle.block_cov_stacks`` order)."""
+    """One niche's interval nodes from its tiles' block covariances (``naive.block_cov_stacks`` order)."""
     n = len(rows)
     ms = [e - s for s, e in block_runs]
-    spindle_bytes = 4 * n * sum(m * (m + 1) // 2 for m in ms)
+    naive_bytes = 4 * n * sum(m * (m + 1) // 2 for m in ms)
     keys, dims, spread, curves, ffs, vecs = [], [], [], [], [], []
     for b, m in enumerate(ms):
         for s, j in aligned_intervals(m):
@@ -169,7 +169,7 @@ def build_niche(covs: List[np.ndarray], perm, block_runs, rows, p: int, beta: fl
             curves.append(r)
             ffs.append((order, cols))
             vecs.append(v)
-    K = allocate_relative(curves, dims, spread, beta * spindle_bytes)
+    K = allocate_relative(curves, dims, spread, beta * naive_bytes)
     centres, radius, node_index = [], [], []
     for (order, cols), v, k in zip(ffs, vecs, K):
         d = cols[:, :k]
@@ -189,7 +189,7 @@ def build_niche(covs: List[np.ndarray], perm, block_runs, rows, p: int, beta: fl
         gene_block[perm[s0:e0]] = b
         gene_pos[perm[s0:e0]] = np.arange(e0 - s0)
     return PartialNiche(np.asarray(rows), perm, [int(s0) for s0, _ in block_runs], gene_block, gene_pos, keys,
-                        spread, centres, radius, node_index, spindle_bytes)
+                        spread, centres, radius, node_index, naive_bytes)
 
 
 @dataclass
@@ -282,18 +282,18 @@ def radius_search(qy: _Query, r2: float) -> List[Tuple[float, int, int]]:
 
 
 # ---------------------------------------------------------------------------------------------- index class
-class SpindleLitePartial:
-    """Spindle-lite partial (final configuration): build from the layout and the training covariances, search a gene
+class SpindlePartial:
+    """Spindle partial (final configuration): build from the layout and the training covariances, search a gene
     set with knob g."""
 
     def __init__(self, data, train_covs, beta: float = BETA):
         self._build(data, block_cov_stacks(data, train_covs), beta)
 
     @classmethod
-    def from_partial(cls, partial, data, beta: float = BETA) -> "SpindleLitePartial":
-        """Build from a ``SpindlePartial`` index's block covariances (same layout and covariances)."""
+    def from_naive_partial(cls, naive_partial, data, beta: float = BETA) -> "SpindlePartial":
+        """Build from a ``SpindleNaivePartial`` index's block covariances (same layout and covariances)."""
         obj = cls.__new__(cls)
-        obj._build(data, partial.covs, beta)
+        obj._build(data, naive_partial.covs, beta)
         return obj
 
     def _build(self, data, block_covs, beta):
@@ -310,7 +310,7 @@ class SpindleLitePartial:
             self.niches[k] = nc
             logger.info("Niche %d: %d tiles, %d intervals, %d nodes, %.1fs", k, nc.n, len(nc.keys),
                         sum(len(C) for C in nc.centres), time.perf_counter() - t0)
-        self.spindle_bytes = int(sum(nc.spindle_bytes for nc in self.niches.values()))
+        self.naive_bytes = int(sum(nc.naive_bytes for nc in self.niches.values()))
         self._flat = FlatPartial(self.niches)
 
     @property

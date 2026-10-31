@@ -1,8 +1,8 @@
 """Collect the ladder points: results/fig2_cost/ladder/*.json -> results/fig2_cost/ladder.csv.
 
 Usage (login node, after the c_ladder.py arrays): python experiments/fig2_cost/c_ladder_summary.py
-Adds spindle_build_s (prepare + layout + spindle: Spindle's full build, file loading excluded). Fails if a point carries
-another tag. Prints the points and which planned points are missing (a gene point above the pilot's limit is expected).
+Adds naive_build_s (prepare + layout + naive: Spindle-naive's full build, file loading excluded). Fails if a point
+carries another tag. Prints the points and which planned points are missing (a gene point above the pilot's limit is expected).
 """
 
 import json
@@ -21,12 +21,12 @@ OUT = data.RESULTS / "fig2_cost" / "ladder.csv"
 
 def main():
     df = pd.DataFrame([json.loads(f.read_text()) for f in sorted(c_ladder.OUT.glob("*.json"))])
-    df["spindle_build_s"] = df[["prepare_s", "layout_s", "spindle_s"]].sum(axis=1)
+    df["naive_build_s"] = df[["prepare_s", "layout_s", "naive_s"]].sum(axis=1)
     df = df.sort_values(["ladder", "n_cells", "p"])
     df.to_csv(OUT, index=False)
     print(f"wrote {OUT.relative_to(data.ROOT)}: {len(df)} points; tags {sorted(set(df.tag))}")
-    cols = ["ladder", "n_cells", "p", "n_train", "n_niches", "n_blocks", "spindle_build_s", "lite_s", "partial_s",
-            "plite_s", "peak_gb_plite", "bytes_spindle", "bytes_lite", "bytes_plite"]
+    cols = ["ladder", "n_cells", "p", "n_train", "n_niches", "n_blocks", "naive_build_s", "spindle_s",
+            "naive_partial_s", "spindle_partial_s", "peak_gb_spindle_partial", "bytes_naive", "bytes_spindle", "bytes_spindle_partial"]
     print(df[cols].round(2).to_string(index=False))
     for ladder, xs in (("cells", c_ladder.CELLS), ("genes", c_ladder.GENES)):
         have = {f.stem.split("_", 1)[1] for f in c_ladder.OUT.glob(f"{ladder}_*.json")}

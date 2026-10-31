@@ -13,7 +13,7 @@ Platform correction (statistics over all query tiles and all index tiles; no lab
   shift(Lq, Lt) = (Lq - mean_q) * min(1, sd_t / sd_q) + mean_t    (entry-wise means, one scalar s.d. over all entries)
   none       no correction;
   global     shift of the whole p x p log, then exp (the default);
-  per_niche  shift per niche x block on Spindle's block-log vectors (the query's vector in that niche's layout
+  per_niche  shift per niche x block on Spindle-naive's block-log vectors (the query's vector in that niche's layout
              against the stored vectors of that niche's tiles); the s.d. is over the weighted vector entries.
 """
 
@@ -148,14 +148,14 @@ def global_corrected(q_covs, t_covs):
     return [exp_sym(x) for x in shift(whole_logs(q_covs), whole_logs(t_covs))]
 
 
-def per_niche_vectors(spindle, q_covs):
+def per_niche_vectors(naive, q_covs):
     """Per query, {niche: block vector shifted block by block onto that niche's stored vectors}."""
-    qvs = [spindle.query_vectors(c["cov"]) for c in q_covs]
+    qvs = [naive.query_vectors(c["cov"]) for c in q_covs]
     out = [dict() for _ in qvs]
-    for k, (_, vec) in spindle.layouts.items():
+    for k, (_, vec) in naive.layouts.items():
         edges = np.cumsum([0] + [len(w) for w in vec.w])
         Q = np.stack([qv[k] for qv in qvs]).astype(np.float64)
-        T = spindle.X[k].astype(np.float64)
+        T = naive.X[k].astype(np.float64)
         Z = np.empty_like(Q)
         for s, e in zip(edges[:-1], edges[1:]):
             Z[:, s:e] = shift(Q[:, s:e], T[:, s:e])

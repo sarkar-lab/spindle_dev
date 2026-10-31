@@ -2,10 +2,10 @@
 
 Usage: python experiments/fig7_skin/c_summary.py
 Writes results/fig7_skin/:
-  lists.csv      per dataset, list and query (T = Spindle-partial, TL = Spindle-lite-partial, D, X): mean and s.d. over
+  lists.csv      per dataset, list and query (T = Spindle-naive, TS = Spindle, D, X): mean and s.d. over
                  seeds of delta, cov_top, cov_all, lift, jacc_T, jacc_D, jacc_X, n_returned
-  tiles.csv      per dataset and seed: median TV to Spindle's top 10, Spindle-lite's first 10, a random 10 and the
-                 expression top 10; share of queries below random (Spindle, Spindle-lite); median Spindle-lite overlap
+  tiles.csv      per dataset and seed: median TV to Spindle-naive's top 10, Spindle's first 10, a random 10 and the
+                 expression top 10; share of queries below random (Spindle-naive, Spindle); median Spindle overlap
 """
 
 import sys
@@ -42,11 +42,11 @@ def tiles():
         for s in SEEDS:
             t = pd.read_csv(seed_dir(key, s) / "tile_queries.csv")
             rows.append({"key": key, "seed": s, "n_queries": len(t), "n_labels": int(t.n_labels.iloc[0]),
-                         "tv_top": t.tv_top.median(), "tv_lite": t.tv_lite.median(),
+                         "tv_top": t.tv_top.median(), "tv_spindle": t.tv_spindle.median(),
                          "tv_random": t.tv_random.median(), "tv_expr": t.tv_expr.median(),
                          "below_random": (t.tv_top < t.tv_random).mean(),
-                         "lite_below_random": (t.tv_lite < t.tv_random).mean(),
-                         "lite_in_top": t.lite_in_top.median(), "tag": t.tag.iloc[0]})
+                         "spindle_below_random": (t.tv_spindle < t.tv_random).mean(),
+                         "spindle_in_top": t.spindle_in_top.median(), "tag": t.tag.iloc[0]})
     return pd.DataFrame(rows)
 
 

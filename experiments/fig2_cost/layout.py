@@ -75,18 +75,18 @@ ranges = [f"{k_cells(r['cells_seed0'][0])}–{k_cells(r['cells_seed0'][1])}", f"
 for j, t in enumerate(ranges):  # one line, centred under its column
     TEXTS.append((t, X_A + A_LEFT + j * col_w, Y1 + fd.H - fd.BOTTOM + 1.0, col_w, 3, "small_c"))
 
-# B: fold labels above the whole-tile row (whole -> Spindle, Spindle -> Spindle-lite), at the log midpoints
+# B: fold labels above the whole-tile row (whole -> Spindle-naive, Spindle-naive -> Spindle), at the log midpoints
 for i, key in enumerate(fd.ps.DATASET_ORDER):
     d = N["datasets"][key]
     y, pitch = row_y(i)
     y_top = y - fd.ROW_OFF * pitch - 2.6
-    for a, b, f in (("spindle", "whole", d["fold_whole_spindle"]), ("lite", "spindle", d["fold_spindle_lite"])):
+    for a, b, f in (("naive", "whole", d["fold_whole_naive"]), ("spindle", "naive", d["fold_naive_spindle"])):
         xm = storage_x(math.sqrt(d["mb"][a] * d["mb"][b]))
         TEXTS.append((f"{f:.0f}×" if f >= 10 else f"{f:.1f}×", xm - 3.0, y_top, 6.0, 2.5, "small"))
 
 # C: what the column shows
-TEXTS += [("Spindle (full build)", X_C1 + 1.5, Y1 + 2.4, 23, 3, "small"),
-          ("added over Spindle", X_C2 + 1.5, Y1 + 2.4, 23, 3, "small"),
+TEXTS += [("Spindle-naive (full build)", X_C1 + 1.5, Y1 + 2.4, 23, 3, "small"),
+          ("added over Spindle-naive", X_C2 + 1.5, Y1 + 2.4, 23, 3, "small"),
           ("all four indexes", X_C3 + 1.5, Y1 + 2.4, 20, 3, "small")]
 
 # D/E titles

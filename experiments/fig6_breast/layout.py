@@ -7,7 +7,7 @@ A  niches: cells by niche; log2 enrichment of the 19 cell types per niche, secti
 B  ACTA2's block partners per niche
 C  block programmes of the chosen niche (rule in f_fig6.py) and the contrast niche in its order; numbered co-varying
    blocks with their key (hub genes; Hallmark, else GO BP term and FDR; block genes in the term) from blocks.csv
-D  a whole-tile query and Spindle's top 10; compositions; all held-out queries vs random 10
+D  a whole-tile query and Spindle-naive's top 10; compositions; all held-out queries vs random 10
 E  gene-list queries, all five signatures: Cliff's delta and co-variation on S
 """
 

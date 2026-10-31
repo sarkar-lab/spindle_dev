@@ -3,18 +3,18 @@
 Usage: python experiments/fig7_skin/f_fig7.py
 A-B: the skin worked example (seed 0); C-E: every section, mean +/- s.d. over seeds 0-4.
 Atoms (figures/fig7_skin/atoms/):
-  sig_map_<list>, cbar_sig_<list>  the three skin signatures: cells by signature score, Spindle-partial's 10 nearest
+  sig_map_<list>, cbar_sig_<list>  the three skin signatures: cells by signature score, Spindle-naive's 10 nearest
                             tiles outlined (rule in c_queries.py)
-  ex_map                    the example whole-tile query (rule in c_queries.py) and Spindle's top 10 on the section,
-                            cells by skin class (common7.skin_classes)
+  ex_map                    the example whole-tile query (rule in c_queries.py) and Spindle-naive's top 10 on the
+                            section, cells by skin class (common7.skin_classes)
   ex_query, ex_hit1..10     the query and its top 10, cells by class
   legend_class              the 4 skin classes
   ex_comp                   class composition of the query, the top 10, a random 10 (mean of 200 draws), the section
   tv_base                   all skin held-out queries (seed 0): composition difference to the top 10 and to a random 10
-  tiles_all, legend_tiles   every section: median composition difference of held-out tiles to Spindle's top 10,
-                            Spindle-lite's first 10 and a random 10
+  tiles_all, legend_tiles   every section: median composition difference of held-out tiles to Spindle-naive's top 10,
+                            Spindle's first 10 and a random 10
   delta_all, lift_all, legend_lists  every tissue signature on every section: Cliff's delta of the signature score
-                            and co-variation lift on S of the 10 tiles of Spindle-partial and of Spindle-lite-partial
+                            and co-variation lift on S of the 10 tiles of Spindle-naive and of Spindle
 """
 
 import sys
@@ -35,7 +35,8 @@ RES = ps.ROOT / "results" / FIG
 S0 = RES / "skin_melanoma" / "seed0"
 SIG_ORDER = ["Melanocyte_Tumor", "Keratinocyte_Epidermis", "Immune_Infiltrate"]
 CLASS_COLORS = ["#882255", "#EE7733", "#33BBEE", "#DDDDDD"]  # melanocyte, keratinocyte, immune, other
-SPINDLE, LITE, PLITE = ps.TIER_COLORS["spindle"], ps.TIER_COLORS["lite"], ps.TIER_COLORS["plite"]
+NAIVE, SPINDLE, SPINDLE_PARTIAL = (ps.TIER_COLORS["naive"], ps.TIER_COLORS["spindle"],
+                                   ps.TIER_COLORS["spindle_partial"])
 MAP_W = 58.0
 KEYS = ps.DATASET_ORDER
 XLAB = [ps.DATASET_LABELS[k] for k in KEYS]
@@ -94,7 +95,7 @@ def example():
     for k in range(len(z["tiles"]) - 1, -1, -1):
         bx0, by0, bx1, by1 = z[f"bbox{k}"]
         ax.add_patch(Rectangle((bx0, by0), bx1 - bx0, by1 - by0, fill=False, lw=0.8,
-                               ec=ps.QUERY_COLOR if k == 0 else SPINDLE, zorder=3 if k == 0 else 2))
+                               ec=ps.QUERY_COLOR if k == 0 else NAIVE, zorder=3 if k == 0 else 2))
     spatial(ax, x0, x1, y0, y1)
     ps.save(fig, FIG, "ex_map", source="results/fig7_skin/skin_melanoma/seed0/example_cells.npz")
 
@@ -105,7 +106,7 @@ def example():
         fig, ax = ps.atom(9, 9)
         ax.scatter(*z[f"xy{k}"].T, s=0.8, c=col[z[f"cls{k}"]], lw=0, rasterized=True)
         ax.add_patch(Rectangle((bx0, by0), bx1 - bx0, by1 - by0, fill=False, lw=0.9,
-                               ec=ps.QUERY_COLOR if k == 0 else SPINDLE))
+                               ec=ps.QUERY_COLOR if k == 0 else NAIVE))
         spatial(ax, cx - side / 2, cx + side / 2, cy - side / 2, cy + side / 2)
         ps.save(fig, FIG, "ex_query" if k == 0 else f"ex_hit{k}",
                 source="results/fig7_skin/skin_melanoma/seed0/example_cells.npz")
@@ -132,7 +133,7 @@ def example():
     q = pd.read_csv(S0 / "tile_queries.csv")
     fig, ax = ps.atom(24, 40, left=8.0, bottom=11.0, right=1.0, top=1.5)
     rng = np.random.default_rng(0)
-    for i, (c, color) in enumerate((("tv_top", SPINDLE), ("tv_random", ps.MUTED))):
+    for i, (c, color) in enumerate((("tv_top", NAIVE), ("tv_random", ps.MUTED))):
         v = q[c].to_numpy()
         ax.scatter(i + rng.uniform(-0.18, 0.18, len(v)), v, s=1.5, c=color, lw=0, alpha=0.7, zorder=2)
         ax.plot([i - 0.28, i + 0.28], [np.median(v)] * 2, color=ps.INK, lw=0.75, zorder=3)
@@ -149,10 +150,10 @@ def example():
 # ---------------------------------------------------------------- C
 def tiles_all():
     T = pd.read_csv(RES / "tiles.csv")
-    cols = ["tv_top", "tv_lite", "tv_random"]
+    cols = ["tv_top", "tv_spindle", "tv_random"]
     m = T.groupby("key")[cols].mean().loc[KEYS]
     s = T.groupby("key")[cols].std().loc[KEYS]
-    kinds = [("tv_top", "Spindle, top 10", SPINDLE, "o", -0.2, True), ("tv_lite", "Spindle-lite, first 10", LITE,
+    kinds = [("tv_top", "Spindle-naive, top 10", NAIVE, "o", -0.2, True), ("tv_spindle", "Spindle, first 10", SPINDLE,
              "D", 0.0, True), ("tv_random", "Random 10", ps.MUTED, "o", 0.2, False)]
     fig, ax = ps.atom(58, 44, left=9.0, bottom=13.0, right=1.0, top=1.5)
     for c, _, color, mk, dx, filled in kinds:
@@ -173,7 +174,7 @@ def tiles_all():
 def lists_all():
     L = pd.read_csv(RES / "lists.csv")
     t = L[L["query"] == "T"].set_index(["key", "list"])
-    tl = L[L["query"] == "TL"].set_index(["key", "list"]).loc[t.index]
+    ts = L[L["query"] == "TS"].set_index(["key", "list"]).loc[t.index]
     rng = np.random.default_rng(0)
     xi = np.array([KEYS.index(k) for k, _ in t.index], dtype=float)
     jit = rng.uniform(-0.06, 0.06, len(xi))
@@ -182,19 +183,19 @@ def lists_all():
                                          [0, 0.2, 0.4])):
         fig, ax = ps.atom(58, 44, left=9.0, bottom=13.0, right=1.0, top=1.5)
         ax.axhline(0, color=ps.MUTED, lw=0.5, ls="--", zorder=1)
-        a, b = t[col].to_numpy(), tl[col].to_numpy()
+        a, b = t[col].to_numpy(), ts[col].to_numpy()
         for x, ya, yb in zip(xi + jit, a, b):
             ax.plot([x - 0.17, x + 0.17], [ya, yb], color=ps.LIGHT, lw=0.5, zorder=1)
-        ax.scatter(xi + jit - 0.17, a, s=6, marker="o", c=SPINDLE, lw=0, zorder=2)
-        ax.scatter(xi + jit + 0.17, b, s=7, marker="^", c=PLITE, lw=0, zorder=2)
+        ax.scatter(xi + jit - 0.17, a, s=6, marker="o", c=NAIVE, lw=0, zorder=2)
+        ax.scatter(xi + jit + 0.17, b, s=7, marker="^", c=SPINDLE_PARTIAL, lw=0, zorder=2)
         dataset_axis(ax)
         ax.set_ylim(*lim)
         ax.set_yticks(ticks)
         ax.set_ylabel(ylab)
         ps.save(fig, FIG, name, source="results/fig7_skin/lists.csv")
     ps.legend_atom(FIG, "legend_lists",
-                   [Line2D([], [], ls="", marker="o", ms=3, color=SPINDLE, label="Spindle-partial, top 10"),
-                    Line2D([], [], ls="", marker="^", ms=3, color=PLITE, label="Spindle-lite-partial, first 10")],
+                   [Line2D([], [], ls="", marker="o", ms=3, color=NAIVE, label="Spindle-naive, top 10"),
+                    Line2D([], [], ls="", marker="^", ms=3, color=SPINDLE_PARTIAL, label="Spindle, first 10")],
                    90, 4, ncol=2, handletextpad=0.2, columnspacing=1.2, source="")
 
 

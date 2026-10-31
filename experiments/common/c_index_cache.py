@@ -11,13 +11,13 @@ Stages, each timed (perf_counter) with the peak resident memory after it (ru_max
   load       load_adata
   prepare    prepare_tiles: tiles, top-variance genes, every tile's shrunk covariance (joblib threads, n_jobs = 8)
   layout     build_layout on the index tiles (split_tiles(seed, test_ratio = 0.1))
-  spindle    Spindle(layout, covs)                       the exact whole-tile index (block logs)
-  lite       SpindleLite.from_spindle                    reuses Spindle's block logs
-  partial    SpindlePartial(layout, covs)                the exact gene-set index (block covariances + logs)
-  plite      SpindleLitePartial.from_partial             reuses SpindlePartial's block covariances
-Then, untimed: omega = variance_quantiles(index covs); the held-out tiles' Spindle.query_vectors and their exact d_B
-to every index tile (Spindle.distances). Bytes: whole covariances as float32 upper triangles of the index tiles;
-Spindle.nbytes, SpindleLite.nbytes, SpindlePartial.nbytes, SpindleLitePartial.nbytes.
+  naive            SpindleNaive(layout, covs)                     the exhaustive whole-tile index (block logs)
+  spindle          Spindle.from_naive                             reuses SpindleNaive's block logs
+  naive_partial    SpindleNaivePartial(layout, covs)              the exhaustive gene-set index (block covariances + logs)
+  spindle_partial  SpindlePartial.from_naive_partial              reuses SpindleNaivePartial's block covariances
+Then, untimed: omega = variance_quantiles(index covs); the held-out tiles' SpindleNaive.query_vectors and their exact
+d_B to every index tile (SpindleNaive.distances). Bytes: whole covariances as float32 upper triangles of the index
+tiles; SpindleNaive.nbytes, Spindle.nbytes, SpindleNaivePartial.nbytes, SpindlePartial.nbytes.
 """
 
 import json
@@ -58,10 +58,10 @@ def build(key, seed):
     train, test = data.split(len(tiles), seed)
     tr_covs = [covs[i] for i in train]
     layout = stage("layout", lambda: sd.build_layout([tiles[i] for i in train], tr_covs, genes, adata.n_obs))
-    spindle = stage("spindle", lambda: sd.Spindle(layout, tr_covs))
-    lite = stage("lite", lambda: sd.SpindleLite.from_spindle(spindle, layout))
-    partial = stage("partial", lambda: sd.SpindlePartial(layout, tr_covs))
-    plite = stage("plite", lambda: sd.SpindleLitePartial.from_partial(partial, layout))
+    naive = stage("naive", lambda: sd.SpindleNaive(layout, tr_covs))
+    spindle = stage("spindle", lambda: sd.Spindle.from_naive(naive, layout))
+    naive_partial = stage("naive_partial", lambda: sd.SpindleNaivePartial(layout, tr_covs))
+    spindle_partial = stage("spindle_partial", lambda: sd.SpindlePartial.from_naive_partial(naive_partial, layout))
 
     p, n = len(genes), len(train)
     labels = np.asarray(layout.labels).astype(int)
@@ -69,25 +69,28 @@ def build(key, seed):
                n_niches=len(layout.block_dict), n_blocks=int(sum(len(b) for b in layout.block_dict.values())),
                niche_sizes=np.bincount(labels).tolist(),
                cov_checksum=data.cov_checksum(covs),
-               bytes_whole=4 * n * p * (p + 1) // 2, bytes_spindle=spindle.nbytes(), bytes_lite=lite.nbytes(),
-               bytes_partial=partial.nbytes(), bytes_plite=plite.nbytes(), plite_spindle_bytes=plite.spindle_bytes,
-               lite_nodes=lite.n_nodes(), plite_nodes=plite.n_nodes())
-    rec["lite_pct"] = 100 * rec["bytes_lite"] / rec["bytes_spindle"]
-    rec["plite_pct"] = 100 * rec["bytes_plite"] / plite.spindle_bytes
+               bytes_whole=4 * n * p * (p + 1) // 2, bytes_naive=naive.nbytes(), bytes_spindle=spindle.nbytes(),
+               bytes_naive_partial=naive_partial.nbytes(), bytes_spindle_partial=spindle_partial.nbytes(),
+               spindle_partial_naive_bytes=spindle_partial.naive_bytes,
+               spindle_nodes=spindle.n_nodes(), spindle_partial_nodes=spindle_partial.n_nodes())
+    rec["spindle_pct"] = 100 * rec["bytes_spindle"] / rec["bytes_naive"]
+    rec["spindle_partial_pct"] = 100 * rec["bytes_spindle_partial"] / spindle_partial.naive_bytes
 
     omega = sd.variance_quantiles(tr_covs)
-    qvs = [spindle.query_vectors(covs[i]) for i in test]
-    D = np.stack([spindle.distances(qv) for qv in qvs])
+    qvs = [naive.query_vectors(covs[i]) for i in test]
+    D = np.stack([naive.distances(qv) for qv in qvs])
 
     data.save_layout(layout, out / "layout.pkl")
-    for name, obj in (("spindle", spindle), ("lite", lite), ("partial", partial), ("plite", plite), ("queries", qvs)):
+    for name, obj in (("spindle", spindle), ("spindle_partial", spindle_partial), ("naive", naive),
+                      ("naive_partial", naive_partial), ("queries", qvs)):
         data._dump(obj, out / f"{name}.pkl")
     np.savez(out / "split.npz", train=train, test=test, genes=np.asarray(genes).astype(str), omega=omega)
     np.save(out / "D.npy", D)
     rec["peak_gb"] = peak_gb()
     (out / "build.json").write_text(json.dumps(rec, indent=1))
     print(f"{key} seed {seed}: {n} index / {len(test)} held-out tiles, {rec['n_niches']} niches, "
-          f"lite {rec['lite_pct']:.2f} %, partial lite {rec['plite_pct']:.2f} % of Spindle; done", flush=True)
+          f"Spindle {rec['spindle_pct']:.2f} %, Spindle partial {rec['spindle_partial_pct']:.2f} % of Spindle-naive; "
+          f"done", flush=True)
 
 
 def main():

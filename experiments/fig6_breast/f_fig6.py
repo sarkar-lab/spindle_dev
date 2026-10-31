@@ -17,12 +17,13 @@ Atoms (figures/fig6_breast/atoms/):
                             other genes, and the mean within random gene sets of the same size
   acta2, cbar_acta2         r of ACTA2 with its block partners per niche: rows = the union over niches of the 6 block
                             partners with the largest r; circle = in ACTA2's block in that niche
-  ex_query, ex_hit1..10     the example whole-tile query (rule in c_queries.py) and Spindle's top 10, cells by class
+  ex_query, ex_hit1..10     the example whole-tile query (rule in c_queries.py) and Spindle-naive's top 10, cells by
+                            class
   legend_class              the 8 cell classes
   ex_comp                   class composition of the query, the top 10, a random 10 (mean of 200 draws), the section
   tv_base                   all held-out queries: composition difference (TV) to the top 10 and to a random 10
   sig_map_<list>, cbar_sig_<list>  the two signatures with the largest T delta (rule in c_queries.py): cells by
-                            signature score, Spindle-partial's top 10 outlined
+                            signature score, Spindle-naive's top 10 outlined
   sig_delta, sig_cov        all 5 signatures, template query, mean +/- s.d. over seeds 0-4: Cliff's delta of the top
                             10's score vs the other index tiles; co-variation on S of the top 10 (median) against the
                             typical index tile (median, grey bar)
@@ -62,7 +63,7 @@ SIG_LABELS = {"Luminal_Tumor_Core": "Luminal", "Macrophage_Myeloid": "Macrophage
               "Basal_Myoepithelial": "Myoepithelial", "Endothelial_Vascular": "Endothelial",
               "Proliferation_Signature": "Proliferation"}
 NO_TILE = "#E3E3E3"  # cells of the low-density tiles that tiling drops
-SPINDLE = ps.TIER_COLORS["spindle"]
+NAIVE = ps.TIER_COLORS["naive"]
 MAP_W = 60.0
 CORR_LIM, ACTA2_LIM = 0.4, 0.6
 plt_viridis = colormaps["viridis"]
@@ -171,7 +172,7 @@ def corr_panels():
 
 
 # ---------------------------------------------------------------- C
-COV_KIND = [("within", "Within block", SPINDLE, "o"), ("between", "Block to rest of niche", ps.MUTED, "o"),
+COV_KIND = [("within", "Within block", NAIVE, "o"), ("between", "Block to rest of niche", ps.MUTED, "o"),
             ("null_mean", "Random gene sets", "#ABABAB", "s")]
 
 
@@ -236,7 +237,7 @@ def example():
         fig, ax = ps.atom(10, 10)
         ax.scatter(*z[f"xy{k}"].T, s=0.9, c=np.array(CLASS_COLORS)[z[f"cls{k}"]], lw=0, rasterized=True)
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, lw=0.9,
-                               ec=ps.QUERY_COLOR if k == 0 else SPINDLE))
+                               ec=ps.QUERY_COLOR if k == 0 else NAIVE))
         spatial(ax, cx - side / 2, cx + side / 2, cy - side / 2, cy + side / 2)
         ps.save(fig, FIG, "ex_query" if k == 0 else f"ex_hit{k}", source="results/fig6_breast/seed0/example_cells.npz")
     ps.legend_atom(FIG, "legend_class", [Patch(fc=c, ec="none", label=n) for n, c, _ in CLASSES], 66, 9, ncol=3,
@@ -262,7 +263,7 @@ def example():
     q = pd.read_csv(S0 / "tile_queries.csv")
     fig, ax = ps.atom(24, 40, left=8.0, bottom=11.0, right=1.0, top=1.5)
     rng = np.random.default_rng(0)
-    for i, (col, c) in enumerate((("tv_top", SPINDLE), ("tv_random", ps.MUTED))):
+    for i, (col, c) in enumerate((("tv_top", NAIVE), ("tv_random", ps.MUTED))):
         v = q[col].to_numpy()
         ax.scatter(i + rng.uniform(-0.18, 0.18, len(v)), v, s=1.5, c=c, lw=0, alpha=0.7, zorder=2)
         ax.plot([i - 0.28, i + 0.28], [np.median(v)] * 2, color=ps.INK, lw=0.75, zorder=3)
@@ -319,7 +320,7 @@ def signature_summary():
 
     fig, ax = ps.atom(29, 40, left=8.0, bottom=13.0, right=1.0, top=1.5)
     ax.axhline(0, color=ps.MUTED, lw=0.5, ls="--", zorder=1)
-    ax.errorbar(x, m.delta, yerr=s.delta, fmt="o", ms=3, color=SPINDLE, elinewidth=0.6, capsize=0, zorder=2)
+    ax.errorbar(x, m.delta, yerr=s.delta, fmt="o", ms=3, color=NAIVE, elinewidth=0.6, capsize=0, zorder=2)
     ax.set_ylim(-1, 1)
     ax.set_yticks([-1, 0, 1])
     ax.set_xticks(x)
@@ -331,7 +332,7 @@ def signature_summary():
     fig, ax = ps.atom(29, 40, left=8.0, bottom=13.0, right=1.0, top=1.5)
     for i in x:
         ax.plot([i - 0.25, i + 0.25], [m.cov_all.iloc[i]] * 2, color=ps.MUTED, lw=0.9, zorder=1)
-    ax.errorbar(x, m.cov_top, yerr=s.cov_top, fmt="o", ms=3, color=SPINDLE, elinewidth=0.6, capsize=0, zorder=2)
+    ax.errorbar(x, m.cov_top, yerr=s.cov_top, fmt="o", ms=3, color=NAIVE, elinewidth=0.6, capsize=0, zorder=2)
     ax.set_ylim(0, 1)
     ax.set_yticks([0, 0.5, 1])
     ax.set_xticks(x)
@@ -339,7 +340,7 @@ def signature_summary():
     ax.set_xlim(-0.6, len(order) - 0.4)
     ax.set_ylabel("Co-variation on S")
     ps.save(fig, FIG, "sig_cov", source="results/fig6_breast/seed<0-4>/gene_lists.csv")
-    ps.legend_atom(FIG, "legend_sig", [Line2D([], [], ls="", marker="o", ms=3, color=SPINDLE, label="Top 10"),
+    ps.legend_atom(FIG, "legend_sig", [Line2D([], [], ls="", marker="o", ms=3, color=NAIVE, label="Top 10"),
                                        Line2D([], [], color=ps.MUTED, lw=0.9, label="Typical tile")],
                    40, 4, ncol=2, source="")
 

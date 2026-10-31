@@ -3,8 +3,10 @@
 Usage (login node): python experiments/fig2_cost/f_ladder.py
 Per ladder (cells: tonsil subsampled, log x; genes: lymph node 5k, linear x), three atoms stacked in the pptx, sharing
 the x axis (only the bottom one carries the x label):
-  <ladder>_storage   whole covariances, Spindle, Spindle-lite, Spindle-partial (open), Spindle-lite-partial (MB, log)
-  <ladder>_time      Spindle's full build (covariances, layout, block logs) and the seconds each other index adds (log)
+  <ladder>_storage   whole covariances, Spindle-naive, Spindle, Spindle-naive (gene sets, open), Spindle (gene sets)
+                     (MB, log)
+  <ladder>_time      Spindle-naive's full build (covariances, layout, block logs) and the seconds each other index adds
+                     (log)
   <ladder>_memory    peak resident memory of the whole build (GB, log)
 Markers and colours as Fig 2B/C (legend_tiers).
 """
@@ -57,20 +59,20 @@ def plot(df, ladder):
     x = d.n_cells if ladder == "cells" else d.p
 
     fig, ax = axes(ladder, "storage", "Storage\n(MB, log scale)", False)
-    for c, mk, filled in (("whole", "s", True), ("spindle", "o", True), ("lite", "D", True),
-                          ("partial", "o", False), ("plite", "^", True)):
-        line(ax, x, d[f"bytes_{c}"] / 1e6, "spindle" if c == "partial" else c, mk, filled)
+    for c, mk, filled in (("whole", "s", True), ("naive", "o", True), ("spindle", "D", True),
+                          ("naive_partial", "o", False), ("spindle_partial", "^", True)):
+        line(ax, x, d[f"bytes_{c}"] / 1e6, "naive" if c == "naive_partial" else c, mk, filled)
     ps.save(fig, FIG, f"{ladder}_storage", source=SRC)
 
     fig, ax = axes(ladder, "time", "Build time\n(s, log scale)", False)
-    line(ax, x, d.spindle_build_s, "spindle", "o")
-    line(ax, x, d.lite_s, "lite", "D", ls="--")
-    line(ax, x, d.partial_s, "spindle", "o", filled=False, ls="--")
-    line(ax, x, d.plite_s, "plite", "^", ls="--")
+    line(ax, x, d.naive_build_s, "naive", "o")
+    line(ax, x, d.spindle_s, "spindle", "D", ls="--")
+    line(ax, x, d.naive_partial_s, "naive", "o", filled=False, ls="--")
+    line(ax, x, d.spindle_partial_s, "spindle_partial", "^", ls="--")
     ps.save(fig, FIG, f"{ladder}_time", source=SRC)
 
     fig, ax = axes(ladder, "memory", "Peak memory\n(GB, log scale)", True)
-    ax.plot(x, d.peak_gb_plite, marker="o", ms=2.6, color=ps.INK, zorder=3)
+    ax.plot(x, d.peak_gb_spindle_partial, marker="o", ms=2.6, color=ps.INK, zorder=3)
     ps.save(fig, FIG, f"{ladder}_memory", source=SRC)
 
 

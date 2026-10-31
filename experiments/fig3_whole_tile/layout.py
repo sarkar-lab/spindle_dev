@@ -1,7 +1,7 @@
 """Fig 3 draft layout (mm, top-left corners on the 180 mm page); read by experiments/common/build_figure.py.
 
 A  timing (search only) with the query's own logs; speed-up columns as text boxes (annotations.json)
-B  Spindle-lite against Spindle per dataset: NX at 5 % of N, rows aligned with A
+B  Spindle against Spindle-naive per dataset: NX at 5 % of N, rows aligned with A
 C  the typical breast query's distance bands
 D  memory against fidelity, breast and brain
 """
@@ -25,7 +25,7 @@ POS = {a: (x, y) for a, x, y, _ in ATOMS}
 TEXTS = [
     ("A", 0, 0, 5, 4, "letter"), ("B", 110, 0, 5, 4, "letter"), ("C", 0, 85, 5, 4, "letter"),
     ("D", 60, 85, 5, 4, "letter"),
-    ("Speed-up", ANN["timing"][0][1] - 0.5, 1.5, 16, 3, "small"),  # left: Spindle / whole; right: lite / Spindle
+    ("Speed-up", ANN["timing"][0][1] - 0.5, 1.5, 16, 3, "small"),  # left: whole / Spindle-naive; right: Spindle-naive / Spindle
     ("Breast, typical query", 12, 86, 40, 3, "label"),
     ("Breast", 85, 86, 20, 3, "label"), ("Brain", 145, 86, 20, 3, "label"),
 ]

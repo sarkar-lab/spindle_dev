@@ -113,13 +113,13 @@ DATASET_MARKERS = {
     "pancreatic_cancer": "v", "lymph_node": "P", "lymph_node_5k": "X", "brain_cancer": "h",
 }
 
-# What is stored / searched: whole covariances (grey), Spindle (block logs), Spindle-lite, Spindle-lite-partial
-# (Tol high-contrast blue / red / yellow). Spindle-partial shares Spindle's colour.
-TIER_ORDER = ["whole", "spindle", "lite", "plite"]
-TIER_LABELS = {"whole": "Whole covariances", "spindle": "Spindle", "lite": "Spindle-lite",
-               "plite": "Spindle-lite-partial"}
-TIER_COLORS = {"whole": "#9E9E9E", "spindle": "#004488", "lite": "#BB5566", "plite": "#DDAA33"}
-TIER_MARKERS = {"whole": "s", "spindle": "o", "lite": "D", "plite": "^"}
+# What is stored / searched: whole covariances (grey), Spindle-naive (block logs), Spindle, Spindle on gene sets
+# (Tol high-contrast blue / red / yellow). Spindle-naive on gene sets shares Spindle-naive's colour.
+TIER_ORDER = ["whole", "naive", "spindle", "spindle_partial"]
+TIER_LABELS = {"whole": "Whole covariances", "naive": "Spindle-naive", "spindle": "Spindle",
+               "spindle_partial": "Spindle (gene sets)"}
+TIER_COLORS = {"whole": "#9E9E9E", "naive": "#004488", "spindle": "#BB5566", "spindle_partial": "#DDAA33"}
+TIER_MARKERS = {"whole": "s", "naive": "o", "spindle": "D", "spindle_partial": "^"}
 
 LIGHT = "#D9D9D9"  # background tiles / all-tile distributions
 INK = "#1A1A1A"

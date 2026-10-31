@@ -4,11 +4,11 @@ Usage (sbatch array, task = seed 0-4): sbatch --array=0-4 experiments/common/run
 Writes results/fig6_breast/seed<s>/{tile_queries.csv, gene_lists.csv, gene_list_hits.csv}; seed 0 also
 example.csv + example_cells.npz (Fig 6E) and signature_cells.npz (Fig 6F: every cell's score per signature).
 
-Whole-tile queries = every held-out tile of the seed. Spindle's top 10 = the 10 smallest exact d_B (the cache's D).
-Readout (cells, not tiles): TV = 0.5 sum |a - b| between the query's 8-class composition (common6.CLASSES) and the
+Whole-tile queries = every held-out tile of the seed. Spindle-naive's top 10 = the 10 smallest exact d_B (the cache's
+D). Readout (cells, not tiles): TV = 0.5 sum |a - b| between the query's 8-class composition (common6.CLASSES) and the
 pooled composition of the top 10's cells; null = the mean TV of N_RANDOM random 10-tile draws of index tiles.
 Recorded, never claimed: the expression top 10 (Euclidean on the tile-mean log-normalised expression, z-scored over
-the index tiles) and its TV; how many of Spindle's 10 Spindle-lite returns among its first 10 (search_vectors, default
+the index tiles) and its TV; how many of Spindle-naive's 10 Spindle returns among its first 10 (search_vectors, default
 g = 0.25 as in Fig 3).
 EXAMPLE RULE (approved 26 Oct, fixed before the run): seed 0; among the held-out tiles with >= 100 cells, the one with
 the largest share of myoepithelial cells (ties: lower tile id). Reported with it: its top 10's and a random 10's
@@ -17,7 +17,7 @@ random-10 TV.
 
 Gene-list queries: the 5 breast signatures (signatures.TISSUE_MODULES["breast"]; every gene is an index gene), each
 the template query T (sd.template_query on the build's omega: Methods Eq. signature, rho = 0.5, 90th-percentile
-variances) searched with Spindle-partial (exact d_B^S), top 10. Controls computed and reported, never claimed against:
+variances) searched with Spindle-naive (exact d_B^S), top 10. Controls computed and reported, never claimed against:
 D = diag(omega_S) (variances only), and X = the 10 index tiles with the highest tile score. Readouts per (list, query):
 - delta = Cliff's delta of the tile score (mean over S of the z-scored tile-mean log-normalised expression) of the
   top 10 against the other index tiles;
@@ -58,20 +58,20 @@ def tile_queries(S, seed, out):
         q = cnt_q[j] / cnt_q[j].sum()
         top = np.argsort(c.D[j], kind="stable")[:c6.TOP]
         expr = np.argsort(((z_idx - z_q[j]) ** 2).sum(1), kind="stable")[:c6.TOP]
-        lite_rows, _, _ = c.lite.search_vectors(c.qvs[j])
+        spindle_rows, _, _ = c.spindle.search_vectors(c.qvs[j])
         rand = [c6.tv(q, c6.shares(cnt_idx[rng.choice(n, c6.TOP, replace=False)])) for _ in range(c6.N_RANDOM)]
         tops[j] = top
         rows.append({"query": j, "tile": int(t), "n_cells": int(cnt_q[j].sum()),
                      **{f"q_{k}": float(v) for k, v in zip(c6.CLASS_NAMES, q)},
                      "tv_top": c6.tv(q, c6.shares(cnt_idx[top])), "tv_random": float(np.mean(rand)),
                      "tv_expr": c6.tv(q, c6.shares(cnt_idx[expr])),
-                     "lite_in_top": int(len(set(top.tolist()) & set(np.asarray(lite_rows[:c6.TOP]).tolist()))),
-                     "lite_found": len(lite_rows), "tag": st["tag"]})
+                     "spindle_in_top": int(len(set(top.tolist()) & set(np.asarray(spindle_rows[:c6.TOP]).tolist()))),
+                     "spindle_found": len(spindle_rows), "tag": st["tag"]})
     T = pd.DataFrame(rows)
     T.to_csv(out / "tile_queries.csv", index=False)
     print(f"tile queries: {len(T)}; TV top {T.tv_top.median():.3f}, random {T.tv_random.median():.3f}, expression "
-          f"{T.tv_expr.median():.3f}; below random {(T.tv_top < T.tv_random).mean():.2f}; lite in top 10 median "
-          f"{T.lite_in_top.median():.0f}", flush=True)
+          f"{T.tv_expr.median():.3f}; below random {(T.tv_top < T.tv_random).mean():.2f}; Spindle in top 10 median "
+          f"{T.spindle_in_top.median():.0f}", flush=True)
     if seed != c6.data.EXAMPLE_SEED:
         return
     col = f"q_{EXAMPLE_CLASS}"
@@ -112,7 +112,7 @@ def gene_lists(S, seed, out):
             raise RuntimeError(f"{name}: {missing} not index genes")
         cov_t, _ = sd.template_query(c.omega, idx)
         tops = {"T": cov_t, "D": np.diag(c.omega[idx])}
-        tops = {k: np.argsort(c.partial.distances(Q, idx), kind="stable")[:c6.TOP] for k, Q in tops.items()}
+        tops = {k: np.argsort(c.naive_partial.distances(Q, idx), kind="stable")[:c6.TOP] for k, Q in tops.items()}
         score = z[:, idx].mean(1)
         tops["X"] = np.argsort(-score, kind="stable")[:c6.TOP]
         cov_all = np.array([c6.mean_offdiag_corr(S["X"][cl][:, idx]) for cl in cells])
@@ -141,7 +141,7 @@ def gene_lists(S, seed, out):
 
 
 def main(seed):
-    S = c6.load(seed, parts=("layout", "lite", "partial", "queries", "D"))
+    S = c6.load(seed, parts=("layout", "spindle", "naive_partial", "queries", "D"))
     out = c6.OUT / f"seed{seed}"
     out.mkdir(parents=True, exist_ok=True)
     tile_queries(S, seed, out)

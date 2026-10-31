@@ -3,8 +3,8 @@
     import data
     adata, tiles, covs, genes = data.prepare("breast_cancer")          # recomputed (deterministic, seconds)
     c = data.load_cache("breast_cancer", seed=0)                         # what c_index_cache.py stored
-    c.spindle, c.lite, c.partial, c.plite, c.layout, c.train, c.test, c.omega, c.D, c.qvs
-    data.stamp()                                                        # {"tag": "method-v1", ...}; every result row
+    c.spindle, c.spindle_partial, c.naive, c.naive_partial, c.layout, c.train, c.test, c.omega, c.D, c.qvs
+    data.stamp()                                                        # {"tag": "method-v2", ...}; every result row
 
 Seeds: 0-4, 10 % of the tiles held out at random (``split_tiles(seed, test_ratio=0.1)``);
 seed 0 is the one used for examples, maps and schematics.
@@ -12,10 +12,11 @@ seed 0 is the one used for examples, maps and schematics.
 Cache layout, results/_cache/<key>/seed<k>/ (gitignored, shared file system), written by c_index_cache.py:
   layout.pkl     the ProcessedData of the index tiles, without spd_matrices and U_list (one p x p matrix per tile;
                  ``load_cache(..., covs=covs)`` puts the index covariances back)
-  spindle.pkl, lite.pkl, partial.pkl, plite.pkl   Spindle, SpindleLite, SpindlePartial, SpindleLitePartial
+  spindle.pkl, spindle_partial.pkl, naive.pkl, naive_partial.pkl
+                 Spindle, SpindlePartial, SpindleNaive, SpindleNaivePartial
   split.npz      train / test tile indices (into prepare()'s tiles), genes, omega (variance_quantiles of the index)
-  queries.pkl    Spindle.query_vectors of every held-out tile (test order)
-  D.npy          exact d_B, held-out x index tiles (float64, Spindle.distances)
+  queries.pkl    SpindleNaive.query_vectors of every held-out tile (test order)
+  D.npy          exact d_B, held-out x index tiles (float64, SpindleNaive.distances)
   build.json     build seconds per stage, peak memory, bytes, sizes, host, stamp
 """
 
@@ -35,7 +36,7 @@ for _p in (ROOT / "src", ROOT):
 import paths  # noqa: E402
 import spindle_dev as sd  # noqa: E402
 
-TAG = "method-v1"
+TAG = "method-v2"
 SEEDS = [0, 1, 2, 3, 4]
 EXAMPLE_SEED = 0
 TEST_RATIO = 0.1
@@ -53,9 +54,9 @@ def _git(*args):
 
 def stamp():
     """The code version of a result: ``tag`` is TAG only if src/ is identical to it (committed and in the working
-    tree); otherwise this raises, because a result of a changed method is not a figure input. The one change allowed
-    since the tag is the removal of the unused ``spindle_lite_legacy`` module (27 Oct cleanup)."""
-    if _git("diff", "--diff-filter=d", "-Ispindle_lite_legacy", TAG, "--", "src/"):
+    tree); otherwise this raises, because a result of a changed method is not a figure input. method-v2 is method-v1
+    with the method renamed (bit-identical outputs)."""
+    if _git("diff", TAG, "--", "src/"):
         changed = _git("diff", "--name-only", TAG, "--", "src/")
         raise RuntimeError(f"src/ differs from {TAG}: {changed.split()}; no figure input can be made")
     return {"tag": TAG, "describe": _git("describe", "--tags", "--dirty", "--always"),
@@ -103,7 +104,7 @@ def save_layout(layout, path):
         layout.spd_matrices, layout.U_list = big["spd_matrices"], big["U_list"]
 
 
-def load_cache(key, seed, *, parts=("layout", "spindle", "lite", "partial", "plite", "queries", "D"), covs=None):
+def load_cache(key, seed, *, parts=("layout", "spindle", "spindle_partial", "naive", "naive_partial", "queries", "D"), covs=None):
     """The cached build of (key, seed) as a namespace; ``parts`` limits what is unpickled. ``covs`` (prepare()'s
     covariances) are checked against the build and put back into layout.spd_matrices (index tiles)."""
     d = cache_dir(key, seed)

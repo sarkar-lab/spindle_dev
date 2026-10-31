@@ -1,5 +1,5 @@
-"""Build Spindle and Spindle-lite (whole tile and partial) on one dataset, query each with a held-out tile, then
-query the partial indexes with a gene list given by names (GENE_LIST, the myeloid program).
+"""Build Spindle-naive and Spindle (whole tile and gene set) on one dataset, query each with a held-out tile, then
+query the gene-set indexes with a gene list given by names (GENE_LIST, the myeloid program).
 
 Usage: python examples/run_single_dataset.py <dataset key | path.h5ad> [--out DIR]
 """
@@ -35,29 +35,29 @@ def main():
     data = sd.build_layout([tiles[i] for i in train], train_covs, genes, adata.n_obs)
     print(f"{len(train)} training tiles, {len(set(data.labels.tolist()))} niches")
 
-    spindle = sd.Spindle(data, train_covs)
-    lite = sd.SpindleLite.from_spindle(spindle, data)
-    partial = sd.SpindlePartial(data, train_covs)
-    lite_partial = sd.SpindleLitePartial.from_partial(partial, data)
+    naive = sd.SpindleNaive(data, train_covs)
+    spindle = sd.Spindle.from_naive(naive, data)
+    naive_partial = sd.SpindleNaivePartial(data, train_covs)
+    spindle_partial = sd.SpindlePartial.from_naive_partial(naive_partial, data)
 
     query = covs[test[0]]
-    rows, scores, sec = spindle.search(query, c=10)
-    print(f"Spindle top 10 ({sec * 1e3:.1f} ms):", rows.tolist())
-    found, _, sec = lite.search(query)
+    rows, scores, sec = naive.search(query, c=10)
+    print(f"Spindle-naive top 10 ({sec * 1e3:.1f} ms):", rows.tolist())
+    found, _, sec = spindle.search(query)
     c = min(10, len(found))
-    d = spindle.distances(spindle.query_vectors(query))
+    d = naive.distances(naive.query_vectors(query))
     exact = np.sort(d)[:c].mean()
-    print(f"Spindle-lite returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); its top {c} is "
+    print(f"Spindle returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); its top {c} is "
           f"{100 * (d[found[:c]].mean() - exact) / exact:.1f} % farther than the exact top {c}")
 
     k = int(data.labels[0])
     s, e = data.block_dict[k][0]
     gene_set = np.asarray(data.perm_list[k])[s:min(e, s + 12)]
-    d_s = partial.distances(query_cov_s(query, gene_set, partial.p), gene_set)
-    found, _, sec = lite_partial.search(query, gene_set)
+    d_s = naive_partial.distances(query_cov_s(query, gene_set, naive_partial.p), gene_set)
+    found, _, sec = spindle_partial.search(query, gene_set)
     c = min(10, len(found))
     exact = np.sort(d_s)[:c].mean()
-    print(f"12-gene set: Spindle-lite partial returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); "
+    print(f"12-gene set: Spindle (gene sets) returned {len(found)} tiles ({sec * 1e3:.1f} ms with the query's logs); "
           f"its top {c} is {100 * (d_s[found[:c]].mean() - exact) / exact:.1f} % farther than the exact top {c}")
 
     # a gene list by names (Methods Eq. signature); omega is kept beside the index
@@ -65,11 +65,11 @@ def main():
     idx, found_genes, missing = sd.gene_indices(genes, GENE_LIST)
     if len(idx) >= 2:
         cov_s, idx = sd.template_query(omega, idx)
-        rows, scores, sec = partial.search(cov_s, idx, c=10)
-        print(f"gene list {found_genes} (not in the index: {missing}): Spindle partial top 10 "
+        rows, scores, sec = naive_partial.search(cov_s, idx, c=10)
+        print(f"gene list {found_genes} (not in the index: {missing}): Spindle-naive (gene sets) top 10 "
               f"({sec * 1e3:.1f} ms):", rows.tolist())
-        found, _, sec = lite_partial.search(cov_s, idx)
-        print(f"  Spindle-lite partial returned {len(found)} tiles ({sec * 1e3:.1f} ms), "
+        found, _, sec = spindle_partial.search(cov_s, idx)
+        print(f"  Spindle (gene sets) returned {len(found)} tiles ({sec * 1e3:.1f} ms), "
               f"{len(set(found[:10].tolist()) & set(rows.tolist()))} of the exact top 10 in its top 10")
     else:
         print(f"gene list: {len(idx)} of {GENE_LIST} in the index genes, skipped")
@@ -77,8 +77,8 @@ def main():
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)
         data.spd_matrices, data.U_list = [], None
-        for name, obj in [("layout", data), ("spindle", spindle), ("lite", lite), ("partial", partial),
-                          ("lite_partial", lite_partial)]:
+        for name, obj in [("layout", data), ("naive", naive), ("spindle", spindle), ("naive_partial", naive_partial),
+                          ("spindle_partial", spindle_partial)]:
             sd.save_index(obj, args.out / f"{path.stem}_{name}.pkl")
         print("saved to", args.out)
 

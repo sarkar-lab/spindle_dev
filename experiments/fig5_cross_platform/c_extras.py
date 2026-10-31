@@ -10,7 +10,7 @@ Usage: sbatch --dependency=afterok:<c_cross job> experiments/common/run.sbatch e
             after the global shift (common5); platform silhouette (Euclidean, index vs query tiles) per state.
   example   example.csv (Fig 5F). Rule (user, 26 Oct; replaces the first rule, which picked the Visium query with the
             largest DCIS share, query 12: top 5 at 2-54 % DCIS, co-located tile at rank 54): seed 0, direction v2x
-            (Visium query, Xenium index), spindle_global. A query's focal class is the larger of its DCIS and immune
+            (Visium query, Xenium index), naive_global. A query's focal class is the larger of its DCIS and immune
             shares (classes in separate, recognisable foci on both platforms). Among the queries whose focal share is
             > 0.5 and whose co-located Xenium tile is in the top 5, the one whose top 5 have the largest mean share of
             the query's focal class (ties: lower query id). Reported with it: the top 5's share against the Xenium
@@ -85,7 +85,7 @@ def bias_pca(S, st):
 def example(S, st):
     def top5(seed):
         t = pd.read_csv(c5.OUT / "per_query" / f"seed{seed}_top10.csv")
-        t = t[(t.direction == "v2x") & (t.method == "spindle_global") & (t["rank"] <= 5)]
+        t = t[(t.direction == "v2x") & (t.method == "naive_global") & (t["rank"] <= 5)]
         return t.groupby("query")["index_tile"].apply(lambda x: x.to_numpy())
     focal = ["DCIS", "Immune"]
     j = [c5.CLASSES.index(c) for c in focal]

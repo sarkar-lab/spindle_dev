@@ -2,14 +2,14 @@
 
 Usage: python experiments/fig3_whole_tile/f_fig3.py
 Atoms (figures/fig3_whole_tile/atoms/), datasets top to bottom in style.DATASET_ORDER, so the three row plots line up:
-  timing        search time per query (ms, log scale), search only: whole-matrix scan, Spindle, Spindle-lite (bars,
+  timing        search time per query (ms, log scale), search only: whole-matrix scan, Spindle-naive, Spindle (bars,
                 mean over seeds of the per-seed median; whiskers s.d.); the query's own logs as open markers (whole
-                matrix: grey diamond on the whole bar; block logs: blue circle on the Spindle bar)
-  nx            Spindle-lite NX at c = 5 % of N (%), g = 0.25; mean +/- s.d. over seeds
+                matrix: grey diamond on the whole bar; block logs: blue circle on the Spindle-naive bar)
+  nx            Spindle NX at c = 5 % of N (%), g = 0.25; mean +/- s.d. over seeds
   band          the typical breast query (rule in c_nx.py): exact d_B of every index tile (grey) and of the tiles
-                Spindle-lite returned (colour), same bins
-  memory_<key>  breast, brain: NX5 (%) against stored MB (log scale); Spindle-lite (as built, one point) against
-                d_B; PCA + flat, PCA-256 + PQ against d_W; dotted: Spindle and whole-matrix stores
+                Spindle returned (colour), same bins
+  memory_<key>  breast, brain: NX5 (%) against stored MB (log scale); Spindle (as built, one point) against
+                d_B; PCA + flat, PCA-256 + PQ against d_W; dotted: Spindle-naive and whole-matrix stores
   legend_*      one legend atom per panel
 Numbers that go next to plots (speed-ups, parameter labels) are text boxes in the pptx: their positions (mm in the
 atom) go to figures/fig3_whole_tile/annotations.json, read by layout.py.
@@ -34,7 +34,7 @@ KEYS = ps.DATASET_ORDER
 ROW_H = 70.0                         # mm, the three row plots
 LEFT_A, RIGHT_A, BOTTOM, TOP = 17.0, 17.0, 9.0, 1.5
 G = 0.25
-LITE, SPINDLE, WHOLE = ps.TIER_COLORS["lite"], ps.TIER_COLORS["spindle"], ps.TIER_COLORS["whole"]
+SPINDLE, NAIVE, WHOLE = ps.TIER_COLORS["spindle"], ps.TIER_COLORS["naive"], ps.TIER_COLORS["whole"]
 COMP = {"pca_flat": "#117733", "pca256_pq": "#999933"}
 COMP_LABEL = {"pca_flat": "PCA + flat (whole matrix)",
               "pca256_pq": "PCA-256 + PQ (whole matrix)"}
@@ -68,15 +68,15 @@ def timing():
         if k not in t.index:
             continue
         r = t.loc[k]
-        for off, col, c in ((-bh, "whole_ms", WHOLE), (0, "spindle_ms", SPINDLE), (bh, "lite_ms", LITE)):
+        for off, col, c in ((-bh, "whole_ms", WHOLE), (0, "naive_ms", NAIVE), (bh, "spindle_ms", SPINDLE)):
             ax.barh(i + off, r[col], height=bh * 0.92, color=c, lw=0, zorder=2)
             ax.errorbar(r[col], i + off, xerr=r[f"{col}_sd"], fmt="none", ecolor=ps.INK, elinewidth=0.5, zorder=3)
         ax.plot(r.qlog_whole_ms, i - bh, "D", ms=2.4, mfc="white", mec=ps.INK, mew=0.6, zorder=4)
-        ax.plot(r.qlog_block_ms, i, "o", ms=2.6, mfc="white", mec=SPINDLE, mew=0.7, zorder=4)
+        ax.plot(r.qlog_block_ms, i, "o", ms=2.6, mfc="white", mec=NAIVE, mew=0.7, zorder=4)
     ax.set_xscale("log")
     ps.plain_log(ax, "x", subs=(1.0,))
     ps.log_grid(ax, "x")
-    lo = min(t.lite_ms.min(), t.spindle_ms.min()) / 2
+    lo = min(t.spindle_ms.min(), t.naive_ms.min()) / 2
     hi = max(t.whole_ms.max(), t.qlog_whole_ms.max()) * 2
     ax.set_xlim(lo, hi)
     rows_axis(ax, True)
@@ -85,8 +85,8 @@ def timing():
         if k in t.index:
             r = t.loc[k]
             xr = to_mm(fig, ax, hi, i)[0] + 1.5
-            note("timing", f"{r.speedup_spindle_vs_whole:.0f}×", xr, to_mm(fig, ax, hi, i - bh / 2)[1])
-            note("timing", f"{r.speedup_lite_vs_spindle:.1f}×", xr + 7.5, to_mm(fig, ax, hi, i + bh / 2)[1])
+            note("timing", f"{r.speedup_naive_vs_whole:.0f}×", xr, to_mm(fig, ax, hi, i - bh / 2)[1])
+            note("timing", f"{r.speedup_spindle_vs_naive:.1f}×", xr + 7.5, to_mm(fig, ax, hi, i + bh / 2)[1])
     ps.save(fig, FIG, "timing", source="results/fig3_whole_tile/timing.csv")
 
 
@@ -100,8 +100,8 @@ def dot_rows(name, cols, xlabel, src, w=70.0):
         r = t.loc[k]
         for j, (col, filled) in enumerate(cols):
             y = i + (j - (len(cols) - 1) / 2) * 0.22
-            ax.errorbar(100 * r[col], y, xerr=100 * r[f"{col}_sd"], fmt="o", ms=2.8, color=LITE,
-                        mfc=LITE if filled else "white", mec=LITE, mew=0.7, elinewidth=0.5, zorder=3)
+            ax.errorbar(100 * r[col], y, xerr=100 * r[f"{col}_sd"], fmt="o", ms=2.8, color=SPINDLE,
+                        mfc=SPINDLE if filled else "white", mec=SPINDLE, mew=0.7, elinewidth=0.5, zorder=3)
     rows_axis(ax, False)
     ax.set_xlim(0, None)
     ax.grid(True, axis="x", color="#E6E6E6", linewidth=0.5, zorder=0)
@@ -116,7 +116,7 @@ def band():
     fig, ax = ps.atom(56, 52, left=10.0, right=2.0, bottom=BOTTOM, top=TOP)
     bins = np.linspace(d.min(), np.quantile(d, 0.995), 50)
     ax.hist(d, bins=bins, color=ps.LIGHT, lw=0, zorder=2)
-    ax.hist(d[found], bins=bins, color=LITE, lw=0, zorder=3)
+    ax.hist(d[found], bins=bins, color=SPINDLE, lw=0, zorder=3)
     ax.set_xlabel(r"Block distance $d_{\mathcal{B}}$ to the query")
     ax.set_ylabel("Index tiles")
     ax.set_xlim(bins[0], bins[-1])
@@ -127,11 +127,11 @@ def memory(key):
     m = pd.read_csv(RES / "memory.csv", dtype={"param": str})
     m = m[m.key == key]
     fig, ax = ps.atom(58, 52, left=10.0, right=2.0, bottom=BOTTOM, top=TOP)
-    for meth, ls in (("spindle", ":"), ("whole", ":")):
+    for meth, ls in (("naive", ":"), ("whole", ":")):
         x = m[m.method == meth].MB.iloc[0]
-        ax.axvline(x, ls=ls, lw=0.75, color=SPINDLE if meth == "spindle" else WHOLE, zorder=1)
-    r = m[m.method == "lite"].iloc[0]
-    ax.errorbar(r.MB, 100 * r.NX5, yerr=100 * r.NX5_sd, fmt="D", ms=3.0, color=LITE, elinewidth=0.5, zorder=4)
+        ax.axvline(x, ls=ls, lw=0.75, color=NAIVE if meth == "naive" else WHOLE, zorder=1)
+    r = m[m.method == "spindle"].iloc[0]
+    ax.errorbar(r.MB, 100 * r.NX5, yerr=100 * r.NX5_sd, fmt="D", ms=3.0, color=SPINDLE, elinewidth=0.5, zorder=4)
     for meth, mk in (("pca_flat", "v"), ("pca256_pq", "P")):
         s = m[m.method == meth].assign(v=lambda d: d.param.astype(float)).sort_values("v")
         if s.empty:
@@ -154,22 +154,22 @@ def memory(key):
 
 
 def legends():
-    bar = [Patch(color=WHOLE, label="Whole-matrix scan"), Patch(color=SPINDLE, label="Spindle"),
-           Patch(color=LITE, label="Spindle-lite"),
+    bar = [Patch(color=WHOLE, label="Whole-matrix scan"), Patch(color=NAIVE, label="Spindle-naive"),
+           Patch(color=SPINDLE, label="Spindle"),
            Line2D([], [], ls="", marker="D", ms=2.4, mfc="white", mec=ps.INK, mew=0.6, label="Query's whole-matrix log"),
-           Line2D([], [], ls="", marker="o", ms=2.6, mfc="white", mec=SPINDLE, mew=0.7, label="Query's block logs")]
+           Line2D([], [], ls="", marker="o", ms=2.6, mfc="white", mec=NAIVE, mew=0.7, label="Query's block logs")]
     ps.legend_atom(FIG, "legend_timing", bar, 88, 8, ncol=3)
-    mem = [Line2D([], [], ls="", marker="D", ms=3.0, color=LITE, label="Spindle-lite"),
+    mem = [Line2D([], [], ls="", marker="D", ms=3.0, color=SPINDLE, label="Spindle"),
            Line2D([], [], marker="v", ms=2.8, color=COMP["pca_flat"], label=COMP_LABEL["pca_flat"]),
            Line2D([], [], marker="P", ms=2.8, color=COMP["pca256_pq"], label=COMP_LABEL["pca256_pq"]),
-           Line2D([], [], ls=":", color=SPINDLE, label="Spindle store"),
+           Line2D([], [], ls=":", color=NAIVE, label="Spindle-naive store"),
            Line2D([], [], ls=":", color=WHOLE, label="Whole-matrix log store")]
     ps.legend_atom(FIG, "legend_memory", mem, 116, 10, ncol=3)
 
 
 if __name__ == "__main__":
     timing()
-    dot_rows("nx", [("NX5", True)], "Spindle-lite NX at 5 % of N (%)", "nx.csv")
+    dot_rows("nx", [("NX5", True)], "Spindle NX at 5 % of N (%)", "nx.csv")
     band()
     for k in ("breast_cancer", "brain_cancer"):
         memory(k)
