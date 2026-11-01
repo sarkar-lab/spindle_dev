@@ -1,0 +1,325 @@
+{
+ "topic": "whole_tile",
+ "notebook": "R2_whole_tile.ipynb",
+ "date": "2026-11-01 00:00",
+ "tag": "method-v2",
+ "describe": "method-v2-dirty",
+ "commit": "8040f91",
+ "inputs": [
+  "results/_cache (R0_index_cache)"
+ ],
+ "peak_rss_gb": 10.2,
+ "notes": "",
+ "files": {
+  "band/brain_cancer.npz": {
+   "description": "brain_cancer: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 37271
+  },
+  "band/breast_cancer.npz": {
+   "description": "breast_cancer: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 9945
+  },
+  "band/kidney_nondiseased.npz": {
+   "description": "kidney_nondiseased: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 5063
+  },
+  "band/lung_cancer.npz": {
+   "description": "lung_cancer: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 9210
+  },
+  "band/lymph_node.npz": {
+   "description": "lymph_node: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 11965
+  },
+  "band/lymph_node_5k.npz": {
+   "description": "lymph_node_5k: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 34715
+  },
+  "band/pancreatic_cancer.npz": {
+   "description": "pancreatic_cancer: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 9925
+  },
+  "band/skin_melanoma.npz": {
+   "description": "skin_melanoma: the typical query (seed 0, g = 0.25): d_B to every index tile, rows returned",
+   "rows": null,
+   "bytes": 5998
+  },
+  "band/typical.csv": {
+   "description": "the typical query of every dataset (seed 0, g = 0.25) and the share of queries returning fewer than 10 tiles",
+   "rows": 8,
+   "bytes": 809
+  },
+  "memory.csv": {
+   "description": "per (dataset, method, param): mean and s.d. over seeds of MB, NX5, Overlap, short5",
+   "rows": 16,
+   "bytes": 2162
+  },
+  "nx.csv": {
+   "description": "per (dataset, g): mean and s.d. over seeds 0-4 of every nx_seeds.csv column",
+   "rows": 48,
+   "bytes": 17721
+  },
+  "nx_seeds.csv": {
+   "description": "per (dataset, seed, g): means over held-out queries (work, tiles returned, radius / nearest d_B: medians)",
+   "rows": 240,
+   "bytes": 41826
+  },
+  "per_dataset/brain_cancer/memory_seed0.csv": {
+   "description": "brain_cancer seed 0: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1167
+  },
+  "per_dataset/brain_cancer/memory_seed1.csv": {
+   "description": "brain_cancer seed 1: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1172
+  },
+  "per_dataset/brain_cancer/memory_seed2.csv": {
+   "description": "brain_cancer seed 2: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1166
+  },
+  "per_dataset/brain_cancer/memory_seed3.csv": {
+   "description": "brain_cancer seed 3: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1168
+  },
+  "per_dataset/brain_cancer/memory_seed4.csv": {
+   "description": "brain_cancer seed 4: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1169
+  },
+  "per_dataset/brain_cancer/seed0.csv": {
+   "description": "brain_cancer seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 6372,
+   "bytes": 1399635
+  },
+  "per_dataset/brain_cancer/seed1.csv": {
+   "description": "brain_cancer seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 6372,
+   "bytes": 1395159
+  },
+  "per_dataset/brain_cancer/seed2.csv": {
+   "description": "brain_cancer seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 6372,
+   "bytes": 1396137
+  },
+  "per_dataset/brain_cancer/seed3.csv": {
+   "description": "brain_cancer seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 6372,
+   "bytes": 1397091
+  },
+  "per_dataset/brain_cancer/seed4.csv": {
+   "description": "brain_cancer seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 6372,
+   "bytes": 1395430
+  },
+  "per_dataset/breast_cancer/memory_seed0.csv": {
+   "description": "breast_cancer seed 0: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1159
+  },
+  "per_dataset/breast_cancer/memory_seed1.csv": {
+   "description": "breast_cancer seed 1: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1159
+  },
+  "per_dataset/breast_cancer/memory_seed2.csv": {
+   "description": "breast_cancer seed 2: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1154
+  },
+  "per_dataset/breast_cancer/memory_seed3.csv": {
+   "description": "breast_cancer seed 3: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1155
+  },
+  "per_dataset/breast_cancer/memory_seed4.csv": {
+   "description": "breast_cancer seed 4: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
+   "rows": 8,
+   "bytes": 1157
+  },
+  "per_dataset/breast_cancer/seed0.csv": {
+   "description": "breast_cancer seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1224,
+   "bytes": 262055
+  },
+  "per_dataset/breast_cancer/seed1.csv": {
+   "description": "breast_cancer seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1224,
+   "bytes": 255691
+  },
+  "per_dataset/breast_cancer/seed2.csv": {
+   "description": "breast_cancer seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1224,
+   "bytes": 261446
+  },
+  "per_dataset/breast_cancer/seed3.csv": {
+   "description": "breast_cancer seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1224,
+   "bytes": 261926
+  },
+  "per_dataset/breast_cancer/seed4.csv": {
+   "description": "breast_cancer seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1224,
+   "bytes": 261328
+  },
+  "per_dataset/kidney_nondiseased/seed0.csv": {
+   "description": "kidney_nondiseased seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 468,
+   "bytes": 99929
+  },
+  "per_dataset/kidney_nondiseased/seed1.csv": {
+   "description": "kidney_nondiseased seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 468,
+   "bytes": 100178
+  },
+  "per_dataset/kidney_nondiseased/seed2.csv": {
+   "description": "kidney_nondiseased seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 468,
+   "bytes": 100451
+  },
+  "per_dataset/kidney_nondiseased/seed3.csv": {
+   "description": "kidney_nondiseased seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 468,
+   "bytes": 99958
+  },
+  "per_dataset/kidney_nondiseased/seed4.csv": {
+   "description": "kidney_nondiseased seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 468,
+   "bytes": 100176
+  },
+  "per_dataset/lung_cancer/seed0.csv": {
+   "description": "lung_cancer seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1020,
+   "bytes": 218167
+  },
+  "per_dataset/lung_cancer/seed1.csv": {
+   "description": "lung_cancer seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1020,
+   "bytes": 219797
+  },
+  "per_dataset/lung_cancer/seed2.csv": {
+   "description": "lung_cancer seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1020,
+   "bytes": 218184
+  },
+  "per_dataset/lung_cancer/seed3.csv": {
+   "description": "lung_cancer seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1020,
+   "bytes": 218163
+  },
+  "per_dataset/lung_cancer/seed4.csv": {
+   "description": "lung_cancer seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1020,
+   "bytes": 217952
+  },
+  "per_dataset/lymph_node/seed0.csv": {
+   "description": "lymph_node seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1566,
+   "bytes": 338614
+  },
+  "per_dataset/lymph_node/seed1.csv": {
+   "description": "lymph_node seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1566,
+   "bytes": 338708
+  },
+  "per_dataset/lymph_node/seed2.csv": {
+   "description": "lymph_node seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1566,
+   "bytes": 338673
+  },
+  "per_dataset/lymph_node/seed3.csv": {
+   "description": "lymph_node seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1566,
+   "bytes": 336736
+  },
+  "per_dataset/lymph_node/seed4.csv": {
+   "description": "lymph_node seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1566,
+   "bytes": 338874
+  },
+  "per_dataset/lymph_node_5k/seed0.csv": {
+   "description": "lymph_node_5k seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 4644,
+   "bytes": 1033436
+  },
+  "per_dataset/lymph_node_5k/seed1.csv": {
+   "description": "lymph_node_5k seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 4644,
+   "bytes": 1026474
+  },
+  "per_dataset/lymph_node_5k/seed2.csv": {
+   "description": "lymph_node_5k seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 4644,
+   "bytes": 1032611
+  },
+  "per_dataset/lymph_node_5k/seed3.csv": {
+   "description": "lymph_node_5k seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 4644,
+   "bytes": 1023240
+  },
+  "per_dataset/lymph_node_5k/seed4.csv": {
+   "description": "lymph_node_5k seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 4644,
+   "bytes": 1037103
+  },
+  "per_dataset/pancreatic_cancer/seed0.csv": {
+   "description": "pancreatic_cancer seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1374,
+   "bytes": 303945
+  },
+  "per_dataset/pancreatic_cancer/seed1.csv": {
+   "description": "pancreatic_cancer seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1374,
+   "bytes": 302020
+  },
+  "per_dataset/pancreatic_cancer/seed2.csv": {
+   "description": "pancreatic_cancer seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1374,
+   "bytes": 302843
+  },
+  "per_dataset/pancreatic_cancer/seed3.csv": {
+   "description": "pancreatic_cancer seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1374,
+   "bytes": 303664
+  },
+  "per_dataset/pancreatic_cancer/seed4.csv": {
+   "description": "pancreatic_cancer seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 1374,
+   "bytes": 303049
+  },
+  "per_dataset/skin_melanoma/seed0.csv": {
+   "description": "skin_melanoma seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 558,
+   "bytes": 118097
+  },
+  "per_dataset/skin_melanoma/seed1.csv": {
+   "description": "skin_melanoma seed 1: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 558,
+   "bytes": 117352
+  },
+  "per_dataset/skin_melanoma/seed2.csv": {
+   "description": "skin_melanoma seed 2: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 558,
+   "bytes": 115969
+  },
+  "per_dataset/skin_melanoma/seed3.csv": {
+   "description": "skin_melanoma seed 3: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 558,
+   "bytes": 117839
+  },
+  "per_dataset/skin_melanoma/seed4.csv": {
+   "description": "skin_melanoma seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
+   "rows": 558,
+   "bytes": 118160
+  }
+ }
+}

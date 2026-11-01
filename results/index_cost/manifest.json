@@ -1,0 +1,26 @@
+{
+ "topic": "index_cost",
+ "notebook": "R1_index_cost.ipynb",
+ "date": "2026-10-31 23:50",
+ "tag": "method-v2",
+ "describe": "method-v2-dirty",
+ "commit": "8040f91",
+ "inputs": [
+  "results/_cache/*/seed*/build.json (R0_index_cache)",
+  "results/index_cost/ladder/*.json (earlier ladder runs)"
+ ],
+ "peak_rss_gb": 0.16,
+ "notes": "",
+ "files": {
+  "builds.csv": {
+   "description": "one row per (dataset, seed) build: sizes, niches, blocks, bytes of every index, build seconds per stage (build_s = prepare + layout + naive + spindle + naive_partial + spindle_partial), peak memory, host",
+   "rows": 40,
+   "bytes": 22078
+  },
+  "ladder.csv": {
+   "description": "one row per ladder point (cells: tonsil subsampled; genes: lymph node 5k top-p genes): sizes, bytes of every index, build seconds per stage, naive_build_s, peak memory",
+   "rows": 17,
+   "bytes": 9142
+  }
+ }
+}

@@ -1,0 +1,281 @@
+{
+ "topic": "breast_programs",
+ "notebook": "R6_breast_programs.ipynb",
+ "date": "2026-10-31 23:53",
+ "tag": "method-v2",
+ "describe": "method-v2-dirty",
+ "commit": "8040f91",
+ "inputs": [
+  "results/_cache/breast_cancer",
+  "~/.cache/gseapy"
+ ],
+ "peak_rss_gb": 5.02,
+ "notes": "Fig 6 inputs; full = whole-section layout (no tile held out)",
+ "files": {
+  "full/acta2.csv": {
+   "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
+   "rows": 936,
+   "bytes": 44683
+  },
+  "full/blocks.csv": {
+   "description": "one row per niche x block: genes, hubs, within / between / null mean |r|, null_p, co-varying, enrichment",
+   "rows": 48,
+   "bytes": 15546
+  },
+  "full/cells_niche.npz": {
+   "description": "every cell: x, y, its tile's niche (-1 = none)",
+   "rows": null,
+   "bytes": 1108827
+  },
+  "full/corr_niche0.npy": {
+   "description": "niche 0's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "full/corr_niche1.npy": {
+   "description": "niche 1's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "full/corr_niche2.npy": {
+   "description": "niche 2's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "full/enrich_null.csv": {
+   "description": "expected enriched fraction of random gene sets per block size",
+   "rows": 13,
+   "bytes": 346
+  },
+  "full/layout.json": {
+   "description": "gene order and blocks per niche, panel genes",
+   "rows": null,
+   "bytes": 7885
+  },
+  "full/niche_types.csv": {
+   "description": "annotated cell types of each niche's index-tile cells vs the section",
+   "rows": 57,
+   "bytes": 5542
+  },
+  "seed0/acta2.csv": {
+   "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
+   "rows": 1248,
+   "bytes": 59617
+  },
+  "seed0/blocks.csv": {
+   "description": "one row per niche x block: genes, hubs, within / between / null mean |r|, null_p, co-varying, enrichment",
+   "rows": 63,
+   "bytes": 20797
+  },
+  "seed0/cells_niche.npz": {
+   "description": "every cell: x, y, its tile's niche (-1 = none)",
+   "rows": null,
+   "bytes": 1115218
+  },
+  "seed0/corr_niche0.npy": {
+   "description": "niche 0's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "seed0/corr_niche1.npy": {
+   "description": "niche 1's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "seed0/corr_niche2.npy": {
+   "description": "niche 2's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "seed0/corr_niche3.npy": {
+   "description": "niche 3's mean correlation in its gene order (float32)",
+   "rows": null,
+   "bytes": 392004
+  },
+  "seed0/enrich_null.csv": {
+   "description": "expected enriched fraction of random gene sets per block size",
+   "rows": 15,
+   "bytes": 394
+  },
+  "seed0/example.csv": {
+   "description": "the example whole-tile query (rule in programs.py): compositions of query, top 10, random 10, section",
+   "rows": 4,
+   "bytes": 1336
+  },
+  "seed0/example_cells.npz": {
+   "description": "cells (x, y, class) and boxes of the example query and its top 10",
+   "rows": null,
+   "bytes": 15624
+  },
+  "seed0/gene_list_hits.csv": {
+   "description": "the top 10 tiles of every signature x query",
+   "rows": 150,
+   "bytes": 10747
+  },
+  "seed0/gene_lists.csv": {
+   "description": "one row per signature x query (T template, D variances only, X expression): Cliff's delta, co-variation, Jaccard",
+   "rows": 15,
+   "bytes": 2619
+  },
+  "seed0/layout.json": {
+   "description": "gene order and blocks per niche, panel genes",
+   "rows": null,
+   "bytes": 9537
+  },
+  "seed0/niche_types.csv": {
+   "description": "annotated cell types of each niche's index-tile cells vs the section",
+   "rows": 76,
+   "bytes": 7394
+  },
+  "seed0/signature_cells.npz": {
+   "description": "every cell's score per signature; boxes of the T top 10",
+   "rows": null,
+   "bytes": 1980761
+  },
+  "seed0/tile_queries.csv": {
+   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "rows": 204,
+   "bytes": 38876
+  },
+  "seed1/acta2.csv": {
+   "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
+   "rows": 936,
+   "bytes": 44697
+  },
+  "seed1/blocks.csv": {
+   "description": "one row per niche x block: genes, hubs, within / between / null mean |r|, null_p, co-varying, enrichment",
+   "rows": 45,
+   "bytes": 15111
+  },
+  "seed1/enrich_null.csv": {
+   "description": "expected enriched fraction of random gene sets per block size",
+   "rows": 16,
+   "bytes": 417
+  },
+  "seed1/gene_list_hits.csv": {
+   "description": "the top 10 tiles of every signature x query",
+   "rows": 150,
+   "bytes": 10726
+  },
+  "seed1/gene_lists.csv": {
+   "description": "one row per signature x query (T template, D variances only, X expression): Cliff's delta, co-variation, Jaccard",
+   "rows": 15,
+   "bytes": 2600
+  },
+  "seed1/niche_types.csv": {
+   "description": "annotated cell types of each niche's index-tile cells vs the section",
+   "rows": 57,
+   "bytes": 5549
+  },
+  "seed1/tile_queries.csv": {
+   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "rows": 204,
+   "bytes": 38797
+  },
+  "seed2/acta2.csv": {
+   "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
+   "rows": 1248,
+   "bytes": 59597
+  },
+  "seed2/blocks.csv": {
+   "description": "one row per niche x block: genes, hubs, within / between / null mean |r|, null_p, co-varying, enrichment",
+   "rows": 67,
+   "bytes": 21285
+  },
+  "seed2/enrich_null.csv": {
+   "description": "expected enriched fraction of random gene sets per block size",
+   "rows": 15,
+   "bytes": 393
+  },
+  "seed2/gene_list_hits.csv": {
+   "description": "the top 10 tiles of every signature x query",
+   "rows": 150,
+   "bytes": 10702
+  },
+  "seed2/gene_lists.csv": {
+   "description": "one row per signature x query (T template, D variances only, X expression): Cliff's delta, co-variation, Jaccard",
+   "rows": 15,
+   "bytes": 2574
+  },
+  "seed2/niche_types.csv": {
+   "description": "annotated cell types of each niche's index-tile cells vs the section",
+   "rows": 76,
+   "bytes": 7357
+  },
+  "seed2/tile_queries.csv": {
+   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "rows": 204,
+   "bytes": 38510
+  },
+  "seed3/acta2.csv": {
+   "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
+   "rows": 1248,
+   "bytes": 59613
+  },
+  "seed3/blocks.csv": {
+   "description": "one row per niche x block: genes, hubs, within / between / null mean |r|, null_p, co-varying, enrichment",
+   "rows": 65,
+   "bytes": 20895
+  },
+  "seed3/enrich_null.csv": {
+   "description": "expected enriched fraction of random gene sets per block size",
+   "rows": 15,
+   "bytes": 394
+  },
+  "seed3/gene_list_hits.csv": {
+   "description": "the top 10 tiles of every signature x query",
+   "rows": 150,
+   "bytes": 10705
+  },
+  "seed3/gene_lists.csv": {
+   "description": "one row per signature x query (T template, D variances only, X expression): Cliff's delta, co-variation, Jaccard",
+   "rows": 15,
+   "bytes": 2534
+  },
+  "seed3/niche_types.csv": {
+   "description": "annotated cell types of each niche's index-tile cells vs the section",
+   "rows": 76,
+   "bytes": 7345
+  },
+  "seed3/tile_queries.csv": {
+   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "rows": 204,
+   "bytes": 39814
+  },
+  "seed4/acta2.csv": {
+   "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
+   "rows": 1248,
+   "bytes": 59579
+  },
+  "seed4/blocks.csv": {
+   "description": "one row per niche x block: genes, hubs, within / between / null mean |r|, null_p, co-varying, enrichment",
+   "rows": 63,
+   "bytes": 20952
+  },
+  "seed4/enrich_null.csv": {
+   "description": "expected enriched fraction of random gene sets per block size",
+   "rows": 17,
+   "bytes": 437
+  },
+  "seed4/gene_list_hits.csv": {
+   "description": "the top 10 tiles of every signature x query",
+   "rows": 150,
+   "bytes": 10724
+  },
+  "seed4/gene_lists.csv": {
+   "description": "one row per signature x query (T template, D variances only, X expression): Cliff's delta, co-variation, Jaccard",
+   "rows": 15,
+   "bytes": 2597
+  },
+  "seed4/niche_types.csv": {
+   "description": "annotated cell types of each niche's index-tile cells vs the section",
+   "rows": 76,
+   "bytes": 7332
+  },
+  "seed4/tile_queries.csv": {
+   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "rows": 204,
+   "bytes": 38767
+  }
+ }
+}

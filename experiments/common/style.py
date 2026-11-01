@@ -1,36 +1,31 @@
-"""Paper style: every atom is one plot, drawn at its placed size in mm on the 180 mm page.
+"""Paper style for the figure notebooks (experiments/figures/F*.ipynb): fonts, colours, panels and pages in mm.
 
     import style as ps
-    fig, ax = ps.atom(55, 40, left=9, bottom=7, right=1, top=1)       # mm: figure size, then axes margins
+    fig = ps.panel(60, 50); ax = ps.axes(fig, left=9, bottom=7, right=1, top=1)   # mm: panel size, then axes margins
     ...
-    ps.save(fig, "fig2_cost", "storage", source="results/fig2_cost/storage.csv")
+    ps.save_panel(fig, "fig2_cost", "B")                  # figures/fig2_cost/panels/B.pdf + .png
+    pg = ps.page(180, 200); panel_b(ps.place(pg, "B", x=120, y=0, w=60, h=50)); ps.save_figure(pg, "fig2_cost")
 
 Rules:
-- No titles, captions, panel letters, annotations or legends inside a plot: axes, axis labels (with "log scale" when
-  log), ticks and colourbar ticks only. A legend is its own atom (``legend_atom``), so is a colourbar
-  (``colorbar_atom``).
-- Saved at exactly its size (never bbox_inches="tight"), so the pptx never rescales it.
-- PDF: vector, TrueType (fonttype 42), transparent background (render.py stamps it onto the page, so text boxes
-  under it stay visible); artists made with ``rasterized=True`` (cell clouds) are rasterised at 1200 dpi.
-  PNG: 1200 dpi, white (the pptx picture). Written to figures/<fig>/atoms/{pdf,png}/<atom>.*, one row per atom in
-  figures/manifest.csv. Resolution rule (user, 26 Oct): nothing may break when zoomed in, within the size budget.
-- Liberation Sans; axis labels 7 pt, ticks and legends 6 pt, lines 0.75 pt.
-- Plotting only: compute nodes lack the font, so never import this module in an sbatch job.
+- Saved at exactly its size (never bbox_inches="tight"). PDF vector, TrueType (fonttype 42); PNG 1200 dpi; artists
+  made with ``rasterized=True`` (cell clouds) are rasterised at 1200 dpi. Resolution rule (user, 26 Oct): nothing may
+  break when zoomed in, within 10 MB per file.
+- Liberation Sans; axis labels 7 pt, ticks and legends 6 pt, panel letters 8 pt bold, lines 0.75 pt.
+- Plotting only: compute nodes lack the font, so never import this module in a result notebook or sbatch job.
 """
 
-import csv
-import subprocess
+import sys
 from pathlib import Path
 
 import matplotlib
 
-matplotlib.use("Agg")
+if "ipykernel" not in sys.modules:  # notebooks keep their inline backend
+    matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import font_manager  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 FIGURES = ROOT / "figures"
-MANIFEST = FIGURES / "manifest.csv"
 DPI = 1200
 MM = 1 / 25.4
 PAGE_W, PAGE_H = 180.0, 225.0  # mm
@@ -140,40 +135,6 @@ def niche_palette(n):
     return _NICHE[:n]
 
 
-# ---------------------------------------------------------------- atoms
-def atom(w, h, left=0.0, bottom=0.0, right=0.0, top=0.0, **kw):
-    """A w x h mm figure with one axes inset by the given margins (mm)."""
-    if w > PAGE_W or h > PAGE_H:
-        raise ValueError(f"atom {w} x {h} mm exceeds the {PAGE_W:g} x {PAGE_H:g} mm page")
-    fig = plt.figure(figsize=(w * MM, h * MM))
-    ax = fig.add_axes([left / w, bottom / h, 1 - (left + right) / w, 1 - (bottom + top) / h], **kw)
-    return fig, ax
-
-
-def legend_atom(fig_name, name, handles, w, h, ncol=1, source="", **kw):
-    """A legend on its own, centred on a w x h mm canvas."""
-    fig = plt.figure(figsize=(w * MM, h * MM))
-    kw.setdefault("loc", "center")
-    fig.legend(handles=handles, ncol=ncol, **kw)
-    save(fig, fig_name, name, source=source)
-
-
-def colorbar_atom(fig_name, name, cmap, vmin, vmax, w, h, ticks=None, label=None, orientation="vertical", source=""):
-    """A colourbar on its own (bar 2.5 mm thick); ticks only (a label, if any, is an axis label)."""
-    from matplotlib.cm import ScalarMappable
-    from matplotlib.colors import Normalize
-
-    if orientation == "vertical":
-        fig, ax = atom(w, h, left=0.5, right=w - 3.0, bottom=1.5, top=1.5)
-    else:
-        fig, ax = atom(w, h, left=2.0, right=2.0, bottom=h - 3.0, top=0.5)
-    cb = fig.colorbar(ScalarMappable(Normalize(vmin, vmax), cmap), cax=ax, orientation=orientation, ticks=ticks)
-    cb.outline.set_linewidth(0.5)
-    if label:
-        cb.set_label(label)
-    save(fig, fig_name, name, source=source)
-
-
 def plain_log(ax, axis="y", subs=(1.0, 2.0, 5.0)):
     """Log axis labelled with plain numbers at 1-2-5 steps; no minor labels."""
     import numpy as np
@@ -192,45 +153,73 @@ def log_grid(ax, axis="y"):
     ax.set_axisbelow(True)
 
 
-def describe():
-    return subprocess.run(["git", "describe", "--tags", "--dirty", "--always"], cwd=ROOT, capture_output=True,
-                          text=True).stdout.strip()
+# ---------------------------------------------------------------- panels (figure notebooks)
+# A panel is a function that draws into a Figure or SubFigure of its size in mm; one cell draws it alone and saves it
+# (save_panel), the last cell places every panel on the page (page + place) and saves the figure (save_figure).
+#     def panel_b(fig):
+#         ax = ps.axes(fig, left=9, bottom=7, right=1, top=1)       # mm margins inside the panel
+#         ...
+#     fig = ps.panel(60, 50); panel_b(fig); ps.save_panel(fig, FIG, "B")
+#     page = ps.page(180, 200); panel_b(ps.place(page, "B", x=120, y=0, w=60, h=50)); ps.save_figure(page, FIG)
+LETTER_PT = 8
 
 
-def atom_paths(fig_name, name):
-    d = FIGURES / fig_name / "atoms"
-    return d / "pdf" / f"{name}.pdf", d / "png" / f"{name}.png"
+def panel(w, h):
+    """A w x h mm figure for one panel."""
+    if w > PAGE_W or h > PAGE_H:
+        raise ValueError(f"panel {w} x {h} mm exceeds the {PAGE_W:g} x {PAGE_H:g} mm page")
+    return plt.figure(figsize=(w * MM, h * MM))
 
 
-FIELDS = ["figure", "atom", "w_mm", "h_mm", "px", "source", "tag"]
+def size_mm(fig):
+    """(w, h) in mm of a Figure or SubFigure."""
+    root = fig.figure if hasattr(fig, "figure") and fig.figure is not None else fig
+    return fig.bbox.width / root.dpi / MM, fig.bbox.height / root.dpi / MM
 
 
-def save(fig, fig_name, name, source=""):
-    """figures/<fig>/atoms/{pdf,png}/<name>.* at the figure's own size; one manifest row per (figure, atom)."""
-    pdf, png = atom_paths(fig_name, name)
-    pdf.parent.mkdir(parents=True, exist_ok=True)
-    png.parent.mkdir(parents=True, exist_ok=True)
-    w, h = fig.get_size_inches() / MM
-    fig.savefig(pdf, dpi=DPI, transparent=True)
-    fig.savefig(png, dpi=DPI)
-    plt.close(fig)
-    rows = {}
-    if MANIFEST.exists():
-        with open(MANIFEST) as fh:
-            rows = {(r["figure"], r["atom"]): r for r in csv.DictReader(fh)}
-    rows[fig_name, name] = {"figure": fig_name, "atom": name, "w_mm": f"{w:.2f}", "h_mm": f"{h:.2f}",
-                            "px": f"{round(w * MM * DPI)}x{round(h * MM * DPI)}", "source": source, "tag": describe()}
-    MANIFEST.parent.mkdir(parents=True, exist_ok=True)
-    with open(MANIFEST, "w", newline="") as fh:
-        wr = csv.DictWriter(fh, fieldnames=FIELDS)
-        wr.writeheader()
-        wr.writerows(rows[k] for k in sorted(rows))
-    print(f"{fig_name}/{name}: {w:.1f} x {h:.1f} mm")
+def axes(fig, left=0.0, bottom=0.0, right=0.0, top=0.0, **kw):
+    """One axes inset by the given margins (mm) in a panel (Figure or SubFigure)."""
+    w, h = size_mm(fig)
+    return fig.add_axes([left / w, bottom / h, 1 - (left + right) / w, 1 - (bottom + top) / h], **kw)
 
 
-def manifest():
-    """{(figure, atom): (w_mm, h_mm)}."""
-    if not MANIFEST.exists():
-        return {}
-    with open(MANIFEST) as fh:
-        return {(r["figure"], r["atom"]): (float(r["w_mm"]), float(r["h_mm"])) for r in csv.DictReader(fh)}
+def page(w=PAGE_W, h=PAGE_H):
+    return plt.figure(figsize=(w * MM, h * MM))
+
+
+def place(pg, letter, x, y, w, h, dx=0.0, dy=0.0):
+    """The w x h mm SubFigure at (x, y) mm from the page's top-left corner, with its panel letter (bold, 8 pt) at its
+    top-left corner, offset by (dx, dy) mm. letter=None: no letter."""
+    W, H = size_mm(pg)
+    if x < 0 or y < 0 or x + w > W + 1e-6 or y + h > H + 1e-6:
+        raise ValueError(f"panel {letter}: {w} x {h} mm at ({x}, {y}) leaves the {W:.0f} x {H:.0f} mm page")
+    # subfigures follow only the gridspec's width/height ratios (not its left/right/...): a 3 x 3 grid, middle cell
+    eps = 1e-6
+    gs = pg.add_gridspec(3, 3, width_ratios=[max(x, eps), w, max(W - x - w, eps)],
+                         height_ratios=[max(y, eps), h, max(H - y - h, eps)], wspace=0, hspace=0,
+                         left=0, right=1, bottom=0, top=1)
+    sf = pg.add_subfigure(gs[1, 1])
+    if letter:
+        pg.text((x + dx) / W, 1 - (y + dy) / H, letter, fontsize=LETTER_PT, fontweight="bold", ha="left", va="top")
+    return sf
+
+
+def _save(fig, stem):
+    stem.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(stem.with_suffix(".pdf"), dpi=DPI, facecolor="white")
+    fig.savefig(stem.with_suffix(".png"), dpi=DPI, facecolor="white")
+    sizes = [stem.with_suffix(e).stat().st_size / 1e6 for e in (".pdf", ".png")]
+    w, h = size_mm(fig)
+    print(f"{stem.relative_to(ROOT)}.pdf/.png: {w:.0f} x {h:.0f} mm, {sizes[0]:.1f} / {sizes[1]:.1f} MB")
+    if max(sizes) > 10:
+        print("  WARNING: over the 10 MB budget")
+
+
+def save_panel(fig, fig_name, name):
+    """figures/<fig>/panels/<name>.pdf + .png (1200 dpi), at the panel's own size (never bbox_inches="tight")."""
+    _save(fig, FIGURES / fig_name / "panels" / name)
+
+
+def save_figure(fig, fig_name):
+    """figures/<fig>/<fig>.pdf + .png (1200 dpi)."""
+    _save(fig, FIGURES / fig_name / fig_name)

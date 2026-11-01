@@ -25,9 +25,10 @@ spindle_dev/
 │   ├── metrics.py       #   shrinkage, matrix logs, correlation
 │   └── utils.py         #   logging, save/load
 ├── examples/            # run_single_dataset.py (usage), check_indexes.py (sanity checks)
-├── experiments/         # the paper's figures: common/ pipeline, one folder per figure (run.sh lists the steps)
-├── results/             # figure inputs and numbers.json per figure (the index cache _cache/ is gitignored)
-├── figures/             # atoms, edited pptx and rendered PDF/PNG per figure, all_figures.{pptx,pdf}
+├── experiments/         # the paper's figures: common/ shared modules, compute/ result notebooks (R0-R8),
+│                        #   figures/ figure notebooks (F2-F8)
+├── results/             # CSVs + manifest.json per topic (the index cache _cache/ and logs _logs/ are gitignored)
+├── figures/             # panels/ and the full figure (PDF + PNG) per figure
 ├── paths.py             # dataset paths, read from datasets.yaml
 └── datasets.yaml        # the only place a dataset path is written
 ```

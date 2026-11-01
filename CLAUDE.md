@@ -34,13 +34,23 @@ each for whole tiles and gene sets, all on one shared layout:
   reported), `template_query` (Methods Eq. signature: ρ = 0.5, Ω = 90th-percentile shrunk variances from
   `variance_quantiles`, kept beside the index since Spindle partial stores no covariances), `tile_query`. All
   return `(cov_s, idx)` for `SpindleNaivePartial` / `SpindlePartial`. Chosen by a gene-set pilot (25–26 Oct;
-  removed in the 27 Oct cleanup, in git history); the exemplar rule stays experiment code (`fig8_pan_cancer/common8.py`).
-- **Figures** (`experiments/`, `results/`, `figures/`): `experiments/common/` holds the shared pieces (`data.py`:
-  datasets, the index cache in `results/_cache/`, seeds 0–4 with seed 0 for examples, the `method-v1` stamp;
-  `style.py`, `build_figure.py`, `render.py`, `assemble_all.py`; `run.sbatch` / `timing.sbatch`).
-  `experiments/<fig>/run.sh` lists each figure's steps in order (sbatch `c_*.py` → `f_*.py` atoms → draft pptx →
-  render → `write_numbers.py` → `results/<fig>/numbers.json`). `figures/<fig>/<fig>.pptx` is the user's edited copy
-  and the source of truth (no script writes it); Fig 1 is the user's own PDF.
+  removed in the 27 Oct cleanup, in git history); the exemplar rule stays experiment code (`experiments/common/pan_cancer.py`).
+- **Figures** (`experiments/`, `results/`, `figures/`), three tiers (regenerated under method-v2 on 1 Nov):
+  1. `experiments/common/*.py`: shared functions. `data.py` (datasets, the index cache in `results/_cache/`, seeds
+     0–4 with seed 0 for examples, the `method-v2` stamp, loaders of R0's staged inputs), `index_cache.py` (build +
+     stage), `slurm.py`, `results_io.py` (CSV + `results/<topic>/manifest.json`), `style.py` (panels in mm), one
+     module per experiment (`whole_tile`, `gene_set(_accuracy)`, `timing`, `cross_platform`, `programs`, `queries`,
+     `pan_cancer`, `sections`, `retrieval`); `run.sbatch` / `timing.sbatch` (Slurm array workers), `run_nb.py` +
+     `run_nb.sbatch` / `timing_nb.sbatch` (execute a notebook).
+  2. `experiments/compute/R0`–`R8_*.ipynb`: result notebooks, writing CSVs + a manifest to `results/<topic>/`
+     (`index_cost`, `whole_tile`, `gene_set`, `timing`, `cross_platform`, `breast_programs`, `queries`,
+     `pan_cancer`); summaries shown, not saved; existing outputs skipped unless `FORCE = True`. Only R0 (index cache
+     builds + staging, ~128 GB for brain) uses Slurm; R1–R8 run without it in ≤ 16 GB (`run_nb.sbatch`, `--mem=16G`).
+     R4 (timing) runs alone on ROSALIND-CPU1 (`sbatch --exclusive experiments/common/timing_nb.sbatch …`).
+  3. `experiments/figures/F2`–`F8_*.ipynb` (login node, spindle_env kernel; the first cell lists the R notebooks
+     needed): one panel per cell → `figures/<fig>/panels/<X>.{pdf,png}`, the full figure → `figures/<fig>/<fig>.{pdf,png}`.
+  No pptx, atoms or numbers files. Fig 1 (`figures/fig1_overview/`) is the user's own PDF: never write or delete it.
+  `experiments/beyond_expression/` and `query_maps/` are self-contained side studies.
 - **Layout** (`layout.py`): tiles → Leiden covariance niches (cap 1,000) → gene order and blocks per niche.
   `preprocessing.py` tiles the section, picks genes, computes covariances and splits train/held-out.
 
@@ -51,12 +61,13 @@ each for whole tiles and gene sets, all on one shared layout:
   a figure input when `src/` differs from the tag.
 - Dataset paths live only in `datasets.yaml`; read them with `paths.dataset_path(key)` (shell:
   `python paths.py <key>`). Never hard-code a path.
-- Experiment code goes in `experiments/<figure>/` and uses only the public API of `spindle_dev`;
+- Experiment code goes in `experiments/` (the three tiers above) and uses only the public API of `spindle_dev`;
   baselines never go into `src/`.
 - **Benchmarks** time the compiled searches only (`SpindleNaive.distances` + sort, `Spindle.search_vectors`,
   `SpindlePartial.search_vectors`; gene sets exact: `SpindleNaivePartial.distances` + sort), from query vectors / pieces
   computed beforehand (`query_vectors`), one thread
-  (`OMP_NUM_THREADS=1` etc.). Never time the numpy / Python references.
+  (`OMP_NUM_THREADS=1` etc.), one timing job at a time on an otherwise idle node (R4). Never time the numpy / Python
+  references.
 - Heavy compute goes through `sbatch` (the shell is a login node), in the `spindle_env` conda env
   (`~/miniforge3/envs/spindle_env`). `spindle_dev` is not installed there: put `src/` on `sys.path`.
   Compute nodes cannot see the login node's `/tmp`, so job scripts and outputs must live on the shared
@@ -68,6 +79,9 @@ each for whole tiles and gene sets, all on one shared layout:
 
 ```bash
 python examples/run_single_dataset.py skin_melanoma
+python experiments/common/run_nb.py experiments/compute/R0_index_cache.ipynb     # login node: submits the builds
+sbatch experiments/common/run_nb.sbatch experiments/compute/R2_whole_tile.ipynb   # any of R1-R3, R5-R8
+python experiments/common/run_nb.py experiments/figures/F3_whole_tile.ipynb      # login node
 ```
 
 There is no test suite; `examples/check_indexes.py <key>` (via sbatch) is the sanity check: Spindle-naive

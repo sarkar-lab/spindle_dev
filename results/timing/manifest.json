@@ -1,0 +1,130 @@
+{
+ "topic": "timing",
+ "notebook": "R4_timing.ipynb",
+ "date": "2026-11-01 02:49",
+ "tag": "method-v2",
+ "describe": "method-v2-dirty",
+ "commit": "8040f91",
+ "inputs": [
+  "results/_cache (R0_index_cache)"
+ ],
+ "peak_rss_gb": 11.03,
+ "notes": "Timed one job at a time on one node (cluster: ROSALIND-CPU1), one thread.",
+ "files": {
+  "gene_set.csv": {
+   "description": "gene-set timings, one row per (dataset, seed, query, size): ms of every step",
+   "rows": 26212,
+   "bytes": 8097028
+  },
+  "gene_set_seeds.csv": {
+   "description": "gene sets: median ms per (dataset, seed), all sizes pooled",
+   "rows": 40,
+   "bytes": 13022
+  },
+  "gene_set_size_seeds.csv": {
+   "description": "gene sets: median ms per (dataset, seed, size)",
+   "rows": 160,
+   "bytes": 51592
+  },
+  "gene_set_summary.csv": {
+   "description": "gene sets: mean and s.d. over seeds; speed-ups search only (Spindle-naive scan without query logs / Spindle) and end to end",
+   "rows": 8,
+   "bytes": 5484
+  },
+  "per_dataset/brain_cancer/gene_set.csv": {
+   "description": "gene_set timings of brain_cancer: one row per (seed, query, size)",
+   "rows": 3859,
+   "bytes": 1201861
+  },
+  "per_dataset/brain_cancer/whole_tile.csv": {
+   "description": "whole_tile timings of brain_cancer: one row per (seed, query)",
+   "rows": 1000,
+   "bytes": 197836
+  },
+  "per_dataset/breast_cancer/gene_set.csv": {
+   "description": "gene_set timings of breast_cancer: one row per (seed, query, size)",
+   "rows": 4000,
+   "bytes": 1251558
+  },
+  "per_dataset/breast_cancer/whole_tile.csv": {
+   "description": "whole_tile timings of breast_cancer: one row per (seed, query)",
+   "rows": 1000,
+   "bytes": 196803
+  },
+  "per_dataset/kidney_nondiseased/gene_set.csv": {
+   "description": "gene_set timings of kidney_nondiseased: one row per (seed, query, size)",
+   "rows": 1488,
+   "bytes": 472183
+  },
+  "per_dataset/kidney_nondiseased/whole_tile.csv": {
+   "description": "whole_tile timings of kidney_nondiseased: one row per (seed, query)",
+   "rows": 390,
+   "bytes": 77472
+  },
+  "per_dataset/lung_cancer/gene_set.csv": {
+   "description": "gene_set timings of lung_cancer: one row per (seed, query, size)",
+   "rows": 3400,
+   "bytes": 1054135
+  },
+  "per_dataset/lung_cancer/whole_tile.csv": {
+   "description": "whole_tile timings of lung_cancer: one row per (seed, query)",
+   "rows": 850,
+   "bytes": 164611
+  },
+  "per_dataset/lymph_node/gene_set.csv": {
+   "description": "gene_set timings of lymph_node: one row per (seed, query, size)",
+   "rows": 3997,
+   "bytes": 1231602
+  },
+  "per_dataset/lymph_node/whole_tile.csv": {
+   "description": "whole_tile timings of lymph_node: one row per (seed, query)",
+   "rows": 1000,
+   "bytes": 192504
+  },
+  "per_dataset/lymph_node_5k/gene_set.csv": {
+   "description": "gene_set timings of lymph_node_5k: one row per (seed, query, size)",
+   "rows": 4000,
+   "bytes": 1244184
+  },
+  "per_dataset/lymph_node_5k/whole_tile.csv": {
+   "description": "whole_tile timings of lymph_node_5k: one row per (seed, query)",
+   "rows": 1000,
+   "bytes": 198142
+  },
+  "per_dataset/pancreatic_cancer/gene_set.csv": {
+   "description": "gene_set timings of pancreatic_cancer: one row per (seed, query, size)",
+   "rows": 3608,
+   "bytes": 1137199
+  },
+  "per_dataset/pancreatic_cancer/whole_tile.csv": {
+   "description": "whole_tile timings of pancreatic_cancer: one row per (seed, query)",
+   "rows": 1000,
+   "bytes": 199945
+  },
+  "per_dataset/skin_melanoma/gene_set.csv": {
+   "description": "gene_set timings of skin_melanoma: one row per (seed, query, size)",
+   "rows": 1860,
+   "bytes": 577491
+  },
+  "per_dataset/skin_melanoma/whole_tile.csv": {
+   "description": "whole_tile timings of skin_melanoma: one row per (seed, query)",
+   "rows": 465,
+   "bytes": 90010
+  },
+  "whole_tile.csv": {
+   "description": "whole-tile timings, one row per (dataset, seed, query): ms of every step (qlog_whole, qlog_block, whole, naive, spindle)",
+   "rows": 6705,
+   "bytes": 1311799
+  },
+  "whole_tile_seeds.csv": {
+   "description": "whole tile: median ms of every step per (dataset, seed)",
+   "rows": 40,
+   "bytes": 4975
+  },
+  "whole_tile_summary.csv": {
+   "description": "whole tile: mean and s.d. over seeds of the per-seed medians; speed-ups of the means",
+   "rows": 8,
+   "bytes": 2402
+  }
+ }
+}

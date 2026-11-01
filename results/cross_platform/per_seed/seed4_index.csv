@@ -1,0 +1,3 @@
+seed,direction,N,tag,describe,index_platform,n_query,p,n_niches,n_blocks,bytes_naive,bytes_spindle
+4,x2v,156,method-v2,method-v2-dirty,Visium,165,307,2,34,2135832,258948
+4,v2x,165,method-v2,method-v2-dirty,Xenium,156,307,3,47,2589816,287774

@@ -1,0 +1,305 @@
+{
+ "topic": "pan_cancer",
+ "notebook": "R8_pan_cancer.ipynb",
+ "date": "2026-10-31 23:54",
+ "tag": "method-v2",
+ "describe": "method-v2-dirty",
+ "commit": "8040f91",
+ "inputs": [
+  "results/_cache"
+ ],
+ "peak_rss_gb": 11.13,
+ "notes": "Fig 8.",
+ "files": {
+  "exemplar.csv": {
+   "description": "one exemplar tile per programme: genes, c, mean r, variance quantiles q",
+   "rows": 4,
+   "bytes": 655
+  },
+  "exemplar.npz": {
+   "description": "R_S, q and box of each exemplar; breast cells",
+   "rows": null,
+   "bytes": 1104544
+  },
+  "per_dataset/brain_cancer/seed0_gradient.npz": {
+   "description": "seed 0: cells, index tile centres/sides, exact d_B^S of every index tile to each query",
+   "rows": null,
+   "bytes": 5804963
+  },
+  "per_dataset/brain_cancer/seed0_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 6836,
+   "bytes": 570181
+  },
+  "per_dataset/brain_cancer/seed0_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3958
+  },
+  "per_dataset/brain_cancer/seed1_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 6849,
+   "bytes": 571918
+  },
+  "per_dataset/brain_cancer/seed1_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3944
+  },
+  "per_dataset/brain_cancer/seed2_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 6938,
+   "bytes": 580308
+  },
+  "per_dataset/brain_cancer/seed2_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3943
+  },
+  "per_dataset/brain_cancer/seed3_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 7406,
+   "bytes": 620672
+  },
+  "per_dataset/brain_cancer/seed3_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3987
+  },
+  "per_dataset/brain_cancer/seed4_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 6514,
+   "bytes": 541403
+  },
+  "per_dataset/brain_cancer/seed4_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3917
+  },
+  "per_dataset/breast_cancer/seed0_gradient.npz": {
+   "description": "seed 0: cells, index tile centres/sides, exact d_B^S of every index tile to each query",
+   "rows": null,
+   "bytes": 1169659
+  },
+  "per_dataset/breast_cancer/seed0_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1106,
+   "bytes": 89422
+  },
+  "per_dataset/breast_cancer/seed0_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3484
+  },
+  "per_dataset/breast_cancer/seed1_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1134,
+   "bytes": 91827
+  },
+  "per_dataset/breast_cancer/seed1_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3634
+  },
+  "per_dataset/breast_cancer/seed2_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1160,
+   "bytes": 94791
+  },
+  "per_dataset/breast_cancer/seed2_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3635
+  },
+  "per_dataset/breast_cancer/seed3_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1207,
+   "bytes": 98230
+  },
+  "per_dataset/breast_cancer/seed3_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3731
+  },
+  "per_dataset/breast_cancer/seed4_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1146,
+   "bytes": 92902
+  },
+  "per_dataset/breast_cancer/seed4_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3756
+  },
+  "per_dataset/lung_cancer/seed0_gradient.npz": {
+   "description": "seed 0: cells, index tile centres/sides, exact d_B^S of every index tile to each query",
+   "rows": null,
+   "bytes": 1168944
+  },
+  "per_dataset/lung_cancer/seed0_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1025,
+   "bytes": 82019
+  },
+  "per_dataset/lung_cancer/seed0_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3952
+  },
+  "per_dataset/lung_cancer/seed1_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1109,
+   "bytes": 89239
+  },
+  "per_dataset/lung_cancer/seed1_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3863
+  },
+  "per_dataset/lung_cancer/seed2_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1043,
+   "bytes": 83576
+  },
+  "per_dataset/lung_cancer/seed2_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3876
+  },
+  "per_dataset/lung_cancer/seed3_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1103,
+   "bytes": 88589
+  },
+  "per_dataset/lung_cancer/seed3_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3989
+  },
+  "per_dataset/lung_cancer/seed4_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1046,
+   "bytes": 84057
+  },
+  "per_dataset/lung_cancer/seed4_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3883
+  },
+  "per_dataset/pancreatic_cancer/seed0_gradient.npz": {
+   "description": "seed 0: cells, index tile centres/sides, exact d_B^S of every index tile to each query",
+   "rows": null,
+   "bytes": 1387608
+  },
+  "per_dataset/pancreatic_cancer/seed0_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1470,
+   "bytes": 127483
+  },
+  "per_dataset/pancreatic_cancer/seed0_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3951
+  },
+  "per_dataset/pancreatic_cancer/seed1_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1541,
+   "bytes": 134922
+  },
+  "per_dataset/pancreatic_cancer/seed1_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3975
+  },
+  "per_dataset/pancreatic_cancer/seed2_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1549,
+   "bytes": 135491
+  },
+  "per_dataset/pancreatic_cancer/seed2_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3975
+  },
+  "per_dataset/pancreatic_cancer/seed3_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1573,
+   "bytes": 137777
+  },
+  "per_dataset/pancreatic_cancer/seed3_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3998
+  },
+  "per_dataset/pancreatic_cancer/seed4_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 1515,
+   "bytes": 131435
+  },
+  "per_dataset/pancreatic_cancer/seed4_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3984
+  },
+  "per_dataset/skin_melanoma/seed0_gradient.npz": {
+   "description": "seed 0: cells, index tile centres/sides, exact d_B^S of every index tile to each query",
+   "rows": null,
+   "bytes": 634605
+  },
+  "per_dataset/skin_melanoma/seed0_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 660,
+   "bytes": 54429
+  },
+  "per_dataset/skin_melanoma/seed0_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3957
+  },
+  "per_dataset/skin_melanoma/seed1_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 672,
+   "bytes": 55488
+  },
+  "per_dataset/skin_melanoma/seed1_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3873
+  },
+  "per_dataset/skin_melanoma/seed2_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 667,
+   "bytes": 55085
+  },
+  "per_dataset/skin_melanoma/seed2_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3928
+  },
+  "per_dataset/skin_melanoma/seed3_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 654,
+   "bytes": 53756
+  },
+  "per_dataset/skin_melanoma/seed3_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3952
+  },
+  "per_dataset/skin_melanoma/seed4_hits.csv": {
+   "description": "every hit: rank, tile, correlation gap, tile score",
+   "rows": 665,
+   "bytes": 54797
+  },
+  "per_dataset/skin_melanoma/seed4_programs.csv": {
+   "description": "programme x method: hits returned, gain, delta, co-variation lift, Jaccard",
+   "rows": 16,
+   "bytes": 3955
+  },
+  "programs.csv": {
+   "description": "per section, programme and method: mean and s.d. over seeds; absent flag",
+   "rows": 80,
+   "bytes": 30537
+  }
+ }
+}
