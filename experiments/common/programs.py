@@ -23,16 +23,18 @@ correlation R_k (the mean of the niche's shrunk index covariances, as a correlat
 - ACTA2 (chosen before the run as a marker that myoepithelial cells and fibroblasts share; no gene search): r with
   every gene in every niche's R_k and whether that gene is in ACTA2's block there.
 
-Whole-tile queries = every held-out tile of the seed. Spindle-naive's top 10 = the 10 smallest exact d_B (the cache's
-D). Readout (cells, not tiles): TV = 0.5 sum |a - b| between the query's 8-class composition (sections.CLASSES) and the
-pooled composition of the top 10's cells; null = the mean TV of N_RANDOM random 10-tile draws of index tiles.
-Recorded, never claimed: the expression top 10 (Euclidean on the tile-mean log-normalised expression, z-scored over
-the index tiles) and its TV; how many of Spindle-naive's 10 Spindle returns among its first 10 (search_vectors, default
-g = 0.25 as in Fig 3).
+Whole-tile queries = every held-out tile of the seed. Spindle's top 10 (top 5) = the first 10 (5) tiles of
+search_vectors (default g = 0.25 as in Fig 3; fewer if it returns fewer, NaN if none; user, 2 Nov: every search result
+from Spindle). Readout (cells, not tiles): TV = 0.5 sum |a - b| between the query's 8-class composition
+(sections.CLASSES) and the pooled composition of the top 10's (top 5's) cells; null = the mean TV of N_RANDOM random
+10-tile (5-tile) draws of index tiles. Recorded, never claimed: Spindle-naive's top 10 / top 5 (the smallest exact d_B,
+the cache's D) and their TV; the expression top 10 (Euclidean on the tile-mean log-normalised expression, z-scored over
+the index tiles) and its TV; how many of Spindle-naive's 10 Spindle returns among its first 10.
 EXAMPLE RULE (approved 26 Oct, fixed before the run): seed 0; among the held-out tiles with >= 100 cells, the one with
-the largest share of myoepithelial cells (ties: lower tile id). Reported with it: its top 10's and a random 10's
-pooled composition, the section's, and the base rate = the share of all held-out queries whose top-10 TV is below the
-random-10 TV.
+the largest share of myoepithelial cells (ties: lower tile id). Reported with it: Spindle's top 10's and a random 10's
+pooled composition, the section's, and the base rate = the share of all held-out queries whose Spindle top-10 TV is
+below the random-10 TV.
+(Until 2 Nov the top 10 / top 5 were Spindle-naive's: columns tv_top / tv_top5, now tv_naive / tv_naive5.)
 
 Gene-list queries: the 5 breast signatures (signatures.TISSUE_MODULES["breast"]; every gene is an index gene), each
 the template query T (sd.template_query on the build's omega: Methods Eq. signature, rho = 0.5, 90th-percentile
@@ -69,6 +71,7 @@ FDR = 0.05
 MARKER = "ACTA2"
 MIN_CELLS = 100
 EXAMPLE_CLASS = "Myoepithelial"
+TOP5 = 5  # the top 5 of Fig 4C, with its own random 5-tile null
 
 
 # ---------------------------------------------------------------- enrichment
@@ -228,19 +231,28 @@ def tile_queries(S, seed):
     m, s = mu_idx.mean(0), mu_idx.std(0) + 1e-9
     z_idx, z_q = (mu_idx - m) / s, (mu_q - m) / s
     rng = np.random.default_rng(seed)
+    rng5 = np.random.default_rng([seed, TOP5])  # own stream: the top-10 columns stay as before
     rows, tops = [], {}
+
+    def tv_of(q, r):
+        return sx.tv(q, sx.class_shares(cnt_idx[r])) if len(r) else np.nan
+
     for j, t in enumerate(c.test):
         q = cnt_q[j] / cnt_q[j].sum()
-        top = np.argsort(c.D[j], kind="stable")[:sx.TOP]
+        naive = np.argsort(c.D[j], kind="stable")[:sx.TOP]
         expr = np.argsort(((z_idx - z_q[j]) ** 2).sum(1), kind="stable")[:sx.TOP]
         spindle_rows, _, _ = c.spindle.search_vectors(c.qvs[j])
+        top = np.asarray(spindle_rows[:sx.TOP], dtype=int)
         rand = [sx.tv(q, sx.class_shares(cnt_idx[rng.choice(n, sx.TOP, replace=False)])) for _ in range(sx.N_RANDOM)]
+        rand5 = [sx.tv(q, sx.class_shares(cnt_idx[rng5.choice(n, TOP5, replace=False)])) for _ in range(sx.N_RANDOM)]
         tops[j] = top
         rows.append({"query": j, "tile": int(t), "n_cells": int(cnt_q[j].sum()),
                      **{f"q_{k}": float(v) for k, v in zip(sx.CLASS_NAMES, q)},
-                     "tv_top": sx.tv(q, sx.class_shares(cnt_idx[top])), "tv_random": float(np.mean(rand)),
-                     "tv_expr": sx.tv(q, sx.class_shares(cnt_idx[expr])),
-                     "spindle_in_top": int(len(set(top.tolist()) & set(np.asarray(spindle_rows[:sx.TOP]).tolist()))),
+                     "tv_spindle": tv_of(q, top), "tv_random": float(np.mean(rand)),
+                     "tv_spindle5": tv_of(q, top[:TOP5]), "tv_random5": float(np.mean(rand5)),
+                     "tv_naive": tv_of(q, naive), "tv_naive5": tv_of(q, naive[:TOP5]),
+                     "tv_expr": tv_of(q, expr),
+                     "spindle_in_naive": int(len(set(naive.tolist()) & set(top.tolist()))),
                      "spindle_found": len(spindle_rows), "tag": st["tag"]})
     T = pd.DataFrame(rows)
     out = {"tile_queries": T}
@@ -252,13 +264,14 @@ def tile_queries(S, seed):
     top = tops[j]
     rand = np.mean([sx.class_shares(cnt_idx[rng.choice(n, sx.TOP, replace=False)]) for _ in range(sx.N_RANDOM)], 0)
     section = np.bincount(S["cls"], minlength=len(sx.CLASSES)) / len(S["cls"])
+    rand5 = np.mean([sx.class_shares(cnt_idx[rng5.choice(n, TOP5, replace=False)]) for _ in range(sx.N_RANDOM)], 0)
     comp = {"query": cnt_q[j] / cnt_q[j].sum(), "top10": sx.class_shares(cnt_idx[top]), "random10": rand,
-            "section": section}
+            "section": section, "top5": sx.class_shares(cnt_idx[top[:TOP5]]), "random5": rand5}
     ex = pd.DataFrame([{"set": k, **{cn: float(v) for cn, v in zip(sx.CLASS_NAMES, vec)}} for k, vec in comp.items()])
     ex["query_tile"], ex["dist_top"] = int(c.test[j]), " ".join(f"{c.D[j][r]:.4f}" for r in top)
     ex["top_tiles"] = " ".join(str(int(c.train[r])) for r in top)
     ex["n_candidates"], ex["tag"] = len(cand), st["tag"]
-    ex["base_rate"] = float((T.tv_top < T.tv_random).mean())
+    ex["base_rate"] = float((T.tv_spindle < T.tv_random).mean())
     ids = [int(c.test[j])] + [int(c.train[r]) for r in top]
     arrays = {}
     for k, t in enumerate(ids):

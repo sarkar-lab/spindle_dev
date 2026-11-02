@@ -16,13 +16,17 @@ As Fig 6, on every section (one (key, seed) at a time):
   method): Cliff's delta of the tile score of the returned tiles against the other index tiles; co-variation = mean
   off-diagonal correlation of S over a tile's cells (raw counts), median over the returned tiles against the median
   over all index tiles; Jaccard with naive_partial, D and X.
-SKIN EXAMPLE RULES (fixed before the run; seed 0):
+SKIN EXAMPLE RULES (fixed before the run; B at seed EXAMPLE_SEED, A at seed SIGNATURE_SEED):
 - B: among the held-out tiles with >= MIN_CELLS cells, the one with the largest share of keratinocyte-class cells
   (sections.skin_classes; ties: lower tile id). Reported with it: the class composition of the query, of
-  Spindle-naive's top 10, of a random 10 (mean of N_RANDOM draws) and of the section, and the base rate = the share of
-  all held-out queries whose top-10 TV is below the random-10 TV.
-- A: all three skin signatures; a cell's score = mean over S of its log-normalised expression; Spindle-naive's top
-  10 outlined.
+  Spindle's first 10, of a random 10 (mean of N_RANDOM draws) and of the section, and the base rate = the share of
+  all held-out queries whose Spindle first-10 TV is below the random-10 TV.
+- A: all three skin signatures; a cell's score = mean over S of its log-normalised expression; Spindle's first 10
+  outlined.
+  (Until 1 Nov, A and B showed Spindle-naive's top 10 at seed 0. Supplementary Fig S6 shows Spindle only; A at seed 4,
+  chosen by the user on 1 Nov as the seed at which Spindle returns 10 tiles for all three skin signatures (at seeds
+  0-3 it returns 1-2 tiles for the immune signature, see per_dataset/skin_melanoma/seed*_gene_lists.csv); B stays at
+  seed 0 (user, 1 Nov: at seed 4 Spindle returns 9 tiles for B's query).)
 Column names (old -> new): tv_top -> tv_naive, spindle_in_top -> spindle_in_naive; gene lists query T / TS / D / X ->
 method naive_partial / spindle_partial / D / X, jacc_T -> jacc_naive_partial.
 """
@@ -34,13 +38,15 @@ import sections as sx
 import spindle_dev as sd
 
 EXAMPLE_KEY = "skin_melanoma"
+EXAMPLE_SEED = 0  # B (the whole-tile example), as data.EXAMPLE_SEED
+SIGNATURE_SEED = 4  # A (the signature maps): Supplementary Fig S6 (user, 1 Nov; rule note above)
 PARTS = ("layout", "spindle", "naive_partial", "spindle_partial", "queries", "D")
 MIN_CELLS = 100
 EXAMPLE_CLASS = "Keratinocyte"
 
 
 def tile_queries(S, seed):
-    """(table of every held-out query, {query position: Spindle-naive's top 10 rows})."""
+    """(table of every held-out query, {query position: Spindle's first 10 rows})."""
     c, st = S["c"], S["stamp"]
     n = len(c.train)
     cnt_idx, cnt_q = sx.comp_counts(S, c.train), sx.comp_counts(S, c.test)
@@ -58,7 +64,7 @@ def tile_queries(S, seed):
         spindle_rows, _, _ = c.spindle.search_vectors(c.qvs[j])
         spindle = np.asarray(spindle_rows[:sx.TOP], dtype=int)
         rand = [sx.tv(q, sx.shares(cnt_idx[rng.choice(n, sx.TOP, replace=False)])) for _ in range(sx.N_RANDOM)]
-        tops[j] = top
+        tops[j] = spindle
         rows.append({"key": S["key"], "seed": seed, "query": j, "tile": int(t), "n_cells": int(cnt_q[j].sum()),
                      "tv_naive": sx.tv(q, sx.shares(cnt_idx[top])), "tv_random": float(np.mean(rand)),
                      "tv_spindle": sx.tv(q, sx.shares(cnt_idx[spindle])),
@@ -95,7 +101,7 @@ def skin_example(S, T, tops):
     ex["query_tile"], ex["dist_top"] = int(c.test[j]), " ".join(f"{c.D[j][r]:.4f}" for r in top)
     ex["top_tiles"] = " ".join(str(int(c.train[r])) for r in top)
     ex["n_candidates"], ex["tag"] = len(cand), st["tag"]
-    ex["base_rate"] = float((T.tv_naive < T.tv_random).mean())
+    ex["base_rate"] = float((T.tv_spindle < T.tv_random).mean())
     ex["n_queries"] = len(T)
     ids = [int(c.test[j])] + [int(c.train[r]) for r in top]
     arrays = {"tiles": np.array(ids), "xy": S["xy"], "cls": cls.astype(np.int8), "classes": np.array(names)}
@@ -137,7 +143,7 @@ def gene_lists(S, seed, keep_cells=False):
                          "tag": st["tag"]})
         if keep_cells:
             cell_scores[name] = S["L"][:, idx].mean(1).astype(np.float16)
-            top_tiles[name] = np.array([S["tiles"][c.train[i]].bbox for i in tops["naive_partial"]],
+            top_tiles[name] = np.array([S["tiles"][c.train[i]].bbox for i in tops["spindle_partial"]],
                                        dtype=np.float64)
     G = pd.DataFrame(rows)
     G["lift"] = G.cov_top - G.cov_all

@@ -19,19 +19,23 @@ Platform correction (statistics over all query tiles and all index tiles; no lab
 
 Search (``search``, per layout seed 0-4; the seed seeds only build_layout's PCA / UMAP / Leiden, every tile is indexed)
 and direction (x2v: Xenium queries against a Visium index; v2x: the reverse): the index platform's tiles get a layout,
-Spindle-naive and Spindle (from_naive). Every tile of the query platform is a query. Methods ranked per query (all
-index tiles, best first):
-  naive_<arm>     SpindleNaive.distances (d_B) of the corrected query, arm in none / per_niche / global
-  spindle         Spindle.search_vectors (g = 0.25) of the global-corrected query; graded against naive_global
+Spindle-naive and Spindle (from_naive). Every tile of the query platform is a query. Methods per query, arm in
+none / per_niche / global:
+  spindle_<arm>   Spindle.search_vectors (g = 0.25) of the corrected query: the tiles it returns, best first (its top
+                  10 = its first 10, fewer if it returns fewer; a co-located tile it does not return has no rank)
+  naive_<arm>     SpindleNaive.distances (d_B) of the corrected query, all index tiles ranked (reference only)
+(Until 2 Nov the headline, the ablation and the example used naive_<arm>; user, 2 Nov: every search result from
+Spindle, so Spindle now runs on every arm.)
 
 Declared before the run (Fig 5; user, 26 Oct):
-- Headline: tissue agreement of naive_global = Pearson r over queries between the query tile's tumour fraction
+- Headline: tissue agreement of spindle_global = Pearson r over queries between the query tile's tumour fraction
   (invasive + DCIS cells or spots, own platform's annotation) and the mean tumour fraction of its top 10 on the other
   platform; per (direction, seed), then mean +/- s.d. over seeds 0-4. Base rate: the mean absolute difference to
   all index tiles (random) beside the top-10 one. Expected (6 Oct, old code): r about 0.85-0.89.
 - Ablation: the same r for none / per_niche / global. The expression and variance-only controls were run once
   (26 Oct, jobs 23272/23279: r 0.93-0.94 and 0.78-0.82) and dropped from the figure and text (user, 26 Oct).
-- Spindle (text only): NX5 and Overlap(5 %, 5 % N) against naive_global, mean over queries per seed.
+- Spindle accuracy (text only): NX5 and Overlap(5 %, 5 % N) of spindle_global against naive_global, mean over queries
+  per seed.
 - Co-located tile rank (hit@1/5/10) is kept in the per-query table; no panel (user, 26 Oct).
 
 Extras (seed 0 / seed-independent): section maps (``maps``), platform-bias PCA (``bias_pca``), example query
@@ -205,22 +209,31 @@ def search(S, seed):
               "per_niche": per_niche_vectors(naive, q_covs),
               "global": [naive.query_vectors(c) for c in global_corrected(q_covs, t_covs)]}
         D = {f"naive_{arm}": np.stack([naive.distances(v) for v in qv[arm]]) for arm in ARMS}
+        R = {f"spindle_{arm}": [spindle.search_vectors(v) for v in qv[arm]] for arm in ARMS}
         matched = match_of(S, direction)
         tum_q, tum_t = tumour(S, query_mod), tumour(S, index_mod)
         base = {"seed": seed, "direction": direction, "N": n, "tag": st["tag"], "describe": st["describe"]}
-        for method, Dm in D.items():
-            for q, d in enumerate(Dm):
-                order = np.argsort(d, kind="stable")
-                rank = rank_of(d, matched[q]) if matched[q] >= 0 else np.nan
+        ranked = {m: [(np.argsort(d, kind="stable"), d) for d in Dm] for m, Dm in D.items()}
+        ranked |= {m: [(rows, D[m.replace("spindle", "naive")][q]) for q, (rows, _, _) in enumerate(res)]
+                   for m, res in R.items()}
+        for method, per in ranked.items():
+            for q, (order, d) in enumerate(per):
+                if matched[q] < 0:
+                    rank = np.nan
+                elif method.startswith("naive"):
+                    rank = rank_of(d, matched[q])
+                else:  # position in Spindle's returned list; none if not returned
+                    pos = np.flatnonzero(order == matched[q])
+                    rank = float(pos[0] + 1) if len(pos) else np.nan
                 per_q.append({**base, "method": method, "query": q, "matched_tile": int(matched[q]),
-                              "query_tumour": tum_q[q], "hits_tumour": tum_t[order[:TOP]].mean(),
+                              "n_found": len(order), "query_tumour": tum_q[q],
+                              "hits_tumour": tum_t[order[:TOP]].mean() if len(order) else np.nan,
                               "random_mae": float(np.abs(tum_t - tum_q[q]).mean()), "matched_rank": rank,
                               **{f"hit@{k}": float(rank <= k) if matched[q] >= 0 else np.nan for k in (1, 5, 10)}})
                 top += [{**base, "method": method, "query": q, "rank": r + 1, "index_tile": int(t), "d": d[t]}
                         for r, t in enumerate(order[:TOP])]
         cc = rt.c5(n)
-        for q, v in enumerate(qv["global"]):
-            rows, _, s = spindle.search_vectors(v)
+        for q, (rows, _, s) in enumerate(R["spindle_global"]):
             d = D["naive_global"][q]
             spindle_rows.append({**base, "query": q, "c5": cc, "n_found": len(rows), "NX5": rt.nx(d, rows, cc),
                                  "overlap5": rt.overlap(d, rows, cc), "work": s["work"]})
@@ -229,7 +242,7 @@ def search(S, seed):
                                                                         naive.layouts.values())),
                      "bytes_naive": naive.nbytes(), "bytes_spindle": spindle.nbytes()})
         pq = pd.DataFrame([r for r in per_q if r["direction"] == direction])
-        r = pq.groupby("method").apply(lambda g: np.corrcoef(g.query_tumour, g.hits_tumour)[0, 1])
+        r = pq.groupby("method").apply(lambda g: g.query_tumour.corr(g.hits_tumour))  # queries with hits
         sr = pd.DataFrame([x for x in spindle_rows if x["direction"] == direction])
         print(f"seed {seed} {direction}: N = {n}, {len(naive.layouts)} niches; tissue r "
               f"{r.round(3).to_dict()}; spindle NX5 {100 * sr.NX5.mean():.1f} %, overlap {sr.overlap5.mean():.2f}",
@@ -313,7 +326,8 @@ def bias_pca(S):
 def example(S, top10):
     """Fig 5F example. top10: {seed: the search's "top10" table}. Rule (user, 26 Oct; replaces the first rule, which
     picked the Visium query with the largest DCIS share, query 12: top 5 at 2-54 % DCIS, co-located tile at rank 54):
-    seed 0, direction v2x (Visium query, Xenium index), naive_global. A query's focal class is the larger of its DCIS
+    seed 0, direction v2x (Visium query, Xenium index), spindle_global (naive_global until 2 Nov; Spindle's top 5 = its
+    first 5, fewer if it returns fewer). A query's focal class is the larger of its DCIS
     and immune shares (classes in separate, recognisable foci on both platforms). Among the queries whose focal share
     is > 0.5 and whose co-located Xenium tile is in the top 5, the one whose top 5 have the largest mean share of the
     query's focal class (ties: lower query id). Reported with it: the top 5's share against the Xenium section's cell
@@ -323,7 +337,7 @@ def example(S, top10):
 
     def top5(seed):
         t = top10[seed]
-        t = t[(t.direction == "v2x") & (t.method == "naive_global") & (t["rank"] <= 5)]
+        t = t[(t.direction == "v2x") & (t.method == "spindle_global") & (t["rank"] <= 5)]
         return t.groupby("query")["index_tile"].apply(lambda x: x.to_numpy())
     focal = ["DCIS", "Immune"]
     j = [CLASSES.index(c) for c in focal]
@@ -344,12 +358,12 @@ def example(S, top10):
     f = focal.index(cls)
     m = int(matched[q])
     h = hits[q]
-    out = pd.DataFrame({"rank": np.arange(1, 6), "index_tile": h, "matched": h == m, "hit_share": comp_x[h, f]})
+    out = pd.DataFrame({"rank": np.arange(1, len(h) + 1), "index_tile": h, "matched": h == m, "hit_share": comp_x[h, f]})
     out["query"], out["focal_class"], out["query_share"] = q, cls, comp_v[q, f]
     out["matched_tile"], out["section_share"] = m, section[f]
     out["n_rich"], out["n_candidates"], out["rich_above_section"] = len(rich), len(cand), base_rate
     for s_ in data.SEEDS[1:]:
-        out[f"top5_seed{s_}"] = " ".join(map(str, top5(s_)[q]))
+        out[f"top5_seed{s_}"] = " ".join(map(str, top5(s_).get(q, [])))
     out["tag"] = st["tag"]
     print(f"example: Visium query {q} ({len(cand)} candidates of {len(rich)} focal-rich queries), {cls} "
           f"{comp_v[q, f]:.2f}; top-5 Xenium {cls} {out.hit_share.min():.2f}-{out.hit_share.max():.2f} (mean "
@@ -377,7 +391,7 @@ def tissue_seeds(pq):
     for (d, m, s), g in pq.groupby(["direction", "method", "seed"]):
         h = g[g.matched_tile >= 0]
         rows.append({"direction": d, "method": m, "seed": s, "N": int(g.N.iloc[0]), "n_query": len(g),
-                     "tissue_r": float(np.corrcoef(g.query_tumour, g.hits_tumour)[0, 1]),
+                     "tissue_r": float(g.query_tumour.corr(g.hits_tumour)), "n_no_hits": int(g.hits_tumour.isna().sum()),
                      "mae": float((g.query_tumour - g.hits_tumour).abs().mean()), "mae_random": g.random_mae.mean(),
                      "hit1": h["hit@1"].mean(), "hit5": h["hit@5"].mean(), "hit10": h["hit@10"].mean(),
                      "hit5_random": 5 / g.N.iloc[0], "median_rank": h.matched_rank.median(), "n_matched": len(h),
@@ -386,7 +400,7 @@ def tissue_seeds(pq):
 
 
 def spindle_summary(sp):
-    """Per direction: Spindle against naive_global, mean over queries per seed, then mean and s.d. over seeds."""
+    """Per direction: spindle_global against naive_global, mean over queries per seed, then mean and s.d. over seeds."""
     st = sp.groupby(["direction", "seed"])[["NX5", "overlap5", "n_found", "work"]].mean().reset_index()
     return seed_stats(st, ["direction"])
 

@@ -40,15 +40,19 @@ each for whole tiles and gene sets, all on one shared layout:
      0–4 with seed 0 for examples, the `method-v2` stamp, loaders of R0's staged inputs), `index_cache.py` (build +
      stage), `slurm.py`, `results_io.py` (CSV + `results/<topic>/manifest.json`), `style.py` (panels in mm), one
      module per experiment (`whole_tile`, `gene_set(_accuracy)`, `timing`, `cross_platform`, `programs`, `queries`,
-     `pan_cancer`, `sections`, `retrieval`); `run.sbatch` / `timing.sbatch` (Slurm array workers), `run_nb.py` +
+     `pan_cancer`, `skin_maps`, `sections`, `retrieval`); `run.sbatch` / `timing.sbatch` (Slurm array workers), `run_nb.py` +
      `run_nb.sbatch` / `timing_nb.sbatch` (execute a notebook).
-  2. `experiments/compute/R0`–`R8_*.ipynb`: result notebooks, writing CSVs + a manifest to `results/<topic>/`
+  2. `experiments/compute/R0`–`R9_*.ipynb`: result notebooks, writing CSVs + a manifest to `results/<topic>/`
      (`index_cost`, `whole_tile`, `gene_set`, `timing`, `cross_platform`, `breast_programs`, `queries`,
-     `pan_cancer`); summaries shown, not saved; existing outputs skipped unless `FORCE = True`. Only R0 (index cache
-     builds + staging, ~128 GB for brain) uses Slurm; R1–R8 run without it in ≤ 16 GB (`run_nb.sbatch`, `--mem=16G`).
+     `pan_cancer`, `skin_maps`); summaries shown, not saved; existing outputs skipped unless `FORCE = True`. Only R0 (index cache
+     builds + staging, ~128 GB for brain) uses Slurm; R1–R9 run without it in ≤ 16 GB (`run_nb.sbatch`, `--mem=16G`).
      R4 (timing) runs alone on ROSALIND-CPU1 (`sbatch --exclusive experiments/common/timing_nb.sbatch …`).
-  3. `experiments/figures/F2`–`F8_*.ipynb` (login node, spindle_env kernel; the first cell lists the R notebooks
+  3. `experiments/figures/F2_cost`, `F3_cross_platform`, `F4_skin` (main figures) and `S1_build`, `S2_whole_tile`,
+     `S3_gene_set`, `S4_cross_platform`, `S5_breast`, `S6_skin`, `S7_sections` (supplementary figures S1–S7, from the old
+     F2–F7 without the main-figure panels; S7 = Fig 4A,B on the other sections, from R9's per-section outputs; earlier
+     versions in `_backup_2026-11-01/`; login node, spindle_env kernel; the first cell lists the R notebooks
      needed): one panel per cell → `figures/<fig>/panels/<X>.{pdf,png}`, the full figure → `figures/<fig>/<fig>.{pdf,png}`.
+     The PDFs are copied by hand into `Spindle/figures/final/`, which the manuscript includes.
   No pptx, atoms or numbers files. Fig 1 (`figures/fig1_overview/`) is the user's own PDF: never write or delete it.
   `experiments/beyond_expression/` and `query_maps/` are self-contained side studies.
 - **Layout** (`layout.py`): tiles → Leiden covariance niches (cap 1,000) → gene order and blocks per niche.
@@ -80,8 +84,8 @@ each for whole tiles and gene sets, all on one shared layout:
 ```bash
 python examples/run_single_dataset.py skin_melanoma
 python experiments/common/run_nb.py experiments/compute/R0_index_cache.ipynb     # login node: submits the builds
-sbatch experiments/common/run_nb.sbatch experiments/compute/R2_whole_tile.ipynb   # any of R1-R3, R5-R8
-python experiments/common/run_nb.py experiments/figures/F3_whole_tile.ipynb      # login node
+sbatch experiments/common/run_nb.sbatch experiments/compute/R2_whole_tile.ipynb   # any of R1-R3, R5-R9
+python experiments/common/run_nb.py experiments/figures/F2_cost.ipynb           # login node
 ```
 
 There is no test suite; `examples/check_indexes.py <key>` (via sbatch) is the sanity check: Spindle-naive

@@ -1,0 +1,5 @@
+key,seed,program,n_genes,n_index,rho,tag
+skin_melanoma,4,Cytotoxic_T,10,839,0.3189194351238039,method-v2
+skin_melanoma,4,Myeloid,5,839,0.44915057662447017,method-v2
+skin_melanoma,4,Stromal_Perivascular,5,839,0.22345455854626103,method-v2
+skin_melanoma,4,B_Plasma,5,839,-0.09793127441943043,method-v2

@@ -1,14 +1,14 @@
 {
  "topic": "queries",
  "notebook": "R7_queries.ipynb",
- "date": "2026-10-31 23:54",
+ "date": "2026-11-01 23:22",
  "tag": "method-v2",
- "describe": "method-v2-dirty",
- "commit": "8040f91",
+ "describe": "method-v2-1-g06b9e46-dirty",
+ "commit": "06b9e46",
  "inputs": [
   "results/_cache"
  ],
- "peak_rss_gb": 6.4,
+ "peak_rss_gb": 0.7,
  "notes": "Fig 7. Old names: tv_top -> tv_naive, spindle_in_top -> spindle_in_naive; gene-list query T/TS/D/X -> method naive_partial/spindle_partial/D/X, jacc_T -> jacc_naive_partial.",
  "files": {
   "lists.csv": {
@@ -315,6 +315,46 @@
    "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
    "rows": 229,
    "bytes": 29308
+  },
+  "per_dataset/skin_melanoma/seed0_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
+   "rows": 12,
+   "bytes": 2490
+  },
+  "per_dataset/skin_melanoma/seed0_tile_queries.csv": {
+   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
+   "rows": 93,
+   "bytes": 11493
+  },
+  "per_dataset/skin_melanoma/seed4_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
+   "rows": 12,
+   "bytes": 2508
+  },
+  "per_dataset/skin_melanoma/seed4_tile_queries.csv": {
+   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
+   "rows": 93,
+   "bytes": 11508
+  },
+  "skin_example/example.csv": {
+   "description": "skin example: class composition of the query, Spindle's first 10, a random 10, the section",
+   "rows": 4,
+   "bytes": 980
+  },
+  "skin_example/example_cells.npz": {
+   "description": "skin example: cells, classes, query and top-10 tiles",
+   "rows": null,
+   "bytes": 636451
+  },
+  "skin_example/signature_cells.npz": {
+   "description": "skin signatures: cell scores, Spindle's first 10 tiles",
+   "rows": null,
+   "bytes": 881052
+  },
+  "skin_example/skin_classes.csv": {
+   "description": "skin graph-based clusters -> skin classes",
+   "rows": 26,
+   "bytes": 2296
   },
   "tiles.csv": {
    "description": "per dataset and seed: median composition differences, shares below random",

@@ -1,15 +1,15 @@
 {
  "topic": "breast_programs",
  "notebook": "R6_breast_programs.ipynb",
- "date": "2026-10-31 23:53",
+ "date": "2026-11-02 03:48",
  "tag": "method-v2",
- "describe": "method-v2-dirty",
- "commit": "8040f91",
+ "describe": "method-v2-1-g06b9e46-dirty",
+ "commit": "06b9e46",
  "inputs": [
   "results/_cache/breast_cancer",
   "~/.cache/gseapy"
  ],
- "peak_rss_gb": 5.02,
+ "peak_rss_gb": 1.0,
  "notes": "Fig 6 inputs; full = whole-section layout (no tile held out)",
  "files": {
   "full/acta2.csv": {
@@ -98,14 +98,14 @@
    "bytes": 394
   },
   "seed0/example.csv": {
-   "description": "the example whole-tile query (rule in programs.py): compositions of query, top 10, random 10, section",
-   "rows": 4,
-   "bytes": 1336
+   "description": "the example whole-tile query (rule in programs.py): compositions of query, Spindle's top 10, random 10, section, Spindle's top 5, random 5",
+   "rows": 6,
+   "bytes": 1989
   },
   "seed0/example_cells.npz": {
-   "description": "cells (x, y, class) and boxes of the example query and its top 10",
+   "description": "cells (x, y, class) and boxes of the example query and Spindle's top 10",
    "rows": null,
-   "bytes": 15624
+   "bytes": 13578
   },
   "seed0/gene_list_hits.csv": {
    "description": "the top 10 tiles of every signature x query",
@@ -133,9 +133,9 @@
    "bytes": 1980761
   },
   "seed0/tile_queries.csv": {
-   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "description": "one row per held-out tile: class composition, TV to Spindle's top 10 / top 5, random 10 / random 5, Spindle-naive's top 10 / top 5, expression top 10; Spindle's overlap with Spindle-naive's 10, tiles returned",
    "rows": 204,
-   "bytes": 38876
+   "bytes": 54792
   },
   "seed1/acta2.csv": {
    "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
@@ -168,9 +168,9 @@
    "bytes": 5549
   },
   "seed1/tile_queries.csv": {
-   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "description": "one row per held-out tile: class composition, TV to Spindle's top 10 / top 5, random 10 / random 5, Spindle-naive's top 10 / top 5, expression top 10; Spindle's overlap with Spindle-naive's 10, tiles returned",
    "rows": 204,
-   "bytes": 38797
+   "bytes": 54832
   },
   "seed2/acta2.csv": {
    "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
@@ -203,9 +203,9 @@
    "bytes": 7357
   },
   "seed2/tile_queries.csv": {
-   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "description": "one row per held-out tile: class composition, TV to Spindle's top 10 / top 5, random 10 / random 5, Spindle-naive's top 10 / top 5, expression top 10; Spindle's overlap with Spindle-naive's 10, tiles returned",
    "rows": 204,
-   "bytes": 38510
+   "bytes": 54417
   },
   "seed3/acta2.csv": {
    "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
@@ -238,9 +238,9 @@
    "bytes": 7345
   },
   "seed3/tile_queries.csv": {
-   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "description": "one row per held-out tile: class composition, TV to Spindle's top 10 / top 5, random 10 / random 5, Spindle-naive's top 10 / top 5, expression top 10; Spindle's overlap with Spindle-naive's 10, tiles returned",
    "rows": 204,
-   "bytes": 39814
+   "bytes": 55708
   },
   "seed4/acta2.csv": {
    "description": "r of ACTA2 with every gene per niche, and whether the gene is in ACTA2's block",
@@ -273,9 +273,9 @@
    "bytes": 7332
   },
   "seed4/tile_queries.csv": {
-   "description": "one row per held-out tile: class composition, TV to Spindle-naive's top 10 / random 10 / expression top 10, Spindle overlap",
+   "description": "one row per held-out tile: class composition, TV to Spindle's top 10 / top 5, random 10 / random 5, Spindle-naive's top 10 / top 5, expression top 10; Spindle's overlap with Spindle-naive's 10, tiles returned",
    "rows": 204,
-   "bytes": 38767
+   "bytes": 54677
   }
  }
 }

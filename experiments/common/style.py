@@ -10,7 +10,7 @@ Rules:
 - Saved at exactly its size (never bbox_inches="tight"). PDF vector, TrueType (fonttype 42); PNG 1200 dpi; artists
   made with ``rasterized=True`` (cell clouds) are rasterised at 1200 dpi. Resolution rule (user, 26 Oct): nothing may
   break when zoomed in, within 10 MB per file.
-- Liberation Sans; axis labels 7 pt, ticks and legends 6 pt, panel letters 8 pt bold, lines 0.75 pt.
+- Liberation Sans; axis labels 8 pt, ticks and legends 7 pt, panel letters 9 pt bold, lines 0.75 pt.
 - Plotting only: compute nodes lack the font, so never import this module in a result notebook or sbatch job.
 """
 
@@ -30,7 +30,7 @@ DPI = 1200
 MM = 1 / 25.4
 PAGE_W, PAGE_H = 180.0, 225.0  # mm
 
-LABEL_PT, TICK_PT, LEGEND_PT = 7, 6, 6
+LABEL_PT, TICK_PT, LEGEND_PT = 8, 7, 7
 LW = 0.75
 
 # ---------------------------------------------------------------- font
@@ -161,7 +161,7 @@ def log_grid(ax, axis="y"):
 #         ...
 #     fig = ps.panel(60, 50); panel_b(fig); ps.save_panel(fig, FIG, "B")
 #     page = ps.page(180, 200); panel_b(ps.place(page, "B", x=120, y=0, w=60, h=50)); ps.save_figure(page, FIG)
-LETTER_PT = 8
+LETTER_PT = 9
 
 
 def panel(w, h):
@@ -188,7 +188,7 @@ def page(w=PAGE_W, h=PAGE_H):
 
 
 def place(pg, letter, x, y, w, h, dx=0.0, dy=0.0):
-    """The w x h mm SubFigure at (x, y) mm from the page's top-left corner, with its panel letter (bold, 8 pt) at its
+    """The w x h mm SubFigure at (x, y) mm from the page's top-left corner, with its panel letter (bold, 9 pt) at its
     top-left corner, offset by (dx, dy) mm. letter=None: no letter."""
     W, H = size_mm(pg)
     if x < 0 or y < 0 or x + w > W + 1e-6 or y + h > H + 1e-6:

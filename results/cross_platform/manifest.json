@@ -1,15 +1,15 @@
 {
  "topic": "cross_platform",
  "notebook": "R5_cross_platform.ipynb",
- "date": "2026-10-31 21:59",
+ "date": "2026-11-02 03:50",
  "tag": "method-v2",
- "describe": "method-v2-dirty",
- "commit": "8040f91",
+ "describe": "method-v2-1-g06b9e46-dirty",
+ "commit": "06b9e46",
  "inputs": [
   "datasets.yaml: cross_modal_xenium, cross_modal_visium",
   "results/_cache/cross_modal/tiles2000.pkl"
  ],
- "peak_rss_gb": 1.66,
+ "peak_rss_gb": 1.62,
  "notes": "",
  "files": {
   "bias_pca.csv": {
@@ -28,9 +28,9 @@
    "bytes": 1007185
   },
   "example.csv": {
-   "description": "Fig 5E example (seed 0, Visium query, naive_global): its top 5 Xenium tiles, focal-class shares, co-located rank, top 5 in seeds 1-4, base rate",
+   "description": "Fig 5E example (seed 0, Visium query, spindle_global): its top 5 Xenium tiles, focal-class shares, co-located rank, top 5 in seeds 1-4, base rate",
    "rows": 5,
-   "bytes": 1124
+   "bytes": 1118
   },
   "index.csv": {
    "description": "per direction: N, query tiles, p, niches / blocks (min-max over seeds), Spindle-naive and Spindle MB",
@@ -40,105 +40,105 @@
   "per_seed/seed0.csv": {
    "description": "seed 0: per (method, direction, query): query / top-10 tumour fraction, random MAE, co-located rank, hit@1/5/10",
    "rows": null,
-   "bytes": 121270
+   "bytes": 264703
   },
   "per_seed/seed0_index.csv": {
    "description": "seed 0: per direction: index sizes, niches, blocks, bytes of Spindle-naive and Spindle",
    "rows": null,
-   "bytes": 241
+   "bytes": 263
   },
   "per_seed/seed0_spindle.csv": {
-   "description": "seed 0: Spindle (g = 0.25, global shift) against naive_global per query: NX5, Overlap, tiles returned, work",
+   "description": "seed 0: spindle_global against naive_global per query: NX5, Overlap, tiles returned, work",
    "rows": null,
-   "bytes": 23413
+   "bytes": 26944
   },
   "per_seed/seed0_top10.csv": {
    "description": "seed 0: the top 10 index tiles of every (method, direction, query) with their d_B",
    "rows": null,
-   "bytes": 741171
+   "bytes": 1479224
   },
   "per_seed/seed1.csv": {
    "description": "seed 1: per (method, direction, query): query / top-10 tumour fraction, random MAE, co-located rank, hit@1/5/10",
    "rows": null,
-   "bytes": 121206
+   "bytes": 264023
   },
   "per_seed/seed1_index.csv": {
    "description": "seed 1: per direction: index sizes, niches, blocks, bytes of Spindle-naive and Spindle",
    "rows": null,
-   "bytes": 241
+   "bytes": 263
   },
   "per_seed/seed1_spindle.csv": {
-   "description": "seed 1: Spindle (g = 0.25, global shift) against naive_global per query: NX5, Overlap, tiles returned, work",
+   "description": "seed 1: spindle_global against naive_global per query: NX5, Overlap, tiles returned, work",
    "rows": null,
-   "bytes": 23354
+   "bytes": 26885
   },
   "per_seed/seed1_top10.csv": {
    "description": "seed 1: the top 10 index tiles of every (method, direction, query) with their d_B",
    "rows": null,
-   "bytes": 741543
+   "bytes": 1452243
   },
   "per_seed/seed2.csv": {
    "description": "seed 2: per (method, direction, query): query / top-10 tumour fraction, random MAE, co-located rank, hit@1/5/10",
    "rows": null,
-   "bytes": 121176
+   "bytes": 264578
   },
   "per_seed/seed2_index.csv": {
    "description": "seed 2: per direction: index sizes, niches, blocks, bytes of Spindle-naive and Spindle",
    "rows": null,
-   "bytes": 241
+   "bytes": 263
   },
   "per_seed/seed2_spindle.csv": {
-   "description": "seed 2: Spindle (g = 0.25, global shift) against naive_global per query: NX5, Overlap, tiles returned, work",
+   "description": "seed 2: spindle_global against naive_global per query: NX5, Overlap, tiles returned, work",
    "rows": null,
-   "bytes": 23359
+   "bytes": 26890
   },
   "per_seed/seed2_top10.csv": {
    "description": "seed 2: the top 10 index tiles of every (method, direction, query) with their d_B",
    "rows": null,
-   "bytes": 741699
+   "bytes": 1468172
   },
   "per_seed/seed3.csv": {
    "description": "seed 3: per (method, direction, query): query / top-10 tumour fraction, random MAE, co-located rank, hit@1/5/10",
    "rows": null,
-   "bytes": 121176
+   "bytes": 264578
   },
   "per_seed/seed3_index.csv": {
    "description": "seed 3: per direction: index sizes, niches, blocks, bytes of Spindle-naive and Spindle",
    "rows": null,
-   "bytes": 241
+   "bytes": 263
   },
   "per_seed/seed3_spindle.csv": {
-   "description": "seed 3: Spindle (g = 0.25, global shift) against naive_global per query: NX5, Overlap, tiles returned, work",
+   "description": "seed 3: spindle_global against naive_global per query: NX5, Overlap, tiles returned, work",
    "rows": null,
-   "bytes": 23359
+   "bytes": 26890
   },
   "per_seed/seed3_top10.csv": {
    "description": "seed 3: the top 10 index tiles of every (method, direction, query) with their d_B",
    "rows": null,
-   "bytes": 741699
+   "bytes": 1468172
   },
   "per_seed/seed4.csv": {
    "description": "seed 4: per (method, direction, query): query / top-10 tumour fraction, random MAE, co-located rank, hit@1/5/10",
    "rows": null,
-   "bytes": 121187
+   "bytes": 264290
   },
   "per_seed/seed4_index.csv": {
    "description": "seed 4: per direction: index sizes, niches, blocks, bytes of Spindle-naive and Spindle",
    "rows": null,
-   "bytes": 241
+   "bytes": 263
   },
   "per_seed/seed4_spindle.csv": {
-   "description": "seed 4: Spindle (g = 0.25, global shift) against naive_global per query: NX5, Overlap, tiles returned, work",
+   "description": "seed 4: spindle_global against naive_global per query: NX5, Overlap, tiles returned, work",
    "rows": null,
-   "bytes": 23563
+   "bytes": 27094
   },
   "per_seed/seed4_top10.csv": {
    "description": "seed 4: the top 10 index tiles of every (method, direction, query) with their d_B",
    "rows": null,
-   "bytes": 741583
+   "bytes": 1465128
   },
   "spindle.csv": {
-   "description": "per direction: Spindle against naive_global (NX5, Overlap, tiles returned, work), mean over queries per seed, then mean and s.d. over seeds",
+   "description": "per direction: spindle_global against naive_global (NX5, Overlap, tiles returned, work), mean over queries per seed, then mean and s.d. over seeds",
    "rows": 2,
    "bytes": 448
   },
@@ -149,18 +149,18 @@
   },
   "tissue.csv": {
    "description": "per (direction, method): mean and s.d. over seeds 0-4 of tissue_seeds.csv",
-   "rows": 6,
-   "bytes": 2200
+   "rows": 12,
+   "bytes": 4344
   },
   "tissue_seed0.csv": {
-   "description": "seed 0, naive_global: per query its tumour fraction and its top 10's mean (Fig 5C)",
+   "description": "seed 0, spindle_global: per query its tumour fraction and its top 10's mean (Fig 5C; NaN = none returned)",
    "rows": 321,
-   "bytes": 16155
+   "bytes": 15860
   },
   "tissue_seeds.csv": {
    "description": "per (direction, method, seed): tissue agreement r, MAE (top 10 / random), hit@1/5/10, median co-located rank, N",
-   "rows": 30,
-   "bytes": 5666
+   "rows": 60,
+   "bytes": 11382
   }
  }
 }
