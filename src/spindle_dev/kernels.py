@@ -77,6 +77,10 @@ def _lib():
         lib.partial_search.argtypes = [_p] * 9 + [_i64] + [_p] * 4 + [ctypes.c_double] + [_p] * 4
         lib.spindle_row_dists.restype = None
         lib.spindle_row_dists.argtypes = [_p, _p, _i64, _i64, _p]
+        lib.spindle_probe_niche.restype = _i64  # method-v3: Spindle's search niche by niche
+        lib.spindle_probe_niche.argtypes = [_p] * 10 + [_i64, _i64, _p, _i64, _p, _p]
+        lib.spindle_scan_niche.restype = _i64
+        lib.spindle_scan_niche.argtypes = [_p] * 10 + [_i64, _i64, _p, _i64, ctypes.c_double, _p, _p, _p, _p]
         _LIB = lib
     return _LIB
 
@@ -170,6 +174,72 @@ class FlatSpindle:
         """``search`` for a list of per-niche query vectors, in parallel threads (the C call releases the GIL)."""
         with ThreadPoolExecutor(max_workers=threads or os.cpu_count()) as ex:
             return list(ex.map(lambda qv: self.search(qv, g), qvs))
+
+    # ---------------------------------------------------------- method-v3: one query's search split by niche
+    # ``search`` in two phases, each niche on its own (kernels.c spindle_probe_niche / spindle_scan_niche): probe every
+    # niche, A_hat = sqrt(the smallest leaf A^2), r = g * A_hat, scan every niche with r^2, then ``assemble``. Same
+    # output as ``search``, bit for bit. A niche's probe and scan must share one ``dcache`` (float64, n_nodes long; the
+    # niches use disjoint parts of it).
+    @property
+    def n_niche(self) -> int:
+        return len(self.keys)
+
+    def probe_niche(self, qcat, k: int, dcache) -> tuple[float, int]:
+        """(the A^2 of niche k's greedy leaf, node distances computed)."""
+        out = np.empty(1)
+        w = _lib().spindle_probe_niche(*self._args, _ptr(qcat), int(k), _ptr(dcache), _ptr(out))
+        if w < 0:
+            raise MemoryError("spindle_probe_niche: out of memory")
+        return float(out[0]), int(w)
+
+    def scan_niche(self, qcat, k: int, r2: float, dcache, out_a2=None, out_t=None):
+        """(hits' A^2, hits' tiles in niche k, node distances computed); ``out_a2`` / ``out_t`` may be buffers of at
+        least the niche's tile count (views of them are returned)."""
+        n = int(self.niche_tile0[k + 1] - self.niche_tile0[k])
+        a2 = np.empty(n) if out_a2 is None else out_a2
+        t = np.empty(n, dtype=np.int64) if out_t is None else out_t
+        nh = np.zeros(1, dtype=np.int64)
+        w = _lib().spindle_scan_niche(*self._args, _ptr(qcat), int(k), float(r2), _ptr(dcache), _ptr(a2), _ptr(t),
+                                      _ptr(nh))
+        if w < 0:
+            raise MemoryError("spindle_scan_niche: out of memory")
+        return a2[:nh[0]], t[:nh[0]], int(w)
+
+    @staticmethod
+    def radius(best_a2: float, g: float) -> tuple[float, float, float]:
+        """(A_hat, r, r^2) from the smallest leaf A^2 over niches, as spindle_search computes them."""
+        a_hat = float(np.sqrt(best_a2))
+        r = float(g) * a_hat
+        return a_hat, r, r * r
+
+    def assemble(self, hits, a_hat: float, r: float, work: int):
+        """``search``'s output from the per-niche hits [(A^2, tiles) for niche 0, 1, ...]."""
+        a2 = np.concatenate([h[0] for h in hits])
+        t = np.concatenate([h[1] for h in hits]).astype(np.int64)
+        k = np.repeat(np.arange(self.n_niche, dtype=np.int64), [len(h[1]) for h in hits])
+        order = np.lexsort((t, k, a2))            # = sorting the (A^2, niche, tile) tuples
+        rows = self.rows[self.niche_tile0[k[order]] + t[order]]
+        return rows, np.sqrt(a2[order]), a_hat, r, int(work)
+
+    def search_parallel(self, qv, g: float, threads: int | None = None, executor=None):
+        """``search`` with the niches on ``threads`` threads (or an existing ``executor``); same output."""
+        qcat = self.qcat(qv)
+        dcache = np.empty(len(self.rad))
+        own = executor is None
+        ex = ThreadPoolExecutor(max_workers=threads or os.cpu_count()) if own else executor
+        try:
+            probes = list(ex.map(lambda k: self.probe_niche(qcat, k, dcache), range(self.n_niche)))
+            best = np.inf
+            for a2, _ in probes:                   # as spindle_search: the first strictly smaller value
+                if a2 < best:
+                    best = a2
+            a_hat, r, r2 = self.radius(best, g)
+            hits = list(ex.map(lambda k: self.scan_niche(qcat, k, r2, dcache), range(self.n_niche)))
+        finally:
+            if own:
+                ex.shutdown()
+        work = sum(w for _, w in probes) + sum(h[2] for h in hits)
+        return self.assemble(hits, a_hat, r, work)
 
 
 

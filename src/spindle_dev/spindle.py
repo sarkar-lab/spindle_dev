@@ -345,6 +345,15 @@ class Spindle:
         return [(rows, scores, {"g": float(g), "a_hat": a_hat, "radius": r, "work": work, "n_found": len(rows)})
                 for rows, scores, a_hat, r, work in self.flat.search_many(qvs, g, threads)]
 
+    def search_vectors_parallel(self, qv: Dict[int, np.ndarray], g: float = G_DEFAULT, threads: Optional[int] = None,
+                                executor=None):
+        """``search_vectors`` with one query's niches searched in parallel threads (method-v3; same output, bit for
+        bit): every niche's probe, then every niche's scan with the common radius (kernels.FlatSpindle.search_parallel).
+        """
+        rows, scores, a_hat, r, work = self.flat.search_parallel(qv, g, threads, executor)
+        stats = {"g": float(g), "a_hat": a_hat, "radius": r, "work": work, "n_found": len(rows)}
+        return rows, scores, stats
+
     def search_vectors_dfs(self, qv: Dict[int, np.ndarray], g: float = G_DEFAULT):
         """The Python depth-first reference of ``search_vectors`` (same output, much slower)."""
         qy = _Query(self.niches, qv)

@@ -417,3 +417,49 @@ int64_t partial_search(const float *cent, const int64_t *node_voff, const double
 void spindle_row_dists(const float *c, const double *q, int64_t n, int64_t dim, double *out) {
     for (int64_t i = 0; i < n; i++) out[i] = sqrt(pairwise(c + i * dim, q, dim));
 }
+
+/* Spindle, one niche at a time (method-v3; FlatSpindle.search_parallel): the two phases of spindle_search split by
+ * niche, so the niches can run on different cores. spindle_probe_niche = probe_niche for niche k (its greedy leaf's
+ * A^2 in *out_a2), spindle_scan_niche = scan_niche for niche k with r2 (hits: A^2 and tile, in scan order). Each node
+ * belongs to one niche, so niches use disjoint parts of dcache; the probe resets niche k's part and the scan of niche k
+ * must use the same dcache after it. Summed over niches, the work equals spindle_search's, and the hits, niche by
+ * niche, are its hits in its order; spindle_search itself is unchanged. Both return the node distances computed (work),
+ * or -1 if out of memory. */
+int64_t spindle_probe_niche(const float *cent, const int64_t *node_voff, const double *rad,
+                            const int64_t *layer_node0, const int64_t *layer_dim, const int64_t *layer_qoff,
+                            const int64_t *niche_layer0, const int64_t *niche_tile0, const uint8_t *codes,
+                            const int64_t *code0, int64_t n_niche, int64_t n_nodes, const double *qcat, int64_t k,
+                            double *dcache, double *out_a2) {
+    Index ix = {cent, node_voff, rad, layer_node0, layer_dim, layer_qoff, niche_layer0, niche_tile0, codes, code0,
+                n_niche, n_nodes, 0};
+    int64_t n = niche_tile0[k + 1] - niche_tile0[k];
+    int64_t *alive = malloc(sizeof(int64_t) * (size_t)(n + 1));
+    if (!alive) return -1;
+    for (int64_t i = layer_node0[niche_layer0[k]]; i < layer_node0[niche_layer0[k + 1]]; i++) dcache[i] = -1.0;
+    Query Q = {&ix, qcat, dcache, 0};
+    *out_a2 = probe_niche(&Q, k, alive);
+    free(alive);
+    return Q.work;
+}
+
+int64_t spindle_scan_niche(const float *cent, const int64_t *node_voff, const double *rad,
+                           const int64_t *layer_node0, const int64_t *layer_dim, const int64_t *layer_qoff,
+                           const int64_t *niche_layer0, const int64_t *niche_tile0, const uint8_t *codes,
+                           const int64_t *code0, int64_t n_niche, int64_t n_nodes, const double *qcat, int64_t k,
+                           double r2, double *dcache, double *out_a2, int64_t *out_t, int64_t *n_hits) {
+    Index ix = {cent, node_voff, rad, layer_node0, layer_dim, layer_qoff, niche_layer0, niche_tile0, codes, code0,
+                n_niche, n_nodes, 0};
+    int64_t n = niche_tile0[k + 1] - niche_tile0[k];
+    int64_t *alive = malloc(sizeof(int64_t) * (size_t)(n + 1));
+    double *l2 = malloc(sizeof(double) * (size_t)(n + 1));
+    double *a2 = malloc(sizeof(double) * (size_t)(n + 1));
+    int64_t *ks = malloc(sizeof(int64_t) * (size_t)(n + 1));
+    if (!alive || !l2 || !a2 || !ks) {
+        free(alive); free(l2); free(a2); free(ks);
+        return -1;
+    }
+    Query Q = {&ix, qcat, dcache, 0};
+    *n_hits = scan_niche(&Q, k, r2, alive, l2, a2, out_a2, ks, out_t, 0);
+    free(alive); free(l2); free(a2); free(ks);
+    return Q.work;
+}

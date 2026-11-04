@@ -60,9 +60,11 @@ each for whole tiles and gene sets, all on one shared layout:
 
 ## Rules
 
-- **The method is frozen** at git tag `method-v2` (= `method-v1` renamed, bit-identical outputs). Do not change
-  `src/`: no variants, no retuning, no extra checks. A real bug goes to the user first. `data.stamp()` refuses to make
-  a figure input when `src/` differs from the tag.
+- **The method is frozen** at git tag `method-v3` (= `method-v2` + Spindle's search split by niche for multi-core
+  queries, new functions only: `kernels.c` `spindle_probe_niche` / `spindle_scan_niche`, `FlatSpindle.search_parallel`,
+  `Spindle.search_vectors_parallel`; used by R11 only; every `method-v2` output unchanged, so results keep the
+  `method-v2` tag; `method-v2` = `method-v1` renamed). Do not change `src/`: no variants, no retuning, no extra checks.
+  A real bug goes to the user first. `data.stamp()` refuses to make a figure input when `src/` differs from `method-v3`.
 - Dataset paths live only in `datasets.yaml`; read them with `paths.dataset_path(key)` (shell:
   `python paths.py <key>`). Never hard-code a path.
 - Experiment code goes in `experiments/` (the three tiers above) and uses only the public API of `spindle_dev`;
