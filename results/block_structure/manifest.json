@@ -1,0 +1,58 @@
+{
+ "topic": "block_structure",
+ "notebook": "R10_block_structure.ipynb",
+ "date": "2026-11-04 05:19",
+ "tag": "method-v2",
+ "describe": "method-v2-3-g88fc62a-dirty",
+ "commit": "88fc62a",
+ "inputs": [
+  "results/_cache/<key>/covs.npy (R0)",
+  "results/_cache/<key>/seed0/layout.pkl (R0)",
+  "results/_cache/<key>/seed0/niche_means.npz (R0)",
+  "results/_cache/breast_cancer/seed0/spindle_partial.pkl (R0)"
+ ],
+ "peak_rss_gb": 0.5,
+ "notes": "",
+ "files": {
+  "consensus_example.npz": {
+   "description": "Fig S6, breast largest niche (seed 0): three random tiles' gene dendrograms (linkage, leaves), the consensus linkage (mean cophenetic matrix; leaf order == layout), blocks, clade flag and two marker genes per block, mean correlation and gene names in niche order",
+   "rows": null,
+   "bytes": 386304
+  },
+  "dyadic_example.npz": {
+   "description": "Fig S7, breast largest niche, its most co-varying block of 20-32 genes (seed 0 Spindle-Partial): every aligned dyadic interval (s, j, K_I), an illustrative gene set's pieces and node counts, every tile's node in every piece, the block's mean correlation and gene names",
+   "rows": null,
+   "bytes": 7805
+  },
+  "example.npz": {
+   "description": "breast example: correlation matrix (float32) of the index tile whose median between-block |r| is the median of the largest niche, in niche order; block runs, niche, tile, genes",
+   "rows": null,
+   "bytes": 281933
+  },
+  "hist.csv": {
+   "description": "|r| histogram (bin_lo, bin_hi, count) of the within-block and between-block gene pairs of every index tile, per dataset; seed-0 layout, shrunk covariances in niche order",
+   "rows": 16000,
+   "bytes": 834993
+  },
+  "niche_example.npz": {
+   "description": "breast: the largest niche's mean correlation matrix (float32) in its gene order, block runs, niche, tiles",
+   "rows": null,
+   "bytes": 361633
+  },
+  "niche_hist.csv": {
+   "description": "|r| histogram (bins of 0.001) over each niche's mean correlation matrix, pooled over the niches: full matrix (every off-diagonal pair) and blocks (pairs inside a block); seed-0 layout",
+   "rows": 16000,
+   "bytes": 777301
+  },
+  "summary.csv": {
+   "description": "per dataset and part (within / between): pairs, |r| quantiles q50 / q90 / q99 (upper bin edge, bins of 0.001) and the fraction of pairs with |r| > 0.1 and > 0.3",
+   "rows": 16,
+   "bytes": 2703
+  },
+  "tile_means.csv": {
+   "description": "one row per index tile (seed-0 layout): niche, mean |r| over its within-block and between-block gene pairs (pairs with a gene without counts in the tile left out), pair counts",
+   "rows": 25864,
+   "bytes": 2382204
+  }
+ }
+}

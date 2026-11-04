@@ -89,3 +89,6 @@ results/_logs/
 # Per-query dumps (re-generable)
 results/*/per_query/
 results/*/per_dataset/*/band_seed*.npz
+
+# Backups of earlier figure/notebook versions (local only; same relative paths as the originals)
+_backups/

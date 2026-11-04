@@ -42,15 +42,15 @@ each for whole tiles and gene sets, all on one shared layout:
      module per experiment (`whole_tile`, `gene_set(_accuracy)`, `timing`, `cross_platform`, `programs`, `queries`,
      `pan_cancer`, `skin_maps`, `sections`, `retrieval`); `run.sbatch` / `timing.sbatch` (Slurm array workers), `run_nb.py` +
      `run_nb.sbatch` / `timing_nb.sbatch` (execute a notebook).
-  2. `experiments/compute/R0`–`R9_*.ipynb`: result notebooks, writing CSVs + a manifest to `results/<topic>/`
+  2. `experiments/compute/R0`–`R10_*.ipynb`: result notebooks, writing CSVs + a manifest to `results/<topic>/`
      (`index_cost`, `whole_tile`, `gene_set`, `timing`, `cross_platform`, `breast_programs`, `queries`,
-     `pan_cancer`, `skin_maps`); summaries shown, not saved; existing outputs skipped unless `FORCE = True`. Only R0 (index cache
-     builds + staging, ~128 GB for brain) uses Slurm; R1–R9 run without it in ≤ 16 GB (`run_nb.sbatch`, `--mem=16G`).
+     `pan_cancer`, `skin_maps`, `block_structure`); summaries shown, not saved; existing outputs skipped unless `FORCE = True`. Only R0 (index cache
+     builds + staging, ~128 GB for brain) uses Slurm; R1–R10 run without it in ≤ 16 GB (`run_nb.sbatch`, `--mem=16G`).
      R4 (timing) runs alone on ROSALIND-CPU1 (`sbatch --exclusive experiments/common/timing_nb.sbatch …`).
-  3. `experiments/figures/F2_cost`, `F3_cross_platform`, `F4_skin` (main figures) and `S1_build`, `S2_whole_tile`,
-     `S3_gene_set`, `S4_cross_platform`, `S5_breast`, `S6_skin`, `S7_sections` (supplementary figures S1–S7, from the old
-     F2–F7 without the main-figure panels; S7 = Fig 4A,B on the other sections, from R9's per-section outputs; earlier
-     versions in `_backup_2026-11-01/`; login node, spindle_env kernel; the first cell lists the R notebooks
+  3. `experiments/figures/F2_cost`, `F3_cross_platform`, `F4_skin` (main figures) and `S1_block`, `S2_breast`,
+     `S3_scaling`, `S4_accuracy`, `S5_cross_platform` (supplementary results, figures S1–S5), `S6_blocks`, `S7_dyadic`
+     (supplementary methods, S6–S7; from R10), `T_supplement` (tables); earlier versions in `_backups/` (gitignored, same relative paths);
+     login node, spindle_env kernel; the first cell lists the R notebooks
      needed): one panel per cell → `figures/<fig>/panels/<X>.{pdf,png}`, the full figure → `figures/<fig>/<fig>.{pdf,png}`.
      The PDFs are copied by hand into `Spindle/figures/final/`, which the manuscript includes.
   No pptx, atoms or numbers files. Fig 1 (`figures/fig1_overview/`) is the user's own PDF: never write or delete it.

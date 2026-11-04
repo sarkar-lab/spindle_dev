@@ -1,0 +1,12 @@
+\begin{tabular}{lp{0.72\textwidth}}
+\toprule
+ &  \\
+\midrule
+Node & ROSALIND-CPU1: 2 sockets, 192 cores (384 hardware threads), 755 GB memory; every build and every timing \\
+Operating system & Ubuntu 24.04 (Linux 6.8.0), Slurm; no GPU \\
+Software & Python 3.12.14, NumPy 2.5.3, SciPy 1.18.1, pandas 3.0.5 \\
+Search kernels & C with AVX2, called through ctypes; gcc 13.3.0, -O3 -mavx2 -ffp-contract=off -fno-fast-math -fno-builtin-pow \\
+Index builds & 8 CPU cores per build (Slurm) \\
+Query timing & one thread (OpenMP, OpenBLAS and MKL threads set to 1), one timing job at a time \\
+\bottomrule
+\end{tabular}
