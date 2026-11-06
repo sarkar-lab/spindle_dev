@@ -16,8 +16,7 @@ pip install -e .
 ## Background
 
 Spindle is a library for indexing and searching the gene–gene covariance matrices of spatial-omics tiles: given a
-query, it finds the tiles of a section whose genes co-vary most like it. Please refer to the
-[documentation page](https://www.hiraksarkar.com/spindle_dev/).
+query, it finds the tiles of a section whose genes co-vary most like it.
 
 A query can be a whole tile, a tile restricted to a gene set, or a gene list alone. Two indexes answer them:
 
