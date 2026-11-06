@@ -20,7 +20,6 @@ index_cache.build (R0_index_cache.ipynb):
   queries.pkl    SpindleNaive.query_vectors of every held-out tile (test order)
   D.npy          exact d_B, held-out x index tiles (float64, SpindleNaive.distances)
   build.json     build seconds per stage, peak memory, bytes, sizes, host, stamp
-  DW.npy         exact whole-matrix d_W, held-out x index tiles (float64; staged)
   niche_means.npz  mean shrunk covariance of each niche's index tiles (float64, p x p; staged)
 
 Staged inputs, results/_cache/<key>/ (index_cache.stage, run by R0_index_cache.ipynb), so that no other notebook loads an

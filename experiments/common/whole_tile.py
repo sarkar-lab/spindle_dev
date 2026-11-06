@@ -1,43 +1,23 @@
-"""Whole-tile accuracy (Fig 3): Spindle against Spindle-naive on every held-out tile, the typical query of the band
-plot, and memory against fidelity. Ported from experiments/fig3_whole_tile/{c_nx,c_memory,c_summary}.py (in git
-history); readouts in retrieval.py; the whole-matrix vectors and d_W are staged by R0 (index_cache.stage).
+"""Whole-tile accuracy (Fig 2C, Supplementary Fig S5): Spindle against Spindle-naive on every held-out tile and the
+typical query of the band plot; the whole-tile timing tables (Fig 2B). Readouts in retrieval.py.
 
 nx_rows(key, seed)  The cached Spindle (beta = 0.10) is searched from the cached query vectors (Spindle.search_vectors,
     compiled) at every g in retrieval.GS; the exact d_B is the cache's D.npy (SpindleNaive.distances). Readouts per
     (query, g): NX5, Overlap(5 %, 5 % N), MX10, tiles returned, short of 10, work (node distances computed) and work /
     all nodes, A_hat, radius, nearest exact d_B.
-    Declared before the run (Fig 3B): headline NX5 at g = 0.25; per (dataset, seed) the mean over held-out queries, then
+    Declared before the run (Fig 2C): headline NX5 at g = 0.25; per (dataset, seed) the mean over held-out queries, then
     mean +/- s.d. over seeds 0-4; the text quotes the median over datasets. Expected (19 Oct, seed 73, 100 queries):
     NX5 about 11 % (8.5-14.4 %).
 typical(df, D, found)  The typical query of the band plot (seed 0, g = 0.25): among the held-out queries that return
     at least 10 tiles, the one whose NX5 is the median (lower middle when even, ties by test order). Base rate stated
     with it: the share of queries that return fewer than 10 tiles.
-memory_rows(key, seed)  Memory against fidelity (Fig 3D: breast and brain): Spindle on block logs against compressed
-    indexes over whole-matrix log vectors, each graded against its own exact distance. The competitors index the
-    whole-matrix log vector of every index tile, whose exact search is the whole-matrix scan (d_W). HNSW was removed
-    (user, 26 Oct): it stores every whole vector plus a graph, so it compresses nothing.
-      pca_flat <D>    PCA to D in {16, 64, 256} (randomized SVD of the centred index vectors, random_state = seed),
-                      exact scan of the codes; MB = codes N x D + projection + mean.
-      pca256_pq <m>   PCA-256, then product quantization (m in {8, 32} sub-quantizers, 8 bits); MB = serialized PQ
-                      (codes + codebooks) + projection + mean.
-      spindle         Spindle as built (beta = 0.10), g = 0.25; MB = Spindle.nbytes(); graded against d_B (D.npy).
-    Reference stores (not graded): naive = SpindleNaive.nbytes(), whole = float32 upper triangles of the whole-matrix
-    logs of the index tiles. Readout per method: NX5 (c_eff = min(c, returned)), Overlap(5 %, 5 % N), share of queries
-    returning fewer than c; mean over every held-out query. The PQ build uses the job's cores (not a readout).
 """
-
-import gc
-import os
 
 import numpy as np
 import pandas as pd
 
 import data
 import retrieval as rt
-
-PCA_DIMS = [16, 64, 256]
-PQ_M = [8, 32]
-MEMORY_KEYS = ["breast_cancer", "brain_cancer"]
 
 
 # ---------------------------------------------------------------- Spindle against Spindle-naive
@@ -77,84 +57,6 @@ def typical(df, D, found, test):
     return rec, D[j].astype(np.float32), found[j]
 
 
-# ---------------------------------------------------------------- memory against fidelity
-class Pca:
-    def __init__(self, X, D, seed):
-        from sklearn.utils.extmath import randomized_svd
-        self.mean = X.mean(axis=0)
-        _, _, Vt = randomized_svd(X - self.mean, n_components=D, random_state=seed)
-        self.W = np.ascontiguousarray(Vt.T, dtype=np.float32)
-
-    def project(self, X, D=None):
-        W = self.W if D is None else self.W[:, :D]
-        return np.ascontiguousarray((np.atleast_2d(X) - self.mean) @ W, dtype=np.float32)
-
-
-def grade(name, param, mb, orders, Dref, c):
-    """Readout row of one method: orders[j] = the rows it returns for query j, best first. NX is NaN for a query
-    that returned nothing (left out of the mean; their share is ``empty``)."""
-    nxs = [rt.nx(Dref[j], o, c) for j, o in enumerate(orders)]
-    return {"method": name, "param": param, "MB": mb / 1e6, "NX5": np.nanmean(nxs), "NX5_median": np.nanmedian(nxs),
-            "overlap5": np.mean([rt.overlap(Dref[j], o, c) for j, o in enumerate(orders)]),
-            "short5": np.mean([len(o) < c for o in orders]), "empty": np.mean([len(o) == 0 for o in orders]),
-            "n_queries": len(orders)}
-
-
-def memory_rows(key, seed):
-    """One row per method of one (dataset, seed). Peak memory: the index tiles' whole vectors (float32) twice (PCA
-    centring), about 9 GB for brain."""
-    import faiss
-    st = data.stamp()
-    threads = int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
-    cc = data.load_cache(key, seed, parts=("naive", "spindle", "queries", "D"))
-    DW = np.load(data.cache_dir(key, seed) / "DW.npy")
-    W = data.staged_whole(key)
-    X = np.ascontiguousarray(W[cc.train])
-    Q = np.ascontiguousarray(W[cc.test])
-    del W
-    gc.collect()
-    n = len(X)
-    c = rt.c5(n)
-    rows = []
-
-    def log(r):
-        r.update(key=key, seed=seed, N=n, c5=c, tag=st["tag"], describe=st["describe"])
-        rows.append(r)
-        print(f"{key} seed {seed}: {r['method']} {r['param']}: {r['MB']:.2f} MB, NX5 {100 * r.get('NX5', 0):.2f} %, "
-              f"overlap {r.get('overlap5', 0):.3f}, short5 {r.get('short5', 0):.3f}, empty {r.get('empty', 0):.3f}",
-              flush=True)
-
-    # Spindle as built, graded against d_B
-    orders = [cc.spindle.search_vectors(qv)[0] for qv in cc.qvs]
-    log({**grade("spindle", cc.spindle.beta, cc.spindle.nbytes(), orders, cc.D, c), "nodes": cc.spindle.n_nodes()})
-    log({"method": "naive", "param": "", "MB": cc.naive.nbytes() / 1e6})
-    log({"method": "whole", "param": "", "MB": X.nbytes / 1e6})
-    del cc
-    gc.collect()
-
-    # whole-matrix competitors, graded against d_W
-    faiss.omp_set_num_threads(threads)
-    pca = Pca(X, min(max(PCA_DIMS), n - 1), seed)
-    Z, Zq = pca.project(X), pca.project(Q)
-    del X
-    gc.collect()
-    for D in PCA_DIMS:
-        if D > Z.shape[1]:
-            continue
-        orders = [np.argsort(((Z[:, :D] - z[:D]) ** 2).sum(1), kind="stable")[:c] for z in Zq]
-        log(grade("pca_flat", D, Z[:, :D].nbytes + pca.W[:, :D].nbytes + pca.mean.nbytes, orders, DW, c))
-    for m in PQ_M:
-        if Z.shape[1] % m or n < 256:
-            continue
-        pq = faiss.IndexPQ(Z.shape[1], m, 8)
-        pq.train(Z)
-        pq.add(Z)
-        _, I = pq.search(Zq, c)
-        log(grade("pca256_pq", m, faiss.serialize_index(pq).nbytes + pca.W.nbytes + pca.mean.nbytes,
-                  [i[i >= 0] for i in I], DW, c))
-    return pd.DataFrame(rows)
-
-
 # ---------------------------------------------------------------- summaries (c_summary.py)
 def one_tag(df):
     tags = set(df["tag"])
@@ -189,20 +91,16 @@ def nx_tables(pq):
     return agg, t
 
 
-def memory_table(mm):
-    """Per (dataset, method, param): mean and s.d. over seeds of MB, NX5, Overlap, short5."""
-    tag = one_tag(mm)
-    mm = mm.assign(param=mm["param"].fillna("").astype(str))
-    t = mean_sd(mm, ["key", "method", "param"], ["MB", "NX5", "overlap5", "short5"])
-    t["tag"] = tag
-    return t
-
-
 def timing_tables(tm):
     """(timing_seeds, timing) from the whole-tile timings (results/timing/whole_tile.csv): per (dataset, seed) the
-    median ms of every timed step; per dataset mean and s.d. over seeds and the speed-ups of the means."""
+    median ms of every timed step and of the end-to-end totals (query logarithms + search, summed per query: e2e_whole
+    = whole-matrix logarithm + scan, e2e_naive / e2e_spindle = block logarithms + search); per dataset mean and s.d.
+    over seeds and the speed-ups of the means, search only and end to end."""
     tag = one_tag(tm)
-    cols = ["qlog_whole_ms", "qlog_block_ms", "whole_ms", "naive_ms", "spindle_ms"]
+    tm = tm.assign(e2e_whole_ms=tm.qlog_whole_ms + tm.whole_ms, e2e_naive_ms=tm.qlog_block_ms + tm.naive_ms,
+                   e2e_spindle_ms=tm.qlog_block_ms + tm.spindle_ms)
+    cols = ["qlog_whole_ms", "qlog_block_ms", "whole_ms", "naive_ms", "spindle_ms", "e2e_whole_ms", "e2e_naive_ms",
+            "e2e_spindle_ms"]
     med = tm.groupby(["key", "seed"])[cols].median().reset_index()
     med["n_queries"] = tm.groupby(["key", "seed"]).size().values
     med["tag"] = tag
@@ -210,5 +108,7 @@ def timing_tables(tm):
     t["speedup_naive_vs_whole"] = t.whole_ms / t.naive_ms
     t["speedup_spindle_vs_naive"] = t.naive_ms / t.spindle_ms
     t["speedup_spindle_vs_whole"] = t.whole_ms / t.spindle_ms
+    t["speedup_e2e_spindle_vs_whole"] = t.e2e_whole_ms / t.e2e_spindle_ms
+    t["speedup_e2e_spindle_vs_naive"] = t.e2e_naive_ms / t.e2e_spindle_ms
     t["tag"] = tag
     return med, t

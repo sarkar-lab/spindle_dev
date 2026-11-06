@@ -1,22 +1,17 @@
 {
  "topic": "skin_maps",
  "notebook": "R9_skin_maps.ipynb",
- "date": "2026-11-02 04:03",
+ "date": "2026-11-05 09:40",
  "tag": "method-v2",
- "describe": "method-v2-1-g06b9e46-dirty",
- "commit": "06b9e46",
+ "describe": "method-v3-dirty",
+ "commit": "b35f7d4",
  "inputs": [
   "results/_cache",
   "results/pan_cancer"
  ],
- "peak_rss_gb": 2.44,
- "notes": "Fig 4.",
+ "peak_rss_gb": 0.16,
+ "notes": "Fig 4A, B; supplementary tables.",
  "files": {
-  "match.csv": {
-   "description": "per section and programme: mean and s.d. of rho over seeds; absent flag (R8)",
-   "rows": 20,
-   "bytes": 1701
-  },
   "per_dataset/brain_cancer/seed0_gene_set_queries.csv": {
    "description": "seed 0, every gene-set query: composition difference to Spindle's first 10 and a random 10",
    "rows": 4248,
@@ -27,31 +22,6 @@
    "rows": null,
    "bytes": 9487562
   },
-  "per_dataset/brain_cancer/seed0_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 303
-  },
-  "per_dataset/brain_cancer/seed1_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 303
-  },
-  "per_dataset/brain_cancer/seed2_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 300
-  },
-  "per_dataset/brain_cancer/seed3_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 300
-  },
-  "per_dataset/brain_cancer/seed4_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 302
-  },
   "per_dataset/breast_cancer/seed0_gene_set_queries.csv": {
    "description": "seed 0, every gene-set query: composition difference to Spindle's first 10 and a random 10",
    "rows": 816,
@@ -61,31 +31,6 @@
    "description": "seed 0: cells, cell and tile scores, cell -> index tile, query Q, tiles Spindle returns, exact d_B^S of every index tile, tile centres and sides, per programme",
    "rows": null,
    "bytes": 2454192
-  },
-  "per_dataset/breast_cancer/seed0_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 302
-  },
-  "per_dataset/breast_cancer/seed1_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 303
-  },
-  "per_dataset/breast_cancer/seed2_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 303
-  },
-  "per_dataset/breast_cancer/seed3_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 305
-  },
-  "per_dataset/breast_cancer/seed4_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 303
   },
   "per_dataset/kidney_nondiseased/seed0_gene_set_queries.csv": {
    "description": "seed 0, every gene-set query: composition difference to Spindle's first 10 and a random 10",
@@ -106,31 +51,6 @@
    "description": "seed 0: cells, cell and tile scores, cell -> index tile, query Q, tiles Spindle returns, exact d_B^S of every index tile, tile centres and sides, per programme",
    "rows": null,
    "bytes": 1986122
-  },
-  "per_dataset/lung_cancer/seed0_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 292
-  },
-  "per_dataset/lung_cancer/seed1_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 296
-  },
-  "per_dataset/lung_cancer/seed2_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 295
-  },
-  "per_dataset/lung_cancer/seed3_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 295
-  },
-  "per_dataset/lung_cancer/seed4_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 295
   },
   "per_dataset/lymph_node/seed0_gene_set_queries.csv": {
    "description": "seed 0, every gene-set query: composition difference to Spindle's first 10 and a random 10",
@@ -157,31 +77,6 @@
    "rows": null,
    "bytes": 2353620
   },
-  "per_dataset/pancreatic_cancer/seed0_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 319
-  },
-  "per_dataset/pancreatic_cancer/seed1_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 321
-  },
-  "per_dataset/pancreatic_cancer/seed2_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 322
-  },
-  "per_dataset/pancreatic_cancer/seed3_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 323
-  },
-  "per_dataset/pancreatic_cancer/seed4_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 320
-  },
   "per_dataset/skin_melanoma/seed0_gene_set_queries.csv": {
    "description": "seed 0, every gene-set query: composition difference to Spindle's first 10 and a random 10",
    "rows": 372,
@@ -192,31 +87,6 @@
    "rows": null,
    "bytes": 1258688
   },
-  "per_dataset/skin_melanoma/seed0_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 298
-  },
-  "per_dataset/skin_melanoma/seed1_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 298
-  },
-  "per_dataset/skin_melanoma/seed2_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 301
-  },
-  "per_dataset/skin_melanoma/seed3_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 300
-  },
-  "per_dataset/skin_melanoma/seed4_match.csv": {
-   "description": "per programme: Spearman rho of closeness (-d_B^S) and tile score",
-   "rows": 4,
-   "bytes": 300
-  },
   "skin_cells.npz": {
    "description": "skin seed 0: cells, cell scores (z-scored genes), tile scores, cell -> index tile, query Q and the tiles Spindle returns, per programme",
    "rows": null,
@@ -226,11 +96,6 @@
    "description": "skin seed 0, every gene-set query: composition difference to Spindle's first 10 and a random 10",
    "rows": 372,
    "bytes": 30011
-  },
-  "skin_queries.csv": {
-   "description": "skin seed 0, every held-out query: class shares of query / Spindle 10 / Spindle-naive 10 / random 10",
-   "rows": 93,
-   "bytes": 33742
   }
  }
 }

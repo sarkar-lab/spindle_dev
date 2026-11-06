@@ -1,4 +1,4 @@
-"""One indexed section with its cached build and per-cell inputs, and the statistics of the biology results (Figs 6-8),
+"""One indexed section with its cached build and per-cell inputs, and the statistics of the query results (Figs 3-4),
 from the staged inputs of R0 (no h5ad, no covariance recomputed). Ported from experiments/fig6_breast/common6.py and
 experiments/fig7_skin/common7.py (in git history), themselves from the 17 Oct block-programme code, the poster v2 biology
 and the gene-set pilot.
@@ -10,14 +10,13 @@ and the gene-set pilot.
 Cell labels: breast, the section's annotation (``Cluster``; "Unlabeled" cells are dropped by sd.load_adata), 19 types,
 used as they are in the niche enrichment (Fig 6) and grouped into the 8 classes of CLASSES for tile compositions (cells,
 not tiles); every other section, the 10x graph-based clusters (cells without a cluster are left out of compositions).
-The skin worked example groups the clusters into classes (skin_classes). Expression: raw counts on the index genes,
+Expression: raw counts on the index genes,
 log-normalised per cell, log1p(x / total * median total).
 """
 
 from types import SimpleNamespace
 
 import numpy as np
-import pandas as pd
 from scipy.stats import rankdata
 
 import data
@@ -152,12 +151,7 @@ def bh(p):
     return out
 
 
-# ---------------------------------------------------------------- gene lists and skin classes (common7)
-SKIN_CLASSES = [("Melanocyte", "Melanocyte_Tumor"), ("Keratinocyte", "Keratinocyte_Epidermis"),
-                ("Immune", "Immune_Infiltrate"), ("Other", None)]
-CLASS_Z = 0.5
-
-
+# ---------------------------------------------------------------- gene lists (common7)
 def gene_lists(key, genes):
     """[(name, idx, found, missing)] of the tissue's curated signatures with >= MIN_LIST index genes."""
     out = []
@@ -167,26 +161,3 @@ def gene_lists(key, genes):
             out.append((name, np.asarray(idx), list(found), list(missing)))
     return out
 
-
-def skin_classes(S):
-    """Skin cell classes for the worked example (rule fixed before the run): every graph-based cluster takes the skin
-    signature (SKIN_CLASSES) with the largest mean standardised cell score over its cells (cell score = mean over S
-    of log-normalised expression, standardised over all cells), if that mean exceeds CLASS_Z s.d., else "Other".
-    Returns (class index per cell, -1 = no cluster; table of clusters)."""
-    sig = {n: idx for n, idx, _, _ in gene_lists(S["key"], S["genes"])}
-    Z = []
-    for _, name in SKIN_CLASSES[:-1]:
-        s = S["L"][:, sig[name]].mean(1)
-        Z.append((s - s.mean()) / s.std())
-    Z = np.stack(Z, 1)
-    types = S["types"]
-    cls = np.full(len(types), -1)
-    rows = []
-    for t in sorted({t for t in types if t}, key=int):
-        m = types == t
-        z = Z[m].mean(0)
-        k = int(np.argmax(z)) if z.max() > CLASS_Z else len(SKIN_CLASSES) - 1
-        cls[m] = k
-        rows.append({"type": t, "class": SKIN_CLASSES[k][0], "n_cells": int(m.sum()),
-                     **{f"z_{n}": float(v) for (n, _), v in zip(SKIN_CLASSES, z)}})
-    return cls, pd.DataFrame(rows)

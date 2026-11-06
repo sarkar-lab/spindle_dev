@@ -1,5 +1,0 @@
-key,seed,program,n_genes,n_index,rho,tag
-pancreatic_cancer,0,Cytotoxic_T,10,2061,-0.1480329507668311,method-v2
-pancreatic_cancer,0,Myeloid,5,2061,0.2778229871784217,method-v2
-pancreatic_cancer,0,Stromal_Perivascular,5,2061,-0.3096393385304565,method-v2
-pancreatic_cancer,0,B_Plasma,5,2061,0.02741452397546226,method-v2

@@ -1,365 +1,220 @@
 {
  "topic": "queries",
  "notebook": "R7_queries.ipynb",
- "date": "2026-11-01 23:22",
+ "date": "2026-11-05 09:44",
  "tag": "method-v2",
- "describe": "method-v2-1-g06b9e46-dirty",
- "commit": "06b9e46",
+ "describe": "method-v3-dirty",
+ "commit": "b35f7d4",
  "inputs": [
   "results/_cache"
  ],
- "peak_rss_gb": 0.7,
- "notes": "Fig 7. Old names: tv_top -> tv_naive, spindle_in_top -> spindle_in_naive; gene-list query T/TS/D/X -> method naive_partial/spindle_partial/D/X, jacc_T -> jacc_naive_partial.",
+ "peak_rss_gb": 0.19,
+ "notes": "Fig 4C. Old names: gene-list query T/TS -> method naive_partial/spindle_partial, jacc_T -> jacc_naive_partial.",
  "files": {
   "lists.csv": {
    "description": "per dataset, list and method: mean and s.d. over seeds",
-   "rows": 96,
-   "bytes": 27986
+   "rows": 48,
+   "bytes": 13041
   },
   "per_dataset/brain_cancer/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2278
-  },
-  "per_dataset/brain_cancer/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 1062,
-   "bytes": 132726
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1164
   },
   "per_dataset/brain_cancer/seed1_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2310
-  },
-  "per_dataset/brain_cancer/seed1_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 1062,
-   "bytes": 132734
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1170
   },
   "per_dataset/brain_cancer/seed2_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2271
-  },
-  "per_dataset/brain_cancer/seed2_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 1062,
-   "bytes": 132660
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1146
   },
   "per_dataset/brain_cancer/seed3_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2267
-  },
-  "per_dataset/brain_cancer/seed3_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 1062,
-   "bytes": 132585
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1169
   },
   "per_dataset/brain_cancer/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2317
-  },
-  "per_dataset/brain_cancer/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 1062,
-   "bytes": 132708
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1162
   },
   "per_dataset/breast_cancer/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 20,
-   "bytes": 3848
-  },
-  "per_dataset/breast_cancer/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 204,
-   "bytes": 25258
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 10,
+   "bytes": 1878
   },
   "per_dataset/breast_cancer/seed1_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 20,
-   "bytes": 3849
-  },
-  "per_dataset/breast_cancer/seed1_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 204,
-   "bytes": 25274
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 10,
+   "bytes": 1894
   },
   "per_dataset/breast_cancer/seed2_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 20,
-   "bytes": 3835
-  },
-  "per_dataset/breast_cancer/seed2_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 204,
-   "bytes": 25233
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 10,
+   "bytes": 1907
   },
   "per_dataset/breast_cancer/seed3_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 20,
-   "bytes": 3780
-  },
-  "per_dataset/breast_cancer/seed3_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 204,
-   "bytes": 25230
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 10,
+   "bytes": 1893
   },
   "per_dataset/breast_cancer/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 20,
-   "bytes": 3875
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 10,
+   "bytes": 1886
   },
-  "per_dataset/breast_cancer/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 204,
-   "bytes": 25209
+  "per_dataset/kidney_nondiseased/seed0_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 892
+  },
+  "per_dataset/kidney_nondiseased/seed1_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 897
+  },
+  "per_dataset/kidney_nondiseased/seed2_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 878
+  },
+  "per_dataset/kidney_nondiseased/seed3_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 897
+  },
+  "per_dataset/kidney_nondiseased/seed4_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 892
   },
   "per_dataset/lung_cancer/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1627
-  },
-  "per_dataset/lung_cancer/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 170,
-   "bytes": 20839
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 844
   },
   "per_dataset/lung_cancer/seed1_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1623
-  },
-  "per_dataset/lung_cancer/seed1_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 170,
-   "bytes": 20813
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 836
   },
   "per_dataset/lung_cancer/seed2_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1597
-  },
-  "per_dataset/lung_cancer/seed2_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 170,
-   "bytes": 20815
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 847
   },
   "per_dataset/lung_cancer/seed3_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1598
-  },
-  "per_dataset/lung_cancer/seed3_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 170,
-   "bytes": 20799
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 830
   },
   "per_dataset/lung_cancer/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1635
-  },
-  "per_dataset/lung_cancer/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 170,
-   "bytes": 20753
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 851
   },
   "per_dataset/lymph_node/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 16,
-   "bytes": 3010
-  },
-  "per_dataset/lymph_node/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 261,
-   "bytes": 31981
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 8,
+   "bytes": 1519
   },
   "per_dataset/lymph_node/seed1_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 16,
-   "bytes": 3034
-  },
-  "per_dataset/lymph_node/seed1_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 261,
-   "bytes": 31972
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 8,
+   "bytes": 1514
   },
   "per_dataset/lymph_node/seed2_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 16,
-   "bytes": 3060
-  },
-  "per_dataset/lymph_node/seed2_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 261,
-   "bytes": 32006
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 8,
+   "bytes": 1539
   },
   "per_dataset/lymph_node/seed3_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 16,
-   "bytes": 3068
-  },
-  "per_dataset/lymph_node/seed3_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 261,
-   "bytes": 31951
-  },
-  "per_dataset/lymph_node/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 16,
-   "bytes": 3027
-  },
-  "per_dataset/lymph_node/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 261,
-   "bytes": 31968
-  },
-  "per_dataset/lymph_node_5k/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
    "rows": 8,
    "bytes": 1534
   },
-  "per_dataset/lymph_node_5k/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 774,
-   "bytes": 97481
+  "per_dataset/lymph_node/seed4_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 8,
+   "bytes": 1526
+  },
+  "per_dataset/lymph_node_5k/seed0_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 791
   },
   "per_dataset/lymph_node_5k/seed1_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1540
-  },
-  "per_dataset/lymph_node_5k/seed1_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 774,
-   "bytes": 97503
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 806
   },
   "per_dataset/lymph_node_5k/seed2_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1536
-  },
-  "per_dataset/lymph_node_5k/seed2_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 774,
-   "bytes": 97399
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 806
   },
   "per_dataset/lymph_node_5k/seed3_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1489
-  },
-  "per_dataset/lymph_node_5k/seed3_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 774,
-   "bytes": 97407
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 775
   },
   "per_dataset/lymph_node_5k/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 8,
-   "bytes": 1504
-  },
-  "per_dataset/lymph_node_5k/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 774,
-   "bytes": 97458
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 4,
+   "bytes": 789
   },
   "per_dataset/pancreatic_cancer/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2282
-  },
-  "per_dataset/pancreatic_cancer/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 229,
-   "bytes": 29291
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1141
   },
   "per_dataset/pancreatic_cancer/seed1_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2310
-  },
-  "per_dataset/pancreatic_cancer/seed1_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 229,
-   "bytes": 29269
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1142
   },
   "per_dataset/pancreatic_cancer/seed2_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2295
-  },
-  "per_dataset/pancreatic_cancer/seed2_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 229,
-   "bytes": 29309
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1156
   },
   "per_dataset/pancreatic_cancer/seed3_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2313
-  },
-  "per_dataset/pancreatic_cancer/seed3_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 229,
-   "bytes": 29339
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1156
   },
   "per_dataset/pancreatic_cancer/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2328
-  },
-  "per_dataset/pancreatic_cancer/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 229,
-   "bytes": 29308
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1160
   },
   "per_dataset/skin_melanoma/seed0_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2490
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1219
   },
-  "per_dataset/skin_melanoma/seed0_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 93,
-   "bytes": 11493
+  "per_dataset/skin_melanoma/seed1_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1232
+  },
+  "per_dataset/skin_melanoma/seed2_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1200
+  },
+  "per_dataset/skin_melanoma/seed3_gene_lists.csv": {
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1202
   },
   "per_dataset/skin_melanoma/seed4_gene_lists.csv": {
-   "description": "every tissue signature x method (naive_partial, spindle_partial, D, X): delta, co-variation, Jaccard",
-   "rows": 12,
-   "bytes": 2508
-  },
-  "per_dataset/skin_melanoma/seed4_tile_queries.csv": {
-   "description": "every held-out tile: composition difference (TV) to Spindle-naive's top 10, Spindle's first 10, a random 10 (mean of 200) and the expression top 10",
-   "rows": 93,
-   "bytes": 11508
-  },
-  "skin_example/example.csv": {
-   "description": "skin example: class composition of the query, Spindle's first 10, a random 10, the section",
-   "rows": 4,
-   "bytes": 980
-  },
-  "skin_example/example_cells.npz": {
-   "description": "skin example: cells, classes, query and top-10 tiles",
-   "rows": null,
-   "bytes": 636451
-  },
-  "skin_example/signature_cells.npz": {
-   "description": "skin signatures: cell scores, Spindle's first 10 tiles",
-   "rows": null,
-   "bytes": 881052
-  },
-  "skin_example/skin_classes.csv": {
-   "description": "skin graph-based clusters -> skin classes",
-   "rows": 26,
-   "bytes": 2296
-  },
-  "tiles.csv": {
-   "description": "per dataset and seed: median composition differences, shares below random",
-   "rows": 40,
-   "bytes": 5992
+   "description": "every tissue signature x method (naive_partial, spindle_partial): delta, co-variation, Jaccard",
+   "rows": 6,
+   "bytes": 1220
   }
  }
 }

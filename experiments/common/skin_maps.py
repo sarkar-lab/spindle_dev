@@ -1,28 +1,24 @@
-"""Search distance against expression on skin melanoma, and gene-set queries on skin (Fig 4; R9_skin_maps.ipynb).
-Section loader and statistics in sections.py; programme queries as pan_cancer.py.
+"""Cross-dataset maps and partial queries from held-out tiles (Fig 4A-B, Supplementary Tables of the composition
+differences and of Spearman's rho; R9_skin_maps.ipynb). Section loader and statistics in sections.py; programme queries
+as pan_cancer.py.
 
 RULES (fixed before the run):
-- MATCH, every section of pan_cancer.KEYS and seed 0-4, every programme of results/pan_cancer/exemplar.csv: the query is
-  Fig 8's (diag(sigma) R_S diag(sigma), sigma quantile-matched to the section's index tiles). Closeness of an index tile
-  = -exact d_B^S (Spindle-naive); tile score = mean over S of the z-scored tile-mean log-normalised expression (R8's
-  readout). Readout: Spearman's rho between closeness and tile score over the index tiles (the breast exemplar tile left
-  out, as in R8). "absent" is carried over from results/pan_cancer/programs.csv (Spindle-naive mean delta <= 0).
 - SKIN CELLS (seed 0): a cell's programme score = mean over S of its log-normalised expression, each gene z-scored over
   the section's cells (so no one abundant gene dominates, as the tile score); also each index tile's tile score, each
   cell's index tile (-1 = held-out or dropped tile), each programme's query Q (the covariance searched for) and the
   index tiles Spindle returns for Q (SpindlePartial.search_vectors, default g; index-tile positions, best first; added
   2 Nov, user: the maps keep the exact d_B^S of every tile and mark the tiles Spindle returns).
-- SKIN GENE-SET QUERIES (seed 0): gene_set_queries below; Fig 4C uses |S| = 16 (gene_set.BAND_SIZE, the size of the
-  accuracy benchmark's typical query); queries with no tile returned are reported and left out of the figure.
-- EVERY SECTION (seed 0; Supplementary Fig S7, added 1 Nov): the skin maps' arrays (SKIN CELLS, with each index tile's
-  exact d_B^S to each programme query, centre and side, as pan_cancer.gradient) on every indexed section whose index
-  genes hold every programme gene (map_keys: all but lymph_node_5k, which keeps its 400 most variable genes); the skin
-  gene-set queries on every indexed section.
+- SKIN GENE-SET QUERIES (seed 0): gene_set_queries below; Fig 4B uses |S| = 4 and 16; queries with no tile returned
+  are reported and left out of the figure.
+- EVERY SECTION (seed 0): the skin maps' arrays (SKIN CELLS, with each index tile's exact d_B^S to each programme
+  query, centre and side, as pan_cancer.gradient) on every indexed section whose index genes hold every programme gene
+  (map_keys: all but lymph_node_5k, which keeps its 400 most variable genes), for the Spearman's rho table: rho between
+  closeness (-d_B^S) and tile score (mean over S of the z-scored tile-mean log-normalised expression) over the index
+  tiles; the skin gene-set queries on every indexed section.
 """
 
 import numpy as np
 import pandas as pd
-from scipy.stats import spearmanr
 
 import gene_set as gs
 import pan_cancer as pc
@@ -30,36 +26,6 @@ import sections as sx
 import spindle_dev as sd
 
 KEY = "skin_melanoma"
-
-
-def match(S, seed, E, Z):
-    """Spearman's rho of closeness and tile score per programme in one (section, seed)."""
-    c, covs = S["c"], S["covs"]
-    mu = sx.tile_means(S, c.train)
-    z = (mu - mu.mean(0)) / (mu.std(0) + 1e-9)
-    rows = []
-    for _, e in E.iterrows():
-        prog = e.program
-        idx, _ = pc.program_idx(S["genes"], prog)
-        R, q = Z[f"R_{prog}"], Z[f"q_{prog}"]
-        sig = pc.query_scale(pc.sub_covs(covs, c.train, idx), q)
-        d = c.naive_partial.distances(sig[:, None] * R * sig[None, :], idx)
-        valid = np.ones(len(c.train), bool)
-        if S["key"] == pc.SOURCE:
-            valid[c.train == int(e.tile)] = False
-        rho = spearmanr(-d[valid], z[valid][:, idx].mean(1)).statistic
-        rows.append({"key": S["key"], "seed": seed, "program": prog, "n_genes": len(idx), "n_index": int(valid.sum()),
-                     "rho": float(rho), "tag": S["stamp"]["tag"]})
-    return pd.DataFrame(rows)
-
-
-def summary(g, programs):
-    """Mean and s.d. of rho over seeds per (section, programme), with R8's absent flag."""
-    out = g.groupby(["key", "program"], sort=False).rho.agg(rho="mean", rho_sd="std").reset_index()
-    a = programs[programs.method == "naive_partial"].set_index(["key", "program"]).absent
-    out["absent"] = [bool(a.loc[(k, p)]) for k, p in zip(out.key, out.program)]
-    out["tag"] = g.tag.iloc[0]
-    return out
 
 
 def skin_cells(S, E, Z):
@@ -89,11 +55,10 @@ def skin_cells(S, E, Z):
     return out
 
 
-
 def gene_set_queries(S, seed):
     """Table of every skin gene-set query (the accuracy workload, gene_set.workload: per held-out tile and size, a run of
     consecutive genes in one block of its home niche; the query is the tile's shrunk covariance cut to S): composition
-    difference (TV over the 10x clusters, as queries.tile_queries) of the query tile to Spindle's first 10 tiles (fewer
+    difference (TV over the 10x clusters) of the query tile to Spindle's first 10 tiles (fewer
     if it returns fewer) and to a random 10 (mean of N_RANDOM draws)."""
     c = S["c"]
     n = len(c.train)

@@ -1,0 +1,36 @@
+{
+ "topic": "parallel",
+ "notebook": "R11_parallel.ipynb",
+ "date": "2026-11-04 21:44",
+ "tag": "method-v2",
+ "describe": "method-v3-dirty",
+ "commit": "b35f7d4",
+ "inputs": [
+  "results/_cache (R0_index_cache)",
+  "results/timing (R4_timing)"
+ ],
+ "peak_rss_gb": 10.71,
+ "notes": "brain_cancer on T physical cores of ROSALIND-CPU1 (one hardware thread per core; node shared with other users' jobs); mode full.",
+ "files": {
+  "brain_cancer.csv": {
+   "description": "brain_cancer: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 7000,
+   "bytes": 1527968
+  },
+  "brain_cancer_pilot.csv": {
+   "description": "brain_cancer: one row per (threads, seed, query), ms of every step on T physical cores (pilot)",
+   "rows": 60,
+   "bytes": 12717
+  },
+  "summary.csv": {
+   "description": "mean and s.d. over seeds of the per-(threads, seed) medians, end-to-end totals, scaling over T = 1, end-to-end speed-ups of Spindle",
+   "rows": 7,
+   "bytes": 4833
+  },
+  "summary_pilot.csv": {
+   "description": "mean and s.d. over seeds of the per-(threads, seed) medians, end-to-end totals, scaling over T = 1, end-to-end speed-ups of Spindle",
+   "rows": 3,
+   "bytes": 1424
+  }
+ }
+}

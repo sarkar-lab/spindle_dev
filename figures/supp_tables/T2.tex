@@ -8,5 +8,6 @@ Software & Python 3.12.14, NumPy 2.5.3, SciPy 1.18.1, pandas 3.0.5 \\
 Search kernels & C with AVX2, called through ctypes; gcc 13.3.0, -O3 -mavx2 -ffp-contract=off -fno-fast-math -fno-builtin-pow \\
 Index builds & 8 CPU cores per build (Slurm) \\
 Query timing & one thread (OpenMP, OpenBLAS and MKL threads set to 1), one timing job at a time \\
+Multi-core query timing & 1--64 physical cores, one hardware thread per core, plus one core for the main process; the node was shared with other users' jobs \\
 \bottomrule
 \end{tabular}

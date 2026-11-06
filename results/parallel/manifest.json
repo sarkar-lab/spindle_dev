@@ -1,0 +1,71 @@
+{
+ "topic": "parallel",
+ "notebook": "R11_parallel.ipynb",
+ "date": "2026-11-04 23:59",
+ "tag": "method-v2",
+ "describe": "method-v3-dirty",
+ "commit": "b35f7d4",
+ "inputs": [
+  "results/_cache (R0_index_cache)",
+  "results/timing (R4_timing)"
+ ],
+ "peak_rss_gb": 0.15,
+ "notes": "every dataset on T physical cores of ROSALIND-CPU1 (one hardware thread per core; node shared with other users' jobs); mode full. The brain-only runs of 4 Nov are in _brain_only_2026-11-04/.",
+ "files": {
+  "per_dataset/brain_cancer/timing.csv": {
+   "description": "brain_cancer: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 7000,
+   "bytes": 1552376
+  },
+  "per_dataset/breast_cancer/timing.csv": {
+   "description": "breast_cancer: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 7000,
+   "bytes": 1561107
+  },
+  "per_dataset/kidney_nondiseased/timing.csv": {
+   "description": "kidney_nondiseased: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 2730,
+   "bytes": 615009
+  },
+  "per_dataset/lung_cancer/timing.csv": {
+   "description": "lung_cancer: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 5950,
+   "bytes": 1309559
+  },
+  "per_dataset/lymph_node/timing.csv": {
+   "description": "lymph_node: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 7000,
+   "bytes": 1534333
+  },
+  "per_dataset/lymph_node_5k/timing.csv": {
+   "description": "lymph_node_5k: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 7000,
+   "bytes": 1555315
+  },
+  "per_dataset/pancreatic_cancer/timing.csv": {
+   "description": "pancreatic_cancer: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 7000,
+   "bytes": 1587708
+  },
+  "per_dataset/skin_melanoma/timing.csv": {
+   "description": "skin_melanoma: one row per (threads, seed, query), ms of every step on T physical cores (full)",
+   "rows": 3255,
+   "bytes": 716695
+  },
+  "seeds.csv": {
+   "description": "median ms of every step and end-to-end total per (dataset, threads, seed)",
+   "rows": 280,
+   "bytes": 105067
+  },
+  "summary.csv": {
+   "description": "mean and s.d. over seeds of the per-seed medians, end-to-end totals, scaling over T = 1, end-to-end speed-ups of Spindle",
+   "rows": 56,
+   "bytes": 67756
+  },
+  "timing.csv": {
+   "description": "one row per (dataset, threads, seed, query): ms of every step on T cores",
+   "rows": 46935,
+   "bytes": 10368766
+  }
+ }
+}

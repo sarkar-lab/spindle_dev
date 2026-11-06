@@ -161,8 +161,10 @@ def timing_tables(tm):
     (Spindle-naive / (piece logs + Spindle))."""
     tag = one_tag(tm)
     tm = tm.assign(padding_ms=tm.pad_fill_ms + tm.pad_qlog_ms + tm.pad_scan_ms,
-                   imputation_ms=tm.imp_fill_ms + tm.imp_qlog_ms + tm.imp_scan_ms)
-    cols = STEPS + ["padding_ms", "imputation_ms", "spindle_partial_found", "spindle_partial_work"]
+                   imputation_ms=tm.imp_fill_ms + tm.imp_qlog_ms + tm.imp_scan_ms,
+                   e2e_spindle_partial_ms=tm.qlog_spindle_partial_ms + tm.spindle_partial_ms)
+    cols = STEPS + ["e2e_spindle_partial_ms", "padding_ms", "imputation_ms", "spindle_partial_found",
+                    "spindle_partial_work"]
     out = []
     for by in (["key", "seed"], ["key", "seed", "size"]):
         m = tm.groupby(by)[cols].median().reset_index()
@@ -173,5 +175,6 @@ def timing_tables(tm):
     t = mean_sd(out[0], ["key"], cols)
     t["speedup_spindle_partial"] = t.naive_partial_search_ms / t.spindle_partial_ms
     t["speedup_e2e"] = t.naive_partial_ms / (t.qlog_spindle_partial_ms + t.spindle_partial_ms)
+    t["speedup_e2e_median"] = t.naive_partial_ms / t.e2e_spindle_partial_ms  # totals summed per query
     t["tag"] = tag
     return out[0], out[1], t

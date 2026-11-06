@@ -1,5 +1,0 @@
-key,seed,program,n_genes,n_index,rho,tag
-lung_cancer,1,Cytotoxic_T,10,1535,0.29215692680881133,method-v2
-lung_cancer,1,Myeloid,5,1535,0.5470395651869249,method-v2
-lung_cancer,1,Stromal_Perivascular,5,1535,-0.06289656892202371,method-v2
-lung_cancer,1,B_Plasma,5,1535,0.42880155693115124,method-v2

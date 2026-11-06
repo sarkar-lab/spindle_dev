@@ -1,14 +1,14 @@
 {
  "topic": "whole_tile",
  "notebook": "R2_whole_tile.ipynb",
- "date": "2026-11-01 00:00",
+ "date": "2026-11-05 09:40",
  "tag": "method-v2",
- "describe": "method-v2-dirty",
- "commit": "8040f91",
+ "describe": "method-v3-dirty",
+ "commit": "b35f7d4",
  "inputs": [
   "results/_cache (R0_index_cache)"
  ],
- "peak_rss_gb": 10.2,
+ "peak_rss_gb": 0.18,
  "notes": "",
  "files": {
   "band/brain_cancer.npz": {
@@ -56,11 +56,6 @@
    "rows": 8,
    "bytes": 809
   },
-  "memory.csv": {
-   "description": "per (dataset, method, param): mean and s.d. over seeds of MB, NX5, Overlap, short5",
-   "rows": 16,
-   "bytes": 2162
-  },
   "nx.csv": {
    "description": "per (dataset, g): mean and s.d. over seeds 0-4 of every nx_seeds.csv column",
    "rows": 48,
@@ -70,31 +65,6 @@
    "description": "per (dataset, seed, g): means over held-out queries (work, tiles returned, radius / nearest d_B: medians)",
    "rows": 240,
    "bytes": 41826
-  },
-  "per_dataset/brain_cancer/memory_seed0.csv": {
-   "description": "brain_cancer seed 0: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1167
-  },
-  "per_dataset/brain_cancer/memory_seed1.csv": {
-   "description": "brain_cancer seed 1: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1172
-  },
-  "per_dataset/brain_cancer/memory_seed2.csv": {
-   "description": "brain_cancer seed 2: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1166
-  },
-  "per_dataset/brain_cancer/memory_seed3.csv": {
-   "description": "brain_cancer seed 3: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1168
-  },
-  "per_dataset/brain_cancer/memory_seed4.csv": {
-   "description": "brain_cancer seed 4: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1169
   },
   "per_dataset/brain_cancer/seed0.csv": {
    "description": "brain_cancer seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",
@@ -120,31 +90,6 @@
    "description": "brain_cancer seed 4: Spindle readouts per held-out query and g (graded by the exact d_B)",
    "rows": 6372,
    "bytes": 1395430
-  },
-  "per_dataset/breast_cancer/memory_seed0.csv": {
-   "description": "breast_cancer seed 0: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1159
-  },
-  "per_dataset/breast_cancer/memory_seed1.csv": {
-   "description": "breast_cancer seed 1: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1159
-  },
-  "per_dataset/breast_cancer/memory_seed2.csv": {
-   "description": "breast_cancer seed 2: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1154
-  },
-  "per_dataset/breast_cancer/memory_seed3.csv": {
-   "description": "breast_cancer seed 3: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1155
-  },
-  "per_dataset/breast_cancer/memory_seed4.csv": {
-   "description": "breast_cancer seed 4: one row per method (Spindle against d_B; PCA + flat, PCA-256 + PQ against d_W)",
-   "rows": 8,
-   "bytes": 1157
   },
   "per_dataset/breast_cancer/seed0.csv": {
    "description": "breast_cancer seed 0: Spindle readouts per held-out query and g (graded by the exact d_B)",

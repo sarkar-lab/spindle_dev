@@ -92,3 +92,7 @@ results/*/per_dataset/*/band_seed*.npz
 
 # Backups of earlier figure/notebook versions (local only; same relative paths as the originals)
 _backups/
+
+# Claude Code instructions and settings (local only)
+CLAUDE.md
+.claude/

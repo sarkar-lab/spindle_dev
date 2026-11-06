@@ -1,12 +1,12 @@
-"""Breast block programmes and breast queries (Fig 6), on one build (a seed, or "full": every tile indexed).
-Ported from experiments/fig6_breast/{c_programs,c_queries}.py (in git history); the section loader and the statistics
-are sections.py. Every function returns tables (and arrays); R6_breast_programs.ipynb writes them.
+"""Breast block programmes (Supplementary Fig S2; the whole-section build "full": every tile indexed) and breast
+whole-tile queries (Fig 3C; seed 0). The section loader and the statistics are sections.py. Every function returns
+tables (and arrays); R6_breast_programs.ipynb writes them.
 
     import sections as sx, programs as pg
-    S = sx.load("breast_cancer", "full")                 # or a seed, parts=PROGRAM_PARTS
+    S = sx.load("breast_cancer", "full", parts=pg.PROGRAM_PARTS)
     out = pg.programs(S, "full")                         # blocks, enrich_null, niche_types, acta2 (+ maps)
     S = sx.load("breast_cancer", 0, parts=pg.QUERY_PARTS)
-    out = pg.tile_queries(S, 0) | pg.gene_lists(S, 0)
+    out = pg.tile_queries(S, 0)
 
 Programmes, per niche k and block b of the build (layout.perm_list[k] cut at layout.block_dict[k]), on the niche-mean
 correlation R_k (the mean of the niche's shrunk index covariances, as a correlation):
@@ -24,29 +24,16 @@ correlation R_k (the mean of the niche's shrunk index covariances, as a correlat
   every gene in every niche's R_k and whether that gene is in ACTA2's block there.
 
 Whole-tile queries = every held-out tile of the seed. Spindle's top 10 (top 5) = the first 10 (5) tiles of
-search_vectors (default g = 0.25 as in Fig 3; fewer if it returns fewer, NaN if none; user, 2 Nov: every search result
+search_vectors (default g = 0.25; fewer if it returns fewer, NaN if none; user, 2 Nov: every search result
 from Spindle). Readout (cells, not tiles): TV = 0.5 sum |a - b| between the query's 8-class composition
 (sections.CLASSES) and the pooled composition of the top 10's (top 5's) cells; null = the mean TV of N_RANDOM random
 10-tile (5-tile) draws of index tiles. Recorded, never claimed: Spindle-naive's top 10 / top 5 (the smallest exact d_B,
-the cache's D) and their TV; the expression top 10 (Euclidean on the tile-mean log-normalised expression, z-scored over
-the index tiles) and its TV; how many of Spindle-naive's 10 Spindle returns among its first 10.
+the cache's D) and their TV; how many of Spindle-naive's 10 Spindle returns among its first 10.
 EXAMPLE RULE (approved 26 Oct, fixed before the run): seed 0; among the held-out tiles with >= 100 cells, the one with
 the largest share of myoepithelial cells (ties: lower tile id). Reported with it: Spindle's top 10's and a random 10's
 pooled composition, the section's, and the base rate = the share of all held-out queries whose Spindle top-10 TV is
 below the random-10 TV.
 (Until 2 Nov the top 10 / top 5 were Spindle-naive's: columns tv_top / tv_top5, now tv_naive / tv_naive5.)
-
-Gene-list queries: the 5 breast signatures (signatures.TISSUE_MODULES["breast"]; every gene is an index gene), each
-the template query T (sd.template_query on the build's omega: Methods Eq. signature, rho = 0.5, 90th-percentile
-variances) searched with Spindle-naive (exact d_B^S), top 10. Controls computed and reported, never claimed against:
-D = diag(omega_S) (variances only), and X = the 10 index tiles with the highest tile score. Readouts per (list, query):
-- delta = Cliff's delta of the tile score (mean over S of the z-scored tile-mean log-normalised expression) of the
-  top 10 against the other index tiles;
-- co-variation = mean off-diagonal correlation of S over a tile's cells (raw counts, zero-variance genes dropped);
-  median over the top 10 against the median over all index tiles (the typical tile);
-- jacc_D, jacc_X: Jaccard of the top 10 with D's and X's.
-Map rule (Fig 6, approved 26 Oct): the two signatures with the largest T delta at seed 0; a cell's score = mean over S
-of its log-normalised expression.
 """
 
 from pathlib import Path
@@ -57,12 +44,10 @@ from scipy.stats import hypergeom
 
 import data
 import sections as sx
-import spindle_dev as sd
-from signatures import TISSUE_MODULES
 
 KEY = sx.BREAST
 PROGRAM_PARTS = ("layout",)
-QUERY_PARTS = ("layout", "spindle", "naive_partial", "queries", "D")
+QUERY_PARTS = ("layout", "spindle", "queries", "D")
 GMT = {"Hallmark": Path.home() / ".cache" / "gseapy" / "Enrichr.MSigDB_Hallmark_2020.gmt",
        "GO_BP": Path.home() / ".cache" / "gseapy" / "Enrichr.GO_Biological_Process_2023.gmt"}
 N_NULL = 1000
@@ -227,9 +212,6 @@ def tile_queries(S, seed):
     n = len(c.train)
     cnt_idx = sx.class_counts(S, c.train)
     cnt_q = sx.class_counts(S, c.test)
-    mu_idx, mu_q = sx.tile_means(S, c.train), sx.tile_means(S, c.test)
-    m, s = mu_idx.mean(0), mu_idx.std(0) + 1e-9
-    z_idx, z_q = (mu_idx - m) / s, (mu_q - m) / s
     rng = np.random.default_rng(seed)
     rng5 = np.random.default_rng([seed, TOP5])  # own stream: the top-10 columns stay as before
     rows, tops = [], {}
@@ -240,7 +222,6 @@ def tile_queries(S, seed):
     for j, t in enumerate(c.test):
         q = cnt_q[j] / cnt_q[j].sum()
         naive = np.argsort(c.D[j], kind="stable")[:sx.TOP]
-        expr = np.argsort(((z_idx - z_q[j]) ** 2).sum(1), kind="stable")[:sx.TOP]
         spindle_rows, _, _ = c.spindle.search_vectors(c.qvs[j])
         top = np.asarray(spindle_rows[:sx.TOP], dtype=int)
         rand = [sx.tv(q, sx.class_shares(cnt_idx[rng.choice(n, sx.TOP, replace=False)])) for _ in range(sx.N_RANDOM)]
@@ -251,7 +232,6 @@ def tile_queries(S, seed):
                      "tv_spindle": tv_of(q, top), "tv_random": float(np.mean(rand)),
                      "tv_spindle5": tv_of(q, top[:TOP5]), "tv_random5": float(np.mean(rand5)),
                      "tv_naive": tv_of(q, naive), "tv_naive5": tv_of(q, naive[:TOP5]),
-                     "tv_expr": tv_of(q, expr),
                      "spindle_in_naive": int(len(set(naive.tolist()) & set(top.tolist()))),
                      "spindle_found": len(spindle_rows), "tag": st["tag"]})
     T = pd.DataFrame(rows)
@@ -283,43 +263,3 @@ def tile_queries(S, seed):
           f"{comp['top10'][2]:.2f}, random 10 {rand[2]:.2f}, section {section[2]:.3f}", flush=True)
     return out
 
-
-def gene_lists(S, seed):
-    """{"gene_lists", "gene_list_hits"}; for the example seed also "signature_cells" (arrays: every cell's score per
-    signature, the T top 10's boxes)."""
-    c, st = S["c"], S["stamp"]
-    n = len(c.train)
-    mu = sx.tile_means(S, c.train)
-    z = (mu - mu.mean(0)) / (mu.std(0) + 1e-9)
-    cells = [S["tiles"][t].idx for t in c.train]
-    rows, hits, cell_scores, top_tiles = [], [], {}, {}
-    for name, info in TISSUE_MODULES["breast"].items():
-        idx, found, missing = sd.gene_indices(S["genes"], info["genes"])
-        if missing:
-            raise RuntimeError(f"{name}: {missing} not index genes")
-        cov_t, _ = sd.template_query(c.omega, idx)
-        tops = {"T": cov_t, "D": np.diag(c.omega[idx])}
-        tops = {k: np.argsort(c.naive_partial.distances(Q, idx), kind="stable")[:sx.TOP] for k, Q in tops.items()}
-        score = z[:, idx].mean(1)
-        tops["X"] = np.argsort(-score, kind="stable")[:sx.TOP]
-        cov_all = np.array([sx.mean_offdiag_corr(S["X"][cl][:, idx]) for cl in cells])
-        for qn, top in tops.items():
-            other = np.setdiff1d(np.arange(n), top)
-            rows.append({"list": name, "n_genes": len(idx), "genes": " ".join(found), "query": qn,
-                         "delta": float(sx.cliffs_delta(score[top], score[other])),
-                         "cov_top": float(np.nanmedian(cov_all[top])), "cov_all": float(np.nanmedian(cov_all)),
-                         "cov_top_mean": float(np.nanmean(cov_all[top])),
-                         "jacc_D": sx.jaccard(top, tops["D"]), "jacc_X": sx.jaccard(top, tops["X"]),
-                         "tag": st["tag"]})
-            hits += [{"list": name, "query": qn, "rank": r + 1, "row": int(i), "tile": int(c.train[i]),
-                      "cov": float(cov_all[i]), "score": float(score[i])} for r, i in enumerate(top)]
-        cell_scores[name] = S["L"][:, idx].mean(1).astype(np.float16)
-        top_tiles[name] = np.array([S["tiles"][c.train[i]].bbox for i in tops["T"]], dtype=np.float64)
-    G = pd.DataFrame(rows)
-    G["lift"] = G.cov_top - G.cov_all
-    out = {"gene_lists": G, "gene_list_hits": pd.DataFrame(hits)}
-    if seed == data.EXAMPLE_SEED:
-        out["signature_cells"] = {"xy": S["xy"], "lists": np.array(list(cell_scores)),
-                                  **{f"score_{k}": v for k, v in cell_scores.items()},
-                                  **{f"top_{k}": v for k, v in top_tiles.items()}}
-    return out

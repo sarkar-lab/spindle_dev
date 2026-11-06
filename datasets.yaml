@@ -6,11 +6,11 @@
 # Folders
 dirs:
   # The 8 indexed Xenium sections: plain conversions of the 10x outputs (raw counts in X, cell
-  # centroids in obsm["spatial"]). Shared folder, owned by sarkah1; read only.
-  xenium: /home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium
-  # Public datasets we prepared ourselves (10x cell_feature_matrix.h5 + cells.csv.gz -> h5ad); outside the repo.
-  extra: ../spindle_data
-  # The registered Xenium / Visium pair of the cross-platform experiment (Fig 5).
+  # centroids in obsm["spatial"]).
+  xenium: dataset/xenium
+  # Other public 10x datasets (cell_feature_matrix.h5 + cells.csv.gz -> h5ad).
+  extra: dataset/extra
+  # The registered Xenium / Visium pair of the cross-platform experiment (Fig 3).
   cross_modal: dataset/cross_modal
 
 # Datasets: key -> file. The 8 indexed sections are listed in figure order (by cell count).

@@ -23,8 +23,7 @@ stage (untimed; needs the dataset's builds, checks the covariances against them)
   covs.npy / covs.json, tiles.npz, cells.npz   prepare()'s covariances and tiles, the per-cell inputs (data.py)
   whole.npy / whole.json   whole-matrix vector of every tile: the float32 upper triangle of its p x p log (eigenvalue
                            floor 1e-6), off-diagonals x sqrt 2, / sqrt p, i.e. Spindle-naive's block vector with one
-                           block of all genes in panel order; its L2 distance is the whole-matrix d_W, on d_B's scale
-  seed<k>/DW.npy           exact d_W, held-out x index tiles (compiled scan, as D.npy)
+                           block of all genes in panel order (the whole-matrix scan of the timings, on d_B's scale)
   seed<k>/niche_means.npz  mean shrunk covariance (float64) of each niche's index tiles
 Cell labels: the section's annotation (obs "Cluster") where it has one (breast); otherwise the 10x graph-based clusters
 of its Xenium output (analysis.tar.gz, gene_expression_graphclust/clusters.csv, matched by barcode; "" = no cluster).
@@ -46,14 +45,13 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import data  # noqa: E402
 import spindle_dev as sd  # noqa: E402
-from spindle_dev.kernels import naive_scan  # noqa: E402
 from spindle_dev.metrics import as_cov  # noqa: E402
 from spindle_dev.naive import BlockVectorizer  # noqa: E402
 
 BUILD_FILES = ("build.json", "split.npz", "layout.pkl", "spindle.pkl", "spindle_partial.pkl", "naive.pkl",
                "naive_partial.pkl", "queries.pkl", "D.npy")
 STAGE_FILES = ("covs.npy", "covs.json", "tiles.npz", "cells.npz", "whole.npy", "whole.json")
-STAGE_SEED_FILES = ("DW.npy", "niche_means.npz")
+STAGE_SEED_FILES = ("niche_means.npz",)
 GRAPHCLUST = {
     "skin_melanoma": "xenium_hskin/output-XETG00000__slide_id__hskin/analysis.tar.gz",
     "kidney_nondiseased": "xenium_hkidney/output-XETG0000__slide_id__hkidney/analysis.tar.gz",
@@ -197,7 +195,7 @@ def stage(key):
              n_obs=adata.n_obs)
     del X
 
-    # whole-matrix vectors and d_W
+    # whole-matrix vectors
     vec = whole_vectorizer(p)
     W = np.empty((len(covs), vec.dim), dtype=np.float32)
     for i, c in enumerate(covs):
@@ -205,22 +203,15 @@ def stage(key):
     np.save(d / "whole.npy", W)
     for seed in data.SEEDS:
         s = np.load(data.cache_dir(key, seed) / "split.npz")
-        X = np.ascontiguousarray(W[s["train"]])
-        rows = np.arange(len(X), dtype=np.int64)
-        DW = np.empty((len(s["test"]), len(X)))
-        for j, t in enumerate(s["test"]):
-            naive_scan(X, W[t], rows, DW[j])
-        np.save(data.cache_dir(key, seed) / "DW.npy", DW)
-        del X
 
-        # niche means of the index tiles (Fig 4 imputation baseline)
+        # niche means of the index tiles (imputation baseline of the partial-query accuracy)
         lay = data._load(data.cache_dir(key, seed) / "layout.pkl")
         labels = np.asarray(lay.labels).astype(int)
         niches = sorted(set(labels.tolist()))
         M = np.stack([np.mean([as_cov(covs[s["train"][r]]) for r in np.flatnonzero(labels == k)], axis=0)
                       for k in niches])
         np.savez(data.cache_dir(key, seed) / "niche_means.npz", niches=np.array(niches), M=M)
-        print(f"{key} seed {seed}: d_W {DW.shape}, {len(niches)} niche means", flush=True)
+        print(f"{key} seed {seed}: {len(niches)} niche means", flush=True)
 
     rec = {"key": key, **st, "n_tiles": len(covs), "p": p, "dim": vec.dim, "cov_checksum": chk,
            "seconds": time.perf_counter() - t0, "peak_gb": peak_gb()}
