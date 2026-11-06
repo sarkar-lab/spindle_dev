@@ -1,19 +1,30 @@
 # Spindle
 
-Similarity search over the gene–gene covariance matrices of spatial-transcriptomics tiles.
+## Installation
 
-A section is cut by a quadtree into tiles of at most 200 cells, and each tile's gene–gene covariance is computed and
-shrunk once (`metrics.SHRINK_ALPHA` = 0.1). The index tiles are grouped into covariance niches, and each niche gets a
-gene order with contiguous gene blocks. Tiles are compared with the block log-Euclidean distance d_B, or d_B^S for a
-gene subset S. Two indexes, each for complete and partial (gene-subset) queries, use this layout:
+Python 3.9 or later. gcc is needed once, to build the search kernels. Create and activate a virtual environment, then
+install the dependencies and the package:
 
-- **Spindle** (`Spindle`, `SpindlePartial`): a layered block DAG per niche, searched depth-first with a path lower
-  bound and a radius set by the query's best greedy match. Partial queries use the same design on dyadic gene intervals.
-- **Spindle-naive** (`SpindleNaive`, `SpindleNaivePartial`): an exact scan over the stored block logarithms. It is the
-  exhaustive reference that bounds Spindle's accuracy.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+```
 
-The searches run compiled C kernels (`src/spindle_dev/kernels.c`, AVX2, called through ctypes). They are built with
-gcc into `src/spindle_dev/_build/` on first use and are bit-identical to the numpy / Python references kept beside them.
+## Background
+
+Spindle is a library for indexing and searching the gene–gene covariance matrices of spatial-omics tiles: given a
+query, it finds the tiles of a section whose genes co-vary most like it. Please refer to the
+[documentation page](https://www.hiraksarkar.com/spindle_dev/).
+
+A query can be a whole tile, a tile restricted to a gene set, or a gene list alone. Two indexes answer them:
+
+- **Spindle** (`Spindle`, `SpindlePartial`): the fast index, which returns close matches in a fraction of the time
+  and memory of an exact search.
+- **Spindle-naive** (`SpindleNaive`, `SpindleNaivePartial`): the exact search over every tile, slower and used as the
+  reference.
 
 ## Repository
 
@@ -38,15 +49,6 @@ experiments/                the paper's results (see "Reproducing the paper")
 results/<topic>/            CSV / NPZ inputs of the figures, with a manifest.json per topic
 figures/<figure>/           each figure (PDF + PNG) and its panels; supp_tables/ holds the LaTeX tables
 datasets.yaml, paths.py     dataset locations (the only place a path is written) and their reader
-```
-
-## Install
-
-Python 3.9 or later. gcc is needed once, to build the search kernels.
-
-```bash
-pip install -r requirements.txt
-pip install -e .
 ```
 
 ## Use
