@@ -7,11 +7,11 @@
 dirs:
   # The 8 indexed Xenium sections: plain conversions of the 10x outputs (raw counts in X, cell
   # centroids in obsm["spatial"]).
-  xenium: dataset/xenium
+  xenium: /home/NAShome/sarkah1/shared_data/insitupy_demo_data_xenium
   # Other public 10x datasets (cell_feature_matrix.h5 + cells.csv.gz -> h5ad).
-  extra: dataset/extra
+  extra: /home/NAShome/ghoss18/spindle_data
   # The registered Xenium / Visium pair of the cross-platform experiment (Fig 3).
-  cross_modal: dataset/cross_modal
+  cross_modal: /home/NAShome/ghoss18/spindle_dev/dataset/cross_modal
 
 # Datasets: key -> file. The 8 indexed sections are listed in figure order (by cell count).
 # max_genes (optional, default 800): the index keeps the top-variance min(max_genes, n_genes) genes.
