@@ -1,18 +1,28 @@
 {
  "topic": "block_distance",
  "notebook": "R12_block_distance.ipynb",
- "date": "2026-11-11 19:49",
+ "date": "2026-11-11 20:00",
  "tag": "method-v2",
- "describe": "method-v3-3-g01dbbe8",
- "commit": "01dbbe8",
+ "describe": "method-v3-4-gb026ef3-dirty",
+ "commit": "b026ef3",
  "inputs": [
   "results/_cache/<key>/whole.npy (R0)",
   "results/_cache/<key>/covs.npy (R0)",
   "results/_cache/<key>/seed0/naive.pkl (R0)"
  ],
- "peak_rss_gb": 1.48,
+ "peak_rss_gb": 1.65,
  "notes": "",
  "files": {
+  "dataset_pairs.csv": {
+   "description": "every dataset, seed-0 layout: 1000 random distinct pairs of index tiles drawn uniformly from all pairs of tiles in the same niche (default_rng(0) per dataset); niche, d_whole, d_block as in pairs.csv",
+   "rows": 8000,
+   "bytes": 583058
+  },
+  "datasets.csv": {
+   "description": "per dataset: index tiles, niches, genes p, niches with at least one sampled pair",
+   "rows": 8,
+   "bytes": 339
+  },
   "niches.csv": {
    "description": "the plotted niches, largest first: index tiles, blocks, genes p",
    "rows": 3,

@@ -1,0 +1,34 @@
+{
+ "topic": "block_distance_genes",
+ "notebook": "R13_block_distance_genes.ipynb",
+ "date": "2026-11-11 22:24",
+ "tag": "method-v2",
+ "describe": "method-v3-4-gb026ef3-dirty",
+ "commit": "b026ef3",
+ "inputs": [
+  "the lymph node 5k section (datasets.yaml)",
+  "results/_cache/lymph_node_5k/covs.npy (R0, check)",
+  "results/_cache/lymph_node_5k/seed0/layout.pkl (R0, check)",
+  "results/block_distance/dataset_pairs.csv (R12, check)",
+  "results/_cache/lymph_node_5k/covs.json (cell counts)"
+ ],
+ "peak_rss_gb": 40.94,
+ "notes": "",
+ "files": {
+  "genes_layout.csv": {
+   "description": "per gene count: index tiles, niches, blocks, Leiden resolution, share of the upper-triangle entries inside blocks (tile-weighted)",
+   "rows": 6,
+   "bytes": 514
+  },
+  "genes_pairs.csv": {
+   "description": "lymph node 5k, layout rebuilt at the top 100-2,000 genes (layout_stream.py, seed-0 split): 1,000 random same-niche pairs of index tiles per gene count (default_rng(0)); d_whole, d_block, the split of d_whole^2 into entries inside (d_on) and between (d_off) blocks, tile a's mean |r| within and between blocks (gene pairs with counts in the tile)",
+   "rows": 6000,
+   "bytes": 926394
+  },
+  "scale_examples.npz": {
+   "description": "Fig S11: tiles T, T' (prepare() order) and, per gene count p in genes, T's niche (p{p}_niche, _niche_tiles), its gene order (_perm, _genes) and blocks (_runs), and in that order the niche's mean correlation, T's correlation and |log C_T - log C_T'| (float16)",
+   "rows": null,
+   "bytes": 17380569
+  }
+ }
+}

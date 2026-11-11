@@ -1,0 +1,9 @@
+key,tiles,niches,p,niches_sampled,tag
+skin_melanoma,839,4,382,4,method-v2
+kidney_nondiseased,705,2,377,2,method-v2
+breast_cancer,1840,4,313,4,method-v2
+lung_cancer,1535,3,377,3,method-v2
+pancreatic_cancer,2061,4,474,4,method-v2
+lymph_node,2354,5,377,5,method-v2
+lymph_node_5k,6972,15,400,15,method-v2
+brain_cancer,9558,18,480,18,method-v2
