@@ -11,7 +11,7 @@ Seeds: 0-4, 10 % of the tiles held out at random (``split_tiles(seed, test_ratio
 seed 0 is the one used for examples, maps and schematics.
 
 Cache layout, results/_cache/<key>/seed<k>/ (gitignored, shared file system), written by
-index_cache.build (R0_index_cache.ipynb):
+index_cache.build or, bit for bit the same in < 6 GB, lowmem_build.build (R0_index_cache.ipynb):
   layout.pkl     the ProcessedData of the index tiles, without spd_matrices and U_list (one p x p matrix per tile;
                  ``load_cache(..., covs=covs)`` puts the index covariances back)
   spindle.pkl, spindle_partial.pkl, naive.pkl, naive_partial.pkl

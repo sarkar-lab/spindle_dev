@@ -141,8 +141,14 @@ Spindle's search split by niche, new functions only), or no result is written.
 
 1. **Index cache** ([`R0_index_cache`](experiments/compute/R0_index_cache.ipynb)): builds the layout and all four
    indexes for every dataset and seeds 0–4 (10% of tiles held out at random), times the builds, and stages the
-   per-cell inputs into `results/_cache/` (not tracked). This is the only step that needs a cluster: it submits Slurm
-   jobs, and brain cancer needs about 128 GB.
+   per-cell inputs into `results/_cache/` (not tracked). It submits Slurm jobs when `sbatch` is available and otherwise
+   runs every step as a local process. By default (`LOWMEM = True`) the builds run through
+   [`lowmem_build.py`](experiments/common/lowmem_build.py), which writes the same files, bit for bit, but keeps the
+   per-tile matrices in scratch files on a local disk (the system temp directory; about 18 GB free for brain cancer)
+   instead of in memory. Every build and the staging then need less than 6 GB, so the whole pipeline runs in 16 GB.
+   `LOWMEM = False` runs the in-memory builds whose times are reported in Fig 2C and Supplementary Fig S3 (about 55 GB
+   for brain cancer). With either build, other hardware can change the last bits of floating-point results, because the
+   linear-algebra libraries pick their kernels by CPU.
 2. **Results** ([`experiments/compute/`](experiments/compute/), R1–R12): each notebook writes CSVs and a manifest to
    `results/<topic>/` and skips outputs that already exist (`FORCE = True` redoes them). R1–R3, R5–R10 and R12 run in
    16 GB through `sbatch experiments/common/run_nb.sbatch experiments/compute/<notebook>.ipynb`. The timings must run

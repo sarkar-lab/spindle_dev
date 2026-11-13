@@ -19,7 +19,8 @@ d_B to every index tile (SpindleNaive.distances). Bytes: whole covariances as fl
 tiles; SpindleNaive.nbytes, Spindle.nbytes, SpindleNaivePartial.nbytes, SpindlePartial.nbytes. The build times are
 Fig 2C, so builds run one at a time on one node (timing.sbatch); a local run is sequential anyway.
 
-stage (untimed; needs the dataset's builds, checks the covariances against them):
+stage (untimed; needs the dataset's builds, checks the covariances against them; covariances and whole-matrix vectors are
+written tile by tile, so brain stages in < 6 GB):
   covs.npy / covs.json, tiles.npz, cells.npz   prepare()'s covariances and tiles, the per-cell inputs (data.py)
   whole.npy / whole.json   whole-matrix vector of every tile: the float32 upper triangle of its p x p log (eigenvalue
                            floor 1e-6), off-diagonals x sqrt 2, / sqrt p, i.e. Spindle-naive's block vector with one
@@ -36,8 +37,10 @@ import resource
 import socket
 import sys
 import tarfile
+import threading
 import time
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -47,6 +50,7 @@ import data  # noqa: E402
 import spindle_dev as sd  # noqa: E402
 from spindle_dev.metrics import as_cov  # noqa: E402
 from spindle_dev.naive import BlockVectorizer  # noqa: E402
+from spindle_dev.preprocessing import build_quadtree_tiles, build_tile_covs_full, topvar_genes  # noqa: E402
 
 BUILD_FILES = ("build.json", "split.npz", "layout.pkl", "spindle.pkl", "spindle_partial.pkl", "naive.pkl",
                "naive_partial.pkl", "queries.pkl", "D.npy")
@@ -65,6 +69,33 @@ GRAPHCLUST = {
 
 def peak_gb():
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20  # kB on Linux
+
+
+class MemoryMonitor:
+    """Peak anonymous resident memory of this process (RssAnon), sampled every ``interval`` s."""
+
+    def __init__(self, interval=0.05):
+        self.peak = 0
+        self._stop = threading.Event()
+        threading.Thread(target=self._run, args=(interval,), daemon=True).start()
+
+    @staticmethod
+    def now():
+        with open("/proc/self/status") as fh:
+            for line in fh:
+                if line.startswith("RssAnon:"):
+                    return int(line.split()[1]) * 1024
+        return 0
+
+    def _run(self, interval):
+        while not self._stop.is_set():
+            self.peak = max(self.peak, self.now())
+            self._stop.wait(interval)
+
+    def peak_gb(self):
+        self.peak = max(self.peak, self.now())
+        return self.peak / 2**30
+
 
 
 # ---------------------------------------------------------------- status (what R0 skips)
@@ -114,13 +145,24 @@ def build(key, seed):
     spindle = stage("spindle", lambda: sd.Spindle.from_naive(naive, layout))
     naive_partial = stage("naive_partial", lambda: sd.SpindleNaivePartial(layout, tr_covs))
     spindle_partial = stage("spindle_partial", lambda: sd.SpindlePartial.from_naive_partial(naive_partial, layout))
+    finish_build(rec, out, n_cells=int(adata.n_obs), n_tiles=len(tiles), cov_checksum=data.cov_checksum(covs),
+                 genes=genes, train=train, test=test, tr_covs=tr_covs, test_covs=[covs[i] for i in test],
+                 layout=layout, naive=naive, spindle=spindle, naive_partial=naive_partial,
+                 spindle_partial=spindle_partial)
 
+
+def finish_build(rec, out, *, n_cells, n_tiles, cov_checksum, genes, train, test, tr_covs, test_covs, layout, naive,
+                 spindle, naive_partial, spindle_partial, omega=None, mon=None):
+    """The untimed tail of a build (this module's and lowmem_build's): sizes and bytes into ``rec``, omega (computed
+    here unless given), the held-out query vectors and D, then every BUILD_FILES file in ``out`` (build.json last).
+    ``mon`` (a MemoryMonitor) adds the build's peak anonymous memory, peak_anon_gb."""
+    key, seed = rec["key"], rec["seed"]
     p, n = len(genes), len(train)
     labels = np.asarray(layout.labels).astype(int)
-    rec.update(n_cells=int(adata.n_obs), p=p, n_tiles=len(tiles), n_train=n, n_test=len(test),
+    rec.update(n_cells=n_cells, p=p, n_tiles=n_tiles, n_train=n, n_test=len(test),
                n_niches=len(layout.block_dict), n_blocks=int(sum(len(b) for b in layout.block_dict.values())),
                niche_sizes=np.bincount(labels).tolist(),
-               cov_checksum=data.cov_checksum(covs),
+               cov_checksum=cov_checksum,
                bytes_whole=4 * n * p * (p + 1) // 2, bytes_naive=naive.nbytes(), bytes_spindle=spindle.nbytes(),
                bytes_naive_partial=naive_partial.nbytes(), bytes_spindle_partial=spindle_partial.nbytes(),
                spindle_partial_naive_bytes=spindle_partial.naive_bytes,
@@ -128,8 +170,9 @@ def build(key, seed):
     rec["spindle_pct"] = 100 * rec["bytes_spindle"] / rec["bytes_naive"]
     rec["spindle_partial_pct"] = 100 * rec["bytes_spindle_partial"] / spindle_partial.naive_bytes
 
-    omega = sd.variance_quantiles(tr_covs)
-    qvs = [naive.query_vectors(covs[i]) for i in test]
+    if omega is None:
+        omega = sd.variance_quantiles(tr_covs)
+    qvs = [naive.query_vectors(c) for c in test_covs]
     D = np.stack([naive.distances(qv) for qv in qvs])
 
     data.save_layout(layout, out / "layout.pkl")
@@ -139,6 +182,8 @@ def build(key, seed):
     np.savez(out / "split.npz", train=train, test=test, genes=np.asarray(genes).astype(str), omega=omega)
     np.save(out / "D.npy", D)
     rec["peak_gb"] = peak_gb()
+    if mon is not None:
+        rec["peak_anon_gb"] = mon.peak_gb()
     (out / "build.json").write_text(json.dumps(rec, indent=1))  # last: build_done() keys on it
     print(f"{key} seed {seed}: {n} index / {len(test)} held-out tiles, {rec['n_niches']} niches, "
           f"Spindle {rec['spindle_pct']:.2f} %, Spindle partial {rec['spindle_partial_pct']:.2f} % of Spindle-naive; "
@@ -161,25 +206,51 @@ def whole_vectorizer(p):
     return BlockVectorizer(np.arange(p), [(0, p)])
 
 
+# ---------------------------------------------------------------- covariances one at a time (stage, lowmem_build)
+COV_BATCH = 512  # tiles per build_tile_covs_full call
+
+
+def tiles_and_genes(adata, max_genes):
+    """prepare_tiles' tiles, genes and gene columns, without the covariances."""
+    tiles = build_quadtree_tiles(adata.obsm["spatial"], max_pts=200, min_side=0.0, max_depth=40)
+    genes, gene_idx = topvar_genes(adata, G=min(max_genes, adata.n_vars))
+    return tiles, genes, gene_idx
+
+
+def iter_tile_covs(adata, tiles, gene_idx, batch=COV_BATCH):
+    """prepare_tiles' covariances ({'tile_id', 'cov', 'n'}) in tile order, ``batch`` tiles at a time: every tile's
+    covariance is computed alone, so these are the values of prepare_tiles(adata, max_genes)[1]."""
+    X = SimpleNamespace(X=adata.X[:, gene_idx])  # what build_tile_covs_full(adata, tiles, gene_idx) slices
+    for a in range(0, len(tiles), batch):
+        yield from build_tile_covs_full(X, tiles[a:a + batch], None, n_jobs=8, eps=1e-6)
+
+
 def stage(key):
+    """Covariances and whole-matrix vectors are written tile by tile (memory: the section, one niche's covariances in
+    float64 for its mean, and the cell matrix; brain < 6 GB), with the values of data.prepare(key)."""
     st = data.stamp()
     t0 = time.perf_counter()
+    mon = MemoryMonitor()
     d = data.CACHE / key
     d.mkdir(parents=True, exist_ok=True)
-    adata, tiles, covs, genes = data.prepare(key)
-    chk = data.cov_checksum(covs)
-    for seed in data.SEEDS:
-        meta = json.loads((data.cache_dir(key, seed) / "build.json").read_text())
-        if len(covs) != meta["n_tiles"] or abs(chk - meta["cov_checksum"]) > 1e-6 * abs(meta["cov_checksum"]):
-            raise RuntimeError(f"{key} seed {seed}: covariances differ from the build")
+    adata = sd.load_adata(data.paths.dataset_path(key))
+    tiles, genes, gene_idx = tiles_and_genes(adata, data.paths.dataset_max_genes(key))
     p = len(genes)
 
     # covariances and tiles, exactly as prepare() returns them
-    C = np.lib.format.open_memmap(d / "covs.npy", mode="w+", dtype=np.float32, shape=(len(covs), p, p))
-    for i, c in enumerate(covs):
+    C = np.lib.format.open_memmap(d / "covs.npy", mode="w+", dtype=np.float32, shape=(len(tiles), p, p))
+    chk = 0  # = data.cov_checksum(covs): the same sum in the same order
+    for i, c in enumerate(iter_tile_covs(adata, tiles, gene_idx)):
         C[i] = c["cov"]
+        chk += np.trace(np.asarray(c["cov"], dtype=np.float64))
     C.flush()
     del C
+    chk = float(chk)
+    for seed in data.SEEDS:
+        meta = json.loads((data.cache_dir(key, seed) / "build.json").read_text())
+        if len(tiles) != meta["n_tiles"] or abs(chk - meta["cov_checksum"]) > 1e-6 * abs(meta["cov_checksum"]):
+            raise RuntimeError(f"{key} seed {seed}: covariances differ from the build")
+    covs = np.load(d / "covs.npy", mmap_mode="r")
     np.savez(d / "tiles.npz", id=np.array([t.id for t in tiles]), bbox=np.array([t.bbox for t in tiles], float),
              idx=np.concatenate([t.idx for t in tiles]), off=np.cumsum([0] + [len(t.idx) for t in tiles]))
 
@@ -197,10 +268,11 @@ def stage(key):
 
     # whole-matrix vectors
     vec = whole_vectorizer(p)
-    W = np.empty((len(covs), vec.dim), dtype=np.float32)
+    W = np.lib.format.open_memmap(d / "whole.npy", mode="w+", dtype=np.float32, shape=(len(covs), vec.dim))
     for i, c in enumerate(covs):
-        W[i] = vec.vector(c["cov"], np.float32)
-    np.save(d / "whole.npy", W)
+        W[i] = vec.vector(c, np.float32)
+    W.flush()
+    del W
     for seed in data.SEEDS:
         s = np.load(data.cache_dir(key, seed) / "split.npz")
 
@@ -214,11 +286,12 @@ def stage(key):
         print(f"{key} seed {seed}: {len(niches)} niche means", flush=True)
 
     rec = {"key": key, **st, "n_tiles": len(covs), "p": p, "dim": vec.dim, "cov_checksum": chk,
-           "seconds": time.perf_counter() - t0, "peak_gb": peak_gb()}
+           "seconds": time.perf_counter() - t0, "peak_gb": peak_gb(), "peak_anon_gb": mon.peak_gb()}
     (d / "whole.json").write_text(json.dumps(rec, indent=1))
-    (d / "covs.json").write_text(json.dumps({**rec, "tile_id": [int(c["tile_id"]) for c in covs],
-                                             "n": [int(c["n"]) for c in covs]}))  # last: stage_done() keys on it
-    print(f"{key}: staged in {rec['seconds']:.0f} s, peak {rec['peak_gb']:.1f} GB; done", flush=True)
+    (d / "covs.json").write_text(json.dumps({**rec, "tile_id": [int(t.id) for t in tiles],  # = covs' tile_id, n
+                                             "n": [len(t.idx) for t in tiles]}))  # last: stage_done() keys on it
+    print(f"{key}: staged in {rec['seconds']:.0f} s, peak {rec['peak_anon_gb']:.2f} GB anonymous "
+          f"({rec['peak_gb']:.1f} GB with mapped files); done", flush=True)
 
 
 def main():
